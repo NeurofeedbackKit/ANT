@@ -23,7 +23,10 @@ dependencies = [
     "pyyaml",
     "padasip",
     "mne-icalabel",
-    "PyQt6"
+    "PyQt6",
+    "pactools",
+    "pyvista",
+    "pcntoolkit==1.1.2"
 ]
 license = {file = 'LICENSE'}
 maintainers = [
