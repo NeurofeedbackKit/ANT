@@ -26,6 +26,7 @@ dependencies = [
     "PyQt6",
     "pactools",
     "pyvista",
+    "autoreject",
     "pcntoolkit==1.1.2"
 ]
 license = {file = 'LICENSE'}
@@ -33,7 +34,7 @@ maintainers = [
     {email = 'payam.sadeghi74@gmail.com', name = 'Payam S. Shabestari'},
 ]
 readme = 'README.md'
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 
 [tool.setuptools.packages.find]
 where = ["src"]
