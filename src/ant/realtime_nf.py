@@ -1160,7 +1160,8 @@ class NFRealtime:
                 --------
                 >>> session.save(nf_data=True, acq_delay=False, raw_data=False)
                 """
-                self.stream.disconnect()
+                if self.stream.connected:
+                        self.stream.disconnect()
                 for folder in ["neurofeedback", "delays", "main", "reports"]:
                         (self.subject_dir / folder).mkdir(parents=True, exist_ok=True)
 
