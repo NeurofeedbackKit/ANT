@@ -1,13 +1,12 @@
 from pathlib import Path
+import logging
 import argparse
 import yaml
 import time
 import shutil
 import json
 import re
-
 from ant import NFRealtime
-
 
 def parse_feature_name(feature_name, feature_type):
     """
@@ -117,6 +116,14 @@ def create_nf_yaml_from_selection(
     Path to created YAML file
     """
     subjects_dir = Path(subjects_dir)
+    log_dir = Path(subjects_dir) / subject_id / "logs"
+    log_file = log_dir / f"v_{visit}.log"
+    logging.basicConfig(
+        filename=log_file,
+        level=logging.INFO,
+        format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+    )
+
     template_yaml_path = Path(template_yaml_path)
     json_path = subjects_dir / subject_id / "nf_selection" / f"selection_report_v{visit}.json"
     
@@ -211,7 +218,7 @@ def create_nf_yaml_from_selection(
     with open(output_yaml_path, 'w') as f:
         yaml.dump(nf_config, f, default_flow_style=False, sort_keys=False)
     
-    print(f"Created personalized NF config: {output_yaml_path}")
+    logging.info(f"Created personalized NF config: {output_yaml_path}")
     return output_yaml_path
 
 
@@ -219,28 +226,17 @@ def create_nf_yaml_from_selection(
 with open("config_master.yml", "r") as f:
     config = yaml.safe_load(f)
 
-## show instruction img
-imgs_dir = config.get("imgs_dir", "./")
-image_path = Path(imgs_dir) / "img_02.jpg"
-# show_image_until_space(image_path)
-
 
 ## now connect to stream and record RS EEG
-'''
 parser = argparse.ArgumentParser()
 parser.add_argument("--subject_id", required=True)
 parser.add_argument("--visit", required=True)
 args = parser.parse_args()
 subject_id = args.subject_id
 visit = int(args.visit)
-'''
+
 subjects_dir = config.get("subjects_dir", "./")
 main_duration = config.get("main_duration")
-
-subject_id = "nfru"
-visit = 1
-
-
 template_yaml = "config_methods.yml"
 yaml_path = create_nf_yaml_from_selection(
                                         subject_id,
@@ -270,9 +266,11 @@ kwargs = {
         "verbose": False
         }
 nf = NFRealtime(session="main", **kwargs)
+logging.info(f"Neurofeedback module fro the main recording initiated.")
 
 fname = "/Users/payamsadeghishabestari/ANT/data/simulated/pericalcarine-lh_10_2-raw.fif"
 nf.connect_to_lsl(mock_lsl=True, fname=fname)
+logging.info(f"Connected to the LSL stream ...")
 time.sleep(1)
 
 nf.record_main(
@@ -290,6 +288,7 @@ nf.record_main(
     show_brain_activation=False
 )
 nf.save(nf_data=True, acq_delay=True, raw_data=False)
+logging.info(f"Main recording finished and data are saved.")
 
 ## clean and rename folders at the end
 report_dir = subject_dir / "reports"
@@ -305,3 +304,31 @@ if new_nf_data_path.exists() and new_nf_data_path.is_dir():
 if nf_data_dir.exists():
     nf_data_dir.rename(new_nf_data_path)
 
+logging.info(f"Subject directory cleaned and restructured.")
+
+'''
+from smbprotocol.connection import Connection
+from smbprotocol.session import Session
+from smbprotocol.tree import TreeConnect
+from smbprotocol.open import Open
+
+server = "IDNAS32"
+username = "your_username"
+password = "your_password"
+
+conn = Connection(uuid="random-id", server=server, port=445)
+conn.connect()
+
+session = Session(conn, username=username, password=password)
+session.connect()
+
+tree = TreeConnect(session, r"\\IDNAS32\G_USZ_ORL$")
+tree.connect()
+
+# Example: open root directory
+dir_open = Open(tree, "")
+dir_open.create()
+
+for info in dir_open.query_directory("*"):
+    print(info.file_name)
+'''
