@@ -1,0 +1,56 @@
+# Advanced Neurofeedback Toolbox — Conda environment
+#
+# Usage
+# -----
+# Create environment:
+#   conda env create -f environment.yml
+#
+# Activate:
+#   conda activate ant
+#
+# Update after pulling changes:
+#   conda env update -f environment.yml --prune
+
+name: ant
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  # Python
+  - python=3.11
+
+  # Core scientific stack (conda-forge builds are fastest)
+  - numpy>=1.24,<3
+  - scipy>=1.10
+  - matplotlib>=3.7
+  - nibabel>=5.0
+
+  # MNE ecosystem (conda-forge)
+  - mne>=1.6
+  - mne-connectivity>=0.6
+  - mne-features>=0.3
+
+  # Qt / visualisation
+  - pyqt>=6.4
+  - pyqtgraph>=0.13
+  - pyvista>=0.42
+  - pyvistaqt>=0.11
+
+  # General utilities
+  - pyyaml>=6.0
+  - pip
+
+  # Packages only available via pip
+  - pip:
+    - mne-lsl>=1.2
+    - mne-icalabel>=0.4
+    - fooof>=1.0
+    - pyunlocbox>=0.5.2
+    - padasip>=1.2
+    - pactools>=0.3
+    # Install ANT itself in editable mode
+    - -e .
+    # OSC output (optional — remove if not needed)
+    # - python-osc>=1.8
