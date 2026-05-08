@@ -4,6 +4,7 @@ import time
 from copy import deepcopy
 from functools import wraps
 
+import matplotlib.pyplot as plt
 import yaml
 import numpy as np
 from scipy import sparse
@@ -11,13 +12,29 @@ from scipy.integrate import simpson
 from scipy.signal import butter, welch, periodogram, get_window
 from scipy.spatial.distance import pdist, squareform
 from fooof import FOOOF
-from pyunlocbox import functions, solvers
+try:
+    from pyunlocbox import functions, solvers as _pux_solvers
+    _pyunlocbox_available = True
+except Exception:
+    _pyunlocbox_available = False
 from padasip.filters import FilterLMS
-import pyvista as pv
+try:
+    import pyvista as pv
+    _pyvista_available = True
+except ImportError:
+    pv = None  # type: ignore[assignment]
+    _pyvista_available = False
 from nibabel.freesurfer import read_morph_data
 
-from mne import make_forward_solution, compute_raw_covariance
-from mne.io import read_raw
+from mne import (
+    make_forward_solution,
+    compute_raw_covariance,
+    read_labels_from_annot,
+    setup_source_space,
+    make_bem_model,
+    make_bem_solution,
+)
+from mne.coreg import Coregistration
 from mne.preprocessing import ICA
 from mne.datasets import fetch_fsaverage
 from mne.minimum_norm import make_inverse_operator
@@ -323,13 +340,14 @@ def estimate_aperiodic_component(
 def _compute_inv_operator(
                 raw_baseline,
                 subject_fs_id="fsaverage",
-                subjects_fs_dir=None
+                subjects_fs_dir=None,
+                data_type="eeg",
                 ):
         """
-        Compute the inverse operator for EEG source localization.
+        Compute the inverse operator for EEG/MEG source localization.
 
         This function sets up the forward and inverse models required
-        to project sensor-level EEG data into source space. Depending
+        to project sensor-level data into source space. Depending
         on whether the subject is ``fsaverage`` or an individual, the
         function handles source space, BEM, and coregistration steps
         differently.
@@ -337,12 +355,15 @@ def _compute_inv_operator(
         Parameters
         ----------
         raw_baseline : mne.io.Raw
-                The baseline raw EEG recording used to estimate the noise
+                The baseline raw recording used to estimate the noise
                 covariance and forward model.
         subject : str, default='fsaverage'
                 The subject identifier. If 'fsaverage', a template anatomy
                 provided by MNE is used. Otherwise, a subject-specific model
                 is built using individual MRI and digitization data.
+        data_type : {'eeg', 'meg'}, default='eeg'
+                Modality flag. Controls whether the forward solution is
+                computed for EEG or MEG channels.
 
         Returns
         -------
@@ -375,9 +396,6 @@ def _compute_inv_operator(
                 trans = "fsaverage"
 
         else:
-                bem = sl_params["bem"]
-                src = sl_params["source"]
-
                 src = setup_source_space(subject=subject_fs_id, subjects_dir=subjects_fs_dir)
                 bem_model = make_bem_model(subject=subject_fs_id, subjects_dir=subjects_fs_dir)  
                 bem = make_bem_solution(bem_model)
@@ -388,16 +406,28 @@ def _compute_inv_operator(
                 coreg.fit_icp(n_iterations=40, nasion_weight=10)
                 trans = coreg.trans
 
+        # Drop EEG channels that have no digitized location; make_forward_solution
+        # raises RuntimeError on any EEG channel whose loc vector is all-zero.
+        raw_fwd = raw_baseline.copy()
+        missing_loc = [
+            ch['ch_name'] for ch in raw_fwd.info['chs']
+            if ch['kind'] == 2 and (  # 2 = FIFFV_EEG_CH
+                np.any(np.isnan(ch['loc'][:3])) or np.allclose(ch['loc'][:3], 0.0)
+            )
+        ]
+        if missing_loc:
+            raw_fwd.drop_channels(missing_loc)
+
         fwd = make_forward_solution(
-                                raw_baseline.info,
+                                raw_fwd.info,
                                 trans=trans,
                                 src=src,
                                 bem=bem,
-                                meg=False,
-                                eeg=True
+                                meg=(data_type == "meg"),
+                                eeg=(data_type == "eeg"),
                                 )
-        noise_cov = compute_raw_covariance(raw_baseline, method="empirical")
-        inverse_operator = make_inverse_operator(raw_baseline.info, fwd, noise_cov)
+        noise_cov = compute_raw_covariance(raw_fwd, method="empirical")
+        inverse_operator = make_inverse_operator(raw_fwd.info, fwd, noise_cov)
 
         return inverse_operator, fwd, noise_cov
 
@@ -424,9 +454,9 @@ def weight_to_degree_map(n_nodes):
 
         Notes
         -----
-        - The number of edges is ``n_edges = n_nodes * (n_nodes - 1) / 2``.
-        - Internally, constructs a sparse COO matrix of shape
-        ``(n_nodes, n_edges)``.
+        The number of edges is ``n_edges = n_nodes * (n_nodes - 1) / 2``.
+        Internally, a sparse COO matrix of shape ``(n_nodes, n_edges)`` is
+        constructed.
         """
 
         n_edges = n_nodes * (n_nodes - 1) // 2
@@ -443,6 +473,9 @@ def weight_to_degree_map(n_nodes):
         return lambda w: coo.dot(w), lambda d: coo.T.dot(d)
 
 
+_log_degree_barrier_cache: dict = {}
+
+
 def log_degree_barrier(
                 signals,
                 dist_type,
@@ -450,24 +483,24 @@ def log_degree_barrier(
                 beta,
                 step=0.5,
                 max_iter=10000,
-                rtol=1.0e-16,
-                w0=None
+                rtol=1.0e-5,
+                w0=None,
+                normalize=True,
+                cache_key=None,
                 ):
         """
         Graph learning with a log-barrier degree constraint.
 
-        Builds a weighted graph from smooth signals by solving a convex
-        optimization problem with:
-        - distance fitting,
-        - log-barrier enforcing non-degenerate node degrees,
-        - quadratic regularization on edge weights.
+        Builds a weighted graph from smooth signals by solving::
+
+            min_w  2 <w, z> - α Σ log(k(w)) + β ||w||²
 
         Parameters
         ----------
         signals : array of shape (n_nodes, n_samples)
                 Input data (node-wise signals).
         dist_type : str
-                Distance metric to use (passed to ``scipy.spatial.distance.pdist``).
+                Distance metric (passed to ``scipy.spatial.distance.pdist``).
         alpha : float
                 Weight of the log-barrier degree penalty.
         beta : float
@@ -475,61 +508,92 @@ def log_degree_barrier(
         step : float
                 Initial step size for the optimization.
         w0 : array or None
-                Initial edge weights. If None, initialized to zeros.
+                Initial edge weights. ``None`` uses zeros (or the cached warm-start).
         max_iter : int
-                Maximum number of iterations for the solver.
+                Maximum iterations for the solver.
         rtol : float
                 Relative tolerance for convergence.
+        normalize : bool
+                If True, normalize the returned adjacency matrix to [0, 1].
+        cache_key : hashable or None
+                When not None, the previous solution for this key is used as
+                warm-start and updated in-place after each call.
 
         Returns
         -------
         graph_matrix : ndarray of shape (n_nodes, n_nodes)
-                Learned adjacency matrix of the graph.
-
-        Notes
-        -----
-        - Uses MLF-BF primal-dual solver (external `solvers` package).
-        - Relies on `functions.func` objects with custom eval/prox/grad.
-        - The optimization problem solved is of the form::
-
-                min_w  2 <w, z> - α Σ log(k(w)) + β ||w||²
-
-        where z are normalized pairwise distances and k(w) maps edge
-        weights to node degrees.
-
+                Learned (normalized) adjacency matrix.
         """
         n_nodes = signals.shape[0]
 
-        # Compute pairwise distances and normalize
-        z = pdist(signals, dist_type)
-        z /= np.max(z)
-        w0 = np.zeros_like(z) if w0 is None else w0
+        # Fast path for 2-node case: analytic solution of the scalar problem
+        # min_w 2wz - alpha*log(w) + beta*w^2, w >= 0
+        # derivative: 2z - alpha/w + 2*beta*w = 0  →  2*beta*w^2 + 2z*w - alpha = 0
+        if n_nodes == 2:
+                z = pdist(signals, dist_type)
+                z_norm = z[0] / (np.max(z) + 1e-12)
+                if beta > 0:
+                        disc = 4 * z_norm ** 2 + 8 * beta * alpha
+                        w_opt = (-2 * z_norm + np.sqrt(max(disc, 0))) / (4 * beta)
+                else:
+                        w_opt = alpha / (2 * z_norm + 1e-12)
+                w_opt = max(w_opt, 0.0)
+                mat = np.array([[0.0, w_opt], [w_opt, 0.0]])
+                if normalize and w_opt > 0:
+                        mat /= w_opt
+                return mat
 
-        # Degree operator
+        # General case
+        z = pdist(signals, dist_type)
+        z_max = np.max(z)
+        if z_max > 0:
+                z = z / z_max
+
+        # Warm-starting from cache
+        if w0 is None:
+                w0 = _log_degree_barrier_cache.get(cache_key, np.zeros_like(z))
+
         k, kt = weight_to_degree_map(n_nodes)
         norm_k = np.sqrt(2 * (n_nodes - 1))
 
-        # Objective terms
+        if not _pyunlocbox_available:
+            raise ImportError(
+                "pyunlocbox is required for sensor_graph / source_graph modalities. "
+                "Install it with: pip install pyunlocbox"
+            )
+
         f1 = functions.func()
         f1._eval = lambda w: 2 * np.dot(w, z)
         f1._prox = lambda w, gamma: np.maximum(0, w - 2 * gamma * z)
 
         f2 = functions.func()
         f2._eval = lambda w: -alpha * np.sum(np.log(np.maximum(np.finfo(float).eps, k(w))))
-        f2._prox = lambda d, gamma: np.maximum(0, 0.5 * (d + np.sqrt(d**2 + 4 * alpha * gamma)))
+        f2._prox = lambda d, gamma: np.maximum(0, 0.5 * (d + np.sqrt(d ** 2 + 4 * alpha * gamma)))
 
         f3 = functions.func()
-        f3._eval = lambda w: beta * np.sum(w**2)
+        f3._eval = lambda w: beta * np.sum(w ** 2)
         f3._grad = lambda w: 2 * beta * w
         lipg = 2 * beta
 
-        # Solver setup
         stepsize = step / (1 + lipg + norm_k)
-        solver = solvers.mlfbf(L=k, Lt=kt, step=stepsize)
-        problem = solvers.solve([f1, f2, f3], x0=w0, solver=solver, maxit=max_iter,
-                                rtol=rtol, verbosity="NONE")
+        solver = _pux_solvers.mlfbf(L=k, Lt=kt, step=stepsize)
+        problem = _pux_solvers.solve(
+                [f1, f2, f3], x0=w0.copy(), solver=solver,
+                maxit=max_iter, rtol=rtol, verbosity="NONE",
+        )
+        sol = problem["sol"]
 
-        return squareform(problem["sol"])
+        # Store warm-start for next call
+        if cache_key is not None:
+                _log_degree_barrier_cache[cache_key] = sol.copy()
+
+        mat = squareform(sol)
+        if normalize:
+                m = mat.max()
+                if m > 0:
+                        mat = mat / m
+
+        return mat
 
 
 def plot_glass_brain(bl1, bl2=None):
@@ -688,8 +752,36 @@ def create_blink_template(raw, max_iter=800, method="infomax"):
 
         return template_blink_comp
 
-def setup_surface(subjects_dir, hemi_distance=100.0):
-        """Fetch fsaverage surfaces and prepare PyVista mesh for both hemispheres."""
+def setup_surface(subjects_dir, hemi_distance=100.0, surf="inflated"):
+        """Fetch fsaverage5 surfaces and prepare a PyVista mesh for both hemispheres.
+
+        Parameters
+        ----------
+        subjects_dir : str | Path
+                FreeSurfer subjects directory containing the ``fsaverage5`` folder.
+        hemi_distance : float, default 100.0
+                Lateral separation in mm applied to the right-hemisphere vertices.
+        surf : str, default "inflated"
+                Surface geometry to load.  One of ``"inflated"``, ``"pial"``,
+                ``"white"``, ``"sphere"``.
+
+        Returns
+        -------
+        hemi_offsets : dict
+                Mapping ``{"lh": 0, "rh": n_lh_vertices}``.
+        scalars_full : ndarray, shape (n_total_vertices,)
+                Zero-initialised activity array covering both hemispheres.
+        mesh : pyvista.PolyData
+                Combined bilateral mesh with ``"base"`` (sulcal depth) and
+                ``"activity"`` scalar arrays.
+        verts_stc : dict
+                Mapping ``{"lh": ndarray, "rh": ndarray}`` of source vertex indices.
+        """
+        if not _pyvista_available:
+            raise ImportError(
+                "pyvista is required for brain surface visualisation. "
+                "Install it with:  pip install 'ANT[viz]'"
+            )
         fs_dir = Path(subjects_dir) / "fsaverage5"
         verts_all = []
         faces_all = []
@@ -704,7 +796,7 @@ def setup_surface(subjects_dir, hemi_distance=100.0):
 
         # Load surfaces and separate hemispheres along x-axis
         for hemi in ["lh", "rh"]:
-                surf_path = fs_dir / "surf" / f"{hemi}.inflated"
+                surf_path = fs_dir / "surf" / f"{hemi}.{surf}"
                 verts_surf, faces_surf = read_surface(surf_path)
 
                 # Apply translation: shift right hemisphere
