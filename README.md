@@ -17,7 +17,7 @@
 ---
 
 **ANT** is an open-source Python package for **real-time closed-loop M/EEG neurofeedback**.
-Built on [MNE-Python](https://mne.tools) and the [Lab Streaming Layer (LSL)](https://labstreaminglayer.org), it covers the full pipeline — from amplifier to 3-D brain display — in a single, researcher-friendly API.
+Built on [MNE-Python](https://mne.tools) and the [Lab Streaming Layer (LSL)](https://labstreaminglayer.org), it covers the full pipeline — from amplifier to 3D brain display — in a single, researcher-friendly API.
 
 ## Highlights
 
@@ -26,7 +26,7 @@ Built on [MNE-Python](https://mne.tools) and the [Lab Streaming Layer (LSL)](htt
 | **14+ NF modalities** | Alpha power, ERD/ERS, laterality, Hjorth, spectral centroid, CFC, graph metrics, source power … |
 | **Sensor & source space** | Full MNE inverse-operator pipeline for source-level NF |
 | **Real-time artifact correction** | ORICA (online ICA), adaptive LMS, GEDAI (GED-based spatial filters) |
-| **Three parallel windows** | Raw stream viewer · NF signal monitor · 3-D brain activation |
+| **Three parallel windows** | Raw stream viewer · NF signal monitor · 3D brain activation |
 | **OSC output** | Send feedback values to Max/MSP, SuperCollider, Pure Data |
 | **CLI** | `ANT demo`, `ANT baseline`, `ANT run` — no Python required |
 | **Mock mode** | Works without hardware using bundled sample EEG data |
@@ -98,17 +98,16 @@ nf.record_main(
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         NFRealtime                              │
-│                                                                 │
-│  LSL stream ──► acquire() ──► artifact_correction() ──► NF     │
-│                                                                 │
-│  Main thread:   StreamViewer | NFSignalPlot | BrainPlot (Qt)   │
-│  Acq thread:    get_data → correct → [mod1 ‖ mod2 ‖ mod3]     │
-│  OSC:           send_all() ──► Max/MSP | SC | PD               │
-└─────────────────────────────────────────────────────────────────┘
-```
+<p align="center">
+  <a href="https://payamsash.github.io/ANT/_static/ant_workflow.html">
+    <img src="docs/source/_static/ant_workflow.svg"
+         alt="ANT Processing Pipeline"
+         width="100%"
+         style="border-radius:10px; border:1px solid rgba(200,200,200,0.15);
+                box-shadow:0 6px 18px rgba(0,0,0,0.35);">
+  </a>
+</p>
+<p align="center"><sub>Click to open the interactive diagram</sub></p>
 
 The acquisition loop runs in a **background daemon thread**; all three visualisation windows share a **Qt event loop** on the main thread, updated at ~30 fps via a pump timer.
 
@@ -174,7 +173,7 @@ If you use ANT, please cite:
 ## Acknowledgements
 
 Development was supported by the [Swiss National Science Foundation](https://www.snf.ch/en)
-(grant 208164 — *Advancing Neurofeedback in Tinnitus*).
+(grant number - 208164 — *Advancing Neurofeedback in Tinnitus*).
 
 ## License
 
