@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import datetime
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pyqtgraph as pg
@@ -195,7 +194,7 @@ class NFSignalPlot(QMainWindow):
     >>> plot.push([3.2e-13])
     >>> app.exec()
 
-    .. versionadded:: 0.1.0
+    .. versionadded:: 1.0.0
     """
 
     def __init__(
@@ -217,18 +216,15 @@ class NFSignalPlot(QMainWindow):
         self._channel_scales = [1.0] * self._n
         self._paused = False
 
-        # Vertical offsets: each trace centred 2 units apart
-        self._shifts = np.arange(0.0, self._n * 2.0, 2.0)
-
-        # Data buffers
-        n_pts = max(int(sfreq * time_window), 300)
+        # Data buffers — 30 fps × time_window gives real-time resolution
+        n_pts = max(int(sfreq * time_window), 30)
         self._time_axis = np.linspace(0.0, time_window, n_pts)
         self._buf = np.zeros((self._n, n_pts))
 
         pg.setConfigOptions(antialias=True, foreground="#c0c0d8", background="#0d0d1a")
         self._build_ui()
         self.setWindowTitle("ANT — Advanced Neurofeedback Toolbox")
-        self.resize(1440, 760)
+        self.resize(1440, max(500, 200 + self._n * 150))
 
     # ------------------------------------------------------------------
     # UI construction
@@ -249,57 +245,62 @@ class NFSignalPlot(QMainWindow):
         self._status = self.statusBar()
         self._status.showMessage("Waiting for data …")
 
-    def _build_plot_widget(self) -> pg.PlotWidget:
-        pw = pg.PlotWidget(background="#0d0d1a")
-        pw.setLabel("bottom", "Time", units="s", color="#9090aa")
-        pw.showGrid(x=True, y=True, alpha=0.15)
-        pw.setMouseEnabled(x=False, y=False)
+    def _build_plot_widget(self) -> pg.GraphicsLayoutWidget:
+        glw = pg.GraphicsLayoutWidget()
+        glw.setBackground("#0d0d1a")
 
-        for ax in ("left", "bottom"):
-            pw.getAxis(ax).setPen(pg.mkPen("#303050"))
-            pw.getAxis(ax).setTextPen(pg.mkPen("#9090aa"))
-
-        # Y-axis labels (modality names, colour-coded)
-        pw.getAxis("left").setStyle(showValues=True)
-        pw.getAxis("left").setTicks(
-            [[(float(s), _LABELS.get(m, m)) for s, m in zip(self._shifts, self._mods)]]
-        )
-
-        # Zero reference lines
-        for shift in self._shifts:
-            pw.addItem(
-                pg.InfiniteLine(pos=shift, angle=0, pen=pg.mkPen("#252545", width=1))
-            )
-
-        # Signal curves
+        self._plots: list[pg.PlotItem] = []
         self._curves: list[pg.PlotDataItem] = []
+
         for i, mod in enumerate(self._mods):
             color = _COLORS[i % len(_COLORS)]
-            curve = pw.plot(
+            is_bottom = (i == self._n - 1)
+
+            pi = glw.addPlot(row=i, col=0)
+            pi.showGrid(x=True, y=True, alpha=0.3)
+            pi.setMouseEnabled(x=False, y=False)
+
+            # Label the left axis with the modality name in its colour
+            pi.setLabel("left", _LABELS.get(mod, mod), color=color, size="10pt")
+            pi.getAxis("left").setWidth(110)
+
+            for ax_name in ("left", "bottom"):
+                ax = pi.getAxis(ax_name)
+                ax.setPen(pg.mkPen("#303050"))
+                ax.setTextPen(pg.mkPen("#9090aa"))
+
+            # Only the bottom plot shows the time axis label and tick values
+            if is_bottom:
+                pi.setLabel("bottom", "Time", units="s", color="#9090aa")
+            else:
+                pi.getAxis("bottom").setStyle(showValues=False)
+                pi.getAxis("bottom").setHeight(0)
+
+            # Fine time-axis ticks so minor grid lines appear
+            self._apply_x_tick_spacing(pi, self._time_window)
+
+            # Zero reference line
+            pi.addItem(pg.InfiniteLine(pos=0, angle=0, pen=pg.mkPen("#252545", width=1)))
+
+            # Signal curve
+            curve = pi.plot(
                 self._time_axis,
                 self._buf[i],
                 pen=pg.mkPen(color=color, width=2),
-                name=_LABELS.get(mod, mod),
             )
             self._curves.append(curve)
 
-        # Live value labels anchored to the right of each trace
-        self._val_items: list[pg.TextItem] = []
-        for i, mod in enumerate(self._mods):
-            item = pg.TextItem(
-                text="—",
-                color=_COLORS[i % len(_COLORS)],
-                anchor=(0.0, 0.5),
-            )
-            item.setPos(self._time_window * 0.97, float(self._shifts[i]))
-            pw.addItem(item)
-            self._val_items.append(item)
+            pi.setXRange(0.0, self._time_window, padding=0.01)
+            pi.enableAutoRange(axis='y')
 
-        pw.setYRange(self._shifts[0] - 1.8, self._shifts[-1] + 1.8, padding=0)
-        pw.setXRange(0.0, self._time_window, padding=0.01)
+            # Link all X axes to the first plot
+            if i > 0:
+                pi.setXLink(self._plots[0])
 
-        self._pw = pw
-        return pw
+            self._plots.append(pi)
+
+        self._glw = glw
+        return glw
 
     def _build_control_panel(self) -> QScrollArea:
         scroll = QScrollArea()
@@ -359,7 +360,7 @@ class NFSignalPlot(QMainWindow):
         chk = QCheckBox("Show grid")
         chk.setChecked(True)
         chk.stateChanged.connect(
-            lambda s: self._pw.showGrid(x=bool(s), y=bool(s), alpha=0.15)
+            lambda s: [pi.showGrid(x=bool(s), y=bool(s), alpha=0.3) for pi in self._plots]
         )
         lay.addWidget(chk)
 
@@ -411,6 +412,21 @@ class NFSignalPlot(QMainWindow):
     # Callbacks
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _apply_x_tick_spacing(pi: pg.PlotItem, secs: float) -> None:
+        """Set major/minor X tick spacing so the grid is dense but readable."""
+        if secs <= 5:
+            major, minor = 1.0, 0.25
+        elif secs <= 10:
+            major, minor = 2.0, 0.5
+        elif secs <= 20:
+            major, minor = 5.0, 1.0
+        elif secs <= 30:
+            major, minor = 5.0, 1.0
+        else:
+            major, minor = 10.0, 2.0
+        pi.getAxis("bottom").setTickSpacing(major=major, minor=minor)
+
     def _toggle_pause(self, checked: bool) -> None:
         self._paused = checked
         self._btn_pause.setText("▶  Resume" if checked else "⏸  Pause")
@@ -419,32 +435,36 @@ class NFSignalPlot(QMainWindow):
         self._buf[:] = 0.0
         for i, curve in enumerate(self._curves):
             curve.setData(self._time_axis, self._buf[i])
-        for item in self._val_items:
-            item.setText("—")
 
     def _screenshot(self) -> None:
+        from PyQt6.QtWidgets import QFileDialog
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        path = Path.home() / f"nf_plot_{ts}.png"
-        exp = pg.exporters.ImageExporter(self._pw.plotItem)
+        default = str(Path.home() / f"nf_plot_{ts}.png")
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save Screenshot", default, "PNG Image (*.png)"
+        )
+        if not path:
+            return
+        exp = pg.exporters.ImageExporter(self._glw.scene())
         exp.parameters()["width"] = 1920
-        exp.export(str(path))
-        self._status.showMessage(f"Saved: {path}", 4000)
+        exp.export(path)
 
     def _change_time_window(self, idx: int) -> None:
         secs = float(self._cmb_tw.itemData(idx))
         self._time_window = secs
-        n_pts = max(int(self._sfreq * secs), 300)
+        n_pts = max(int(self._sfreq * secs), 30)
         self._time_axis = np.linspace(0.0, secs, n_pts)
         self._buf = np.zeros((self._n, n_pts))
-        self._pw.setXRange(0.0, secs, padding=0.01)
-        for item in self._val_items:
-            item.setPos(secs * 0.97, item.pos().y())
+        for pi in self._plots:
+            pi.setXRange(0.0, secs, padding=0.01)
+            self._apply_x_tick_spacing(pi, secs)
 
     def _auto_range(self) -> None:
-        visible = self._buf[self._buf != 0]
-        if visible.size > 0:
-            margin = (visible.max() - visible.min()) * 0.1 or 1.0
-            self._pw.setYRange(visible.min() - margin, visible.max() + margin, padding=0)
+        for i, pi in enumerate(self._plots):
+            row = self._buf[i][self._buf[i] != 0]
+            if row.size > 0:
+                margin = (row.max() - row.min()) * 0.1 or 1.0
+                pi.setYRange(row.min() - margin, row.max() + margin, padding=0)
 
     def _scale_up(self, idx: int) -> None:
         self._channel_scales[idx] *= 2.0
@@ -482,9 +502,7 @@ class NFSignalPlot(QMainWindow):
 
         arr = np.asarray(new_vals, dtype=float)
         norm = np.array([
-            self._shifts[i]
-            + (arr[i] / (self._scales[self._mods[i]] + 1e-300))
-            * self._channel_scales[i]
+            (arr[i] / (self._scales[self._mods[i]] + 1e-300)) * self._channel_scales[i]
             for i in range(self._n)
         ])
 
@@ -496,8 +514,9 @@ class NFSignalPlot(QMainWindow):
             curve.setData(self._time_axis, self._buf[i])
             val = arr[i]
             unit = _UNITS.get(self._mods[i], "")
-            label = f"{val:.4g}" + (f" {unit}" if unit else "")
-            self._val_items[i].setText(label)
-            status_parts.append(f"{_LABELS.get(self._mods[i], self._mods[i])}: {val:.4g}")
+            status_parts.append(
+                f"{_LABELS.get(self._mods[i], self._mods[i])}: {val:.4g}"
+                + (f" {unit}" if unit else "")
+            )
 
         self._status.showMessage("  |  ".join(status_parts))
