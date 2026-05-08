@@ -1,25 +1,50 @@
 {
- "Path.cwd": [
+ "Path": [
   {
    "is_class": true,
    "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
-   "name": "Path.cwd"
+   "name": "Path"
   },
   {
    "is_class": true,
    "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
-   "name": "PurePath.cwd"
+   "name": "PurePath"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib.Path",
-   "module_short": "pathlib.Path",
-   "name": "cwd"
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "Path"
+  }
+ ],
+ "_data_dir": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  }
+ ],
+ "ant.__file__": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "str"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "__file__"
   }
  ],
  "df": [

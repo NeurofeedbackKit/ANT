@@ -34,7 +34,7 @@ localization techniques:
 
 Now let's load data and visualize each method's delay.
 
-.. GENERATED FROM PYTHON SOURCE LINES 17-25
+.. GENERATED FROM PYTHON SOURCE LINES 17-27
 
 .. code-block:: Python
 
@@ -42,8 +42,10 @@ Now let's load data and visualize each method's delay.
     import pandas as pd
     import matplotlib.pyplot as plt
     import seaborn as sns
+    import ant
 
-    fname = Path.cwd().parent / "data" / "sample" / "SL_method_delays.csv"
+    _data_dir = Path(ant.__file__).parent.parent.parent / "data" / "sample"
+    fname = _data_dir / "SL_method_delays.csv"
     df = pd.read_csv(fname, index_col=0)
 
 
@@ -53,11 +55,11 @@ Now let's load data and visualize each method's delay.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-27
+.. GENERATED FROM PYTHON SOURCE LINES 28-29
 
 Helper function for labeling each row
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-32
+.. GENERATED FROM PYTHON SOURCE LINES 29-34
 
 .. code-block:: Python
 
@@ -73,11 +75,11 @@ Helper function for labeling each row
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-34
+.. GENERATED FROM PYTHON SOURCE LINES 35-36
 
 Function to plot KDEs for a list of methods
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-79
+.. GENERATED FROM PYTHON SOURCE LINES 36-81
 
 .. code-block:: Python
 
@@ -133,11 +135,11 @@ Function to plot KDEs for a list of methods
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-81
+.. GENERATED FROM PYTHON SOURCE LINES 82-83
 
 Next, visualize delays for "dSPM", "MNE", "sLORETA", "LCMV"
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-89
+.. GENERATED FROM PYTHON SOURCE LINES 83-91
 
 .. code-block:: Python
 
@@ -162,23 +164,23 @@ Next, visualize delays for "dSPM", "MNE", "sLORETA", "LCMV"
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-91
+.. GENERATED FROM PYTHON SOURCE LINES 92-93
 
 Next, visualize delays for "eLORETA"
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-97
+.. GENERATED FROM PYTHON SOURCE LINES 93-99
 
 .. code-block:: Python
 
@@ -203,7 +205,7 @@ Next, visualize delays for "eLORETA"
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.578 seconds)
+   **Total running time of the script:** (0 minutes 0.416 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_sl_method_delays.py:

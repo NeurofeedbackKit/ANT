@@ -3,11 +3,17 @@
 Examples Gallery
 ===================================================
 
-This gallery contains examples demonstrating how to:
+This gallery contains executable examples demonstrating the full capabilities
+of the **Advanced Neurofeedback Toolbox (ANT)**:
 
-- Simulate EEG data with sinusoidal sources in cortical labels.
-- Record baseline and main neurofeedback sessions using the ANT package.
-- Analyze and visualize neurofeedback signals.
+- Run a closed-loop EEG neurofeedback session from a mock LSL stream.
+- Inspect and visualise the three real-time display windows (raw signal,
+  NF signal monitor, brain activation topomap).
+- Compare per-method processing delays for sensor-space and source-space
+  neurofeedback modalities.
+
+All examples work without an amplifier by using ANT's built-in mock LSL
+player backed by the bundled sample EEG recording.
 
 
 
@@ -16,6 +22,23 @@ This gallery contains examples demonstrating how to:
     <div class="sphx-glr-thumbnails">
 
 .. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates a complete closed-loop EEG neurofeedback session using ANT.  We use a mock LSL stream backed by the bundled sample recording so that no amplifier is required.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_nf_realtime_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_nf_realtime.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Real-time neurofeedback session</div>
+    </div>
+
 
 .. raw:: html
 
@@ -53,18 +76,35 @@ This gallery contains examples demonstrating how to:
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates how to simulate EEG data with sinusoidal sources  in a specific brain region and use it for a neurofeedback session using the ANT package.">
+    <div class="sphx-glr-thumbcontainer" tooltip="ANT provides three simultaneous real-time visualisation windows during a neurofeedback session:">
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_pl2ot_nf_realtime_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_realtime_three_windows_thumb.png
     :alt:
 
-  :ref:`sphx_glr_auto_examples_pl2ot_nf_realtime.py`
+  :ref:`sphx_glr_auto_examples_plot_realtime_three_windows.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Simulating EEG and running a Neurofeedback session</div>
+      <div class="sphx-glr-thumbnail-title">Three-window real-time display</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="ANT provides two live visualisation windows during a closed-loop session:">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_nf_realtime_viz_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_nf_realtime_viz.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">NF signal monitor & brain activation display</div>
     </div>
 
 
@@ -78,22 +118,12 @@ This gallery contains examples demonstrating how to:
 .. toctree::
    :hidden:
 
+   /auto_examples/plot_nf_realtime
    /auto_examples/plot_sl_method_delays
    /auto_examples/plot_method_delays
-   /auto_examples/pl2ot_nf_realtime
+   /auto_examples/plot_realtime_three_windows
+   /auto_examples/plot_nf_realtime_viz
 
-
-.. only:: html
-
-  .. container:: sphx-glr-footer sphx-glr-footer-gallery
-
-    .. container:: sphx-glr-download sphx-glr-download-python
-
-      :download:`Download all examples in Python source code: auto_examples_python.zip </auto_examples/auto_examples_python.zip>`
-
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
-
-      :download:`Download all examples in Jupyter notebooks: auto_examples_jupyter.zip </auto_examples/auto_examples_jupyter.zip>`
 
 
 .. only:: html

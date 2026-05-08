@@ -1,28 +1,30 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../src'))
-project = 'ANT'
+# Insert the package source so autodoc can import ant regardless of CWD
+_here = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(_here, '..', '..', 'src'))
+
+# ---------------------------------------------------------------------------
+# Project information
+# ---------------------------------------------------------------------------
+
+project = 'Advanced Neurofeedback Toolbox (ANT)'
 copyright = '2025, Payam S. Shabestari'
 author = 'Payam S. Shabestari'
-release = '0.1.0'
+release = '1.0.0'
 
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+# ---------------------------------------------------------------------------
+# General configuration
+# ---------------------------------------------------------------------------
 
 extensions = [
-    "sphinx.ext.autodoc",       # pull in docstrings
-    "sphinx.ext.napoleon",      # Google/NumPy style docstrings
-    "sphinx.ext.intersphinx",   # link to external docs (Python, NumPy…)
-    "sphinx_autodoc_typehints", # nice rendering of type hints
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
+    "sphinx_autodoc_typehints",
     "numpydoc",
     "sphinx_gallery.gen_gallery",
     "sphinxcontrib.bibtex",
@@ -30,35 +32,94 @@ extensions = [
 ]
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+suppress_warnings = [
+    "ref.python",            # unresolved Python cross-refs
+    "app.add_node",          # sphinx-tabs node duplication
+    "autosummary",           # autosummary miscellaneous
+    "autoapi.python_import_resolution",
+]
 
+# autodoc / autosummary
+autosummary_generate = True
+autosummary_generate_overwrite = False   # keep hand-written RSTs intact
+autodoc_default_options = {
+    "members": True,
+    "inherited-members": False,
+    "undoc-members": False,
+    "show-inheritance": True,
+}
+autodoc_member_order = "bysource"
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+# numpydoc
+numpydoc_show_class_members = False
+numpydoc_class_members_toctree = False
+
+# Napoleon (NumPy-style docstrings)
+napoleon_numpy_docstring = True
+napoleon_google_docstring = False
+napoleon_use_param = False
+napoleon_use_rtype = False
+
+# ---------------------------------------------------------------------------
+# HTML output
+# ---------------------------------------------------------------------------
 
 html_theme = "pydata_sphinx_theme"
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3/", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-}
+html_title = "ANT"
 html_static_path = ['_static']
 html_css_files = ['custom.css']
-bibtex_bibfiles = ['references.bib']
-html_title = "ANT"
 
+html_theme_options = {
+    "logo": {
+        "image_light": "_static/ANT_Logo_Horizontal.svg",
+        "image_dark":  "_static/ANT_Logo_Horizontal.svg",
+    },
+    "github_url": "https://github.com/payamsash/ANT",
+    "navbar_end": ["navbar-icon-links"],
+    "secondary_sidebar_items": ["page-toc", "edit-this-page"],
+    "show_toc_level": 2,
+}
+
+html_sidebars = {
+    "index": [],
+}
+
+# ---------------------------------------------------------------------------
+# Intersphinx
+# ---------------------------------------------------------------------------
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "numpy":  ("https://numpy.org/doc/stable/", None),
+    "scipy":  ("https://docs.scipy.org/doc/scipy/", None),
+    "mne":    ("https://mne.tools/stable/", None),
+}
+
+# ---------------------------------------------------------------------------
+# Bibliography
+# ---------------------------------------------------------------------------
+
+bibtex_bibfiles = ['references.bib']
+bibtex_default_style = 'unsrt'
+
+# ---------------------------------------------------------------------------
+# Sphinx Gallery
+# ---------------------------------------------------------------------------
 
 sphinx_gallery_conf = {
-    # path to your example scripts
-    'examples_dirs': os.path.abspath('../../examples'),  
-    'gallery_dirs': 'auto_examples',  
-
-    # pattern to include only certain scripts
-    'filename_pattern': r'plot_.*\.py',  
-
-    # optional: execute examples to capture output (set True to run)
-    'run_stale_examples': True,  
-
-    # optional: directories to search for backreferences (links to API)
-    'backreferences_dir': os.path.join('generated', 'api'),  
+    'examples_dirs':        os.path.join(_here, '..', '..', 'examples'),
+    'gallery_dirs':         'auto_examples',
+    'filename_pattern':     r'plot_.*\.py',
+    'run_stale_examples':   False,   # only re-run when source md5 changes
+    'plot_gallery':         True,
+    'download_all_examples': False,
+    'show_memory':          False,
+    'backreferences_dir':   os.path.join('generated', 'backreferences'),
+    'doc_module':           ('ant',),
+    'reference_url':        {'ant': None},
+    'first_notebook_cell':  "import matplotlib\nmatplotlib.use('Agg')\n",
+    # Show source code even if execution fails
+    'abort_on_example_error': False,
 }

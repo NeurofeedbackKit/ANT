@@ -18,8 +18,10 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import ant
 
-fname = Path.cwd().parent / "data" / "sample" / "SL_method_delays.csv"
+_data_dir = Path(ant.__file__).parent.parent.parent / "data" / "sample"
+fname = _data_dir / "SL_method_delays.csv"
 df = pd.read_csv(fname, index_col=0)
 
 # %%

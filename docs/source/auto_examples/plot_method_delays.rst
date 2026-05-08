@@ -28,7 +28,7 @@ methods using Seaborn's FacetGrid and KDE plots.
 
 Now let's load data and visualize each method's delay.
 
-.. GENERATED FROM PYTHON SOURCE LINES 11-19
+.. GENERATED FROM PYTHON SOURCE LINES 11-21
 
 .. code-block:: Python
 
@@ -36,8 +36,10 @@ Now let's load data and visualize each method's delay.
     import pandas as pd
     import matplotlib.pyplot as plt
     import seaborn as sns
+    import ant
 
-    fname = Path.cwd().parent / "data" / "sample" / "method_delays.csv"
+    _data_dir = Path(ant.__file__).parent.parent.parent / "data" / "sample"
+    fname = _data_dir / "method_delays.csv"
     df = pd.read_csv(fname, index_col=0)
 
 
@@ -47,11 +49,11 @@ Now let's load data and visualize each method's delay.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-21
+.. GENERATED FROM PYTHON SOURCE LINES 22-23
 
 Helper function for labeling each row
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-26
+.. GENERATED FROM PYTHON SOURCE LINES 23-28
 
 .. code-block:: Python
 
@@ -67,11 +69,11 @@ Helper function for labeling each row
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-28
+.. GENERATED FROM PYTHON SOURCE LINES 29-30
 
 Function to plot KDEs for a list of methods
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-73
+.. GENERATED FROM PYTHON SOURCE LINES 30-75
 
 .. code-block:: Python
 
@@ -127,11 +129,11 @@ Function to plot KDEs for a list of methods
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-75
+.. GENERATED FROM PYTHON SOURCE LINES 76-77
 
 Now let's visualize delays for "sensor_power", "individual_peak_power", "band_ratio"
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-83
+.. GENERATED FROM PYTHON SOURCE LINES 77-85
 
 .. code-block:: Python
 
@@ -155,11 +157,11 @@ Now let's visualize delays for "sensor_power", "individual_peak_power", "band_ra
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-85
+.. GENERATED FROM PYTHON SOURCE LINES 86-87
 
 Next, visualize delays for "entropy", "argmax_freq", "sensor_connectivity_corr"
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-94
+.. GENERATED FROM PYTHON SOURCE LINES 87-96
 
 .. code-block:: Python
 
@@ -184,11 +186,11 @@ Next, visualize delays for "entropy", "argmax_freq", "sensor_connectivity_corr"
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-96
+.. GENERATED FROM PYTHON SOURCE LINES 97-98
 
 Next, visualize delays for "sensor_cfc", "sensor_connectivity_pli"
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-106
+.. GENERATED FROM PYTHON SOURCE LINES 98-108
 
 .. code-block:: Python
 
@@ -215,23 +217,23 @@ Next, visualize delays for "sensor_cfc", "sensor_connectivity_pli"
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
-    /Users/payamsadeghishabestari/ANT/venv/lib/python3.10/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
+    /opt/homebrew/Caskroom/mambaforge/base/envs/ant/lib/python3.11/site-packages/seaborn/axisgrid.py:123: UserWarning: Tight layout not applied. tight_layout cannot make Axes height small enough to accommodate all Axes decorations.
       self._figure.tight_layout(*args, **kwargs)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-108
+.. GENERATED FROM PYTHON SOURCE LINES 109-110
 
 Next, visualize delays for "sensor_graph_sqe", "sensor_graph_corr"
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-116
+.. GENERATED FROM PYTHON SOURCE LINES 110-118
 
 .. code-block:: Python
 
@@ -255,11 +257,11 @@ Next, visualize delays for "sensor_graph_sqe", "sensor_graph_corr"
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-118
+.. GENERATED FROM PYTHON SOURCE LINES 119-120
 
 Finally, visualize delays for "source_connectivity_pli", "source_connectivity_corr", "source_power", "source_graph"
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-126
+.. GENERATED FROM PYTHON SOURCE LINES 120-128
 
 .. code-block:: Python
 
@@ -286,7 +288,7 @@ Finally, visualize delays for "source_connectivity_pli", "source_connectivity_co
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.097 seconds)
+   **Total running time of the script:** (0 minutes 1.037 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_method_delays.py:
