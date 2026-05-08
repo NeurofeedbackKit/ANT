@@ -72,6 +72,16 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/build/
+docs/_images/
+docs/_sources/
+docs/_downloads/
+docs/_static/
+docs/*.html
+docs/*.js
+docs/*.inv
+notebooks/
+test.ipynb
 
 # PyBuilder
 .pybuilder/
