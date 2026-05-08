@@ -1,40 +1,188 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=68", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
+
+# ---------------------------------------------------------------------------
+# Project metadata
+# ---------------------------------------------------------------------------
 
 [project]
 name = "ANT"
-version = "0.1.0"
-description = "Advancing neurofeedback tinnitus"
+version = "1.0.0"
+description = "Advanced Neurofeedback Toolbox — real-time M/EEG neurofeedback for research and clinical use"
 authors = [
-    { name = "Payam S. Shabestari", email = "payam.sadeghi74@email.com" }
+    { name = "Payam S. Shabestari", email = "payam.sadeghi74@gmail.com" },
 ]
+maintainers = [
+    { name = "Payam S. Shabestari", email = "payam.sadeghi74@gmail.com" },
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.11"
+
+keywords = [
+    "neurofeedback", "EEG", "MEG", "brain-computer interface",
+    "real-time", "LSL", "source localisation", "signal processing",
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+]
+
+# Core runtime dependencies (always required)
 dependencies = [
-    "mne>=1.4.2",
-    "numpy>=1.21,<3",
-    "scipy",
+    "mne>=1.6",
+    "mne-lsl>=1.2",
+    "mne-connectivity>=0.6",
+    "mne-features>=0.3",
+    "mne-icalabel>=0.4",
+    "numpy>=1.26,<3",
+    "scipy>=1.13",
+    "matplotlib>=3.8",
+    "nibabel>=5.0",
+    "PyQt6",
     "pyqtgraph",
     "qtpy",
-    "fooof",
-    "pyunlocbox",
-    "mne-lsl",
-    "mne-connectivity",
-    "mne-features",
-    "pyyaml",
-    "padasip",
-    "mne-icalabel",
-    "PyQt6",
-    "pactools",
-    "pyvista",
-    "autoreject",
-    "pcntoolkit==1.1.2"
+    "fooof>=1.0",
+    "pyunlocbox>=0.5.2,<0.6",
+    "padasip>=1.2",
+    "pactools>=0.3",
+    "pyyaml>=6.0",
+    "python-osc>=1.8",
 ]
-license = {file = 'LICENSE'}
-maintainers = [
-    {email = 'payam.sadeghi74@gmail.com', name = 'Payam S. Shabestari'},
+
+# ---------------------------------------------------------------------------
+# Optional dependency groups
+# ---------------------------------------------------------------------------
+
+[project.optional-dependencies]
+
+# 3-D brain visualisation (BrainPlot) — not needed for sensor-space NF
+viz = [
+    "pyvista>=0.44",
+    "pyvistaqt>=0.11.1",
 ]
-readme = 'README.md'
-requires-python = '>=3.11'
+
+# Testing only (fast install)
+dev = [
+    "pytest",
+    "pytest-cov",
+]
+
+# Linting and formatting tools
+lint = [
+    "ruff",
+    "mypy",
+    "pre-commit",
+]
+
+# Documentation build tooling (heavy — only needed to build the docs)
+docs = [
+    "sphinx>=7",
+    "pydata-sphinx-theme>=0.14",
+    "sphinx-gallery>=0.15",
+    "numpydoc>=1.6",
+    "sphinx-autodoc-typehints>=1.25",
+    "sphinx-tabs>=3.4",
+    "sphinxcontrib-bibtex>=2.6",
+    "seaborn>=0.12",
+]
+
+# Everything: all optional extras (inlined — no self-reference, compatible with uv)
+full = [
+    # viz
+    "pyvista>=0.44",
+    "pyvistaqt>=0.11.1",
+    # dev
+    "pytest",
+    "pytest-cov",
+    # lint
+    "ruff",
+    "mypy",
+    "pre-commit",
+    # docs
+    "sphinx>=7",
+    "pydata-sphinx-theme>=0.14",
+    "sphinx-gallery>=0.15",
+    "numpydoc>=1.6",
+    "sphinx-autodoc-typehints>=1.25",
+    "sphinx-tabs>=3.4",
+    "sphinxcontrib-bibtex>=2.6",
+    "seaborn>=0.12",
+]
+
+# ---------------------------------------------------------------------------
+# Entry points
+# ---------------------------------------------------------------------------
+
+[project.scripts]
+ANT = "ant.cli:main"
+
+# ---------------------------------------------------------------------------
+# URLs
+# ---------------------------------------------------------------------------
+
+[project.urls]
+Homepage      = "https://github.com/payamsash/ANT"
+Documentation = "https://payamsash.github.io/ANT/"
+Repository    = "https://github.com/payamsash/ANT"
+"Bug Tracker" = "https://github.com/payamsash/ANT/issues"
+
+# ---------------------------------------------------------------------------
+# Package discovery
+# ---------------------------------------------------------------------------
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"ant" = [
+    "config_methods.yml",   # bundled default NF modality config
+]
+
+# ---------------------------------------------------------------------------
+# Ruff (linter / formatter)
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]   # pycodestyle + pyflakes + isort
+ignore = [
+    "E501",   # line too long — handled by formatter
+    "F401",   # unused import in __init__.py re-exports
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/ant/__init__.py" = ["F401"]
+"src/ant/tools/__init__.py" = ["F401", "F403"]
+
+# ---------------------------------------------------------------------------
+# Mypy (optional type checking)
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_return_any = false
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
