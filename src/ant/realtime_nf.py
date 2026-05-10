@@ -127,8 +127,6 @@ class NFRealtime(ModalityMixin):
 
     ref_channel : str, default "Fp1"
         Reference channel for LMS artifact correction.
-    save_raw : bool, default True
-        Save raw data to ``<subjects_dir>/<subject_id>/raw/``.
     save_nf_signal : bool, default True
         Save extracted NF feature time-series as JSON.
     config_file : str | None, default None
@@ -148,7 +146,7 @@ class NFRealtime(ModalityMixin):
     --------
     ant.modalities.ModalityMixin : All supported NF feature methods.
     ant.viz.NFSignalPlot : Scrolling NF signal display.
-    ant.viz.BrainPlot : 3-D brain activation display.
+    ant.viz.BrainPlot : 3D brain activation display.
 
     Notes
     -----
@@ -169,9 +167,9 @@ class NFRealtime(ModalityMixin):
     .. versionadded:: 1.0.0
     """
 
-    VALID_SESSIONS = {"baseline", "main"}
-    VALID_ARTIFACT_METHODS = {False, "orica", "lms", "gedai"}
-    VALID_DATA_TYPES = {"eeg", "meg"}
+    _VALID_SESSIONS = {"baseline", "main"}
+    _VALID_ARTIFACT_METHODS = {False, "orica", "lms", "gedai"}
+    _VALID_DATA_TYPES = {"eeg", "meg"}
 
     _SENSOR_POWER_SCALE: dict[str, float] = {"eeg": 1e-12, "meg": 1e-24}
 
@@ -191,7 +189,6 @@ class NFRealtime(ModalityMixin):
         h_freq: float = 40.0,
         artifact_correction: Union[bool, str] = False,
         ref_channel: str = "Fp1",
-        save_raw: bool = True,
         save_nf_signal: bool = True,
         config_file: Optional[str] = None,
         verbose: Union[bool, str, None] = None,
@@ -200,13 +197,13 @@ class NFRealtime(ModalityMixin):
             raise ValueError("`subject_id` must be a non-empty string.")
         if not isinstance(visit, int) or visit < 1:
             raise ValueError("`visit` must be a positive integer (≥ 1).")
-        if session not in self.VALID_SESSIONS:
+        if session not in self._VALID_SESSIONS:
             raise ValueError(
-                f"`session` must be one of {self.VALID_SESSIONS}, got {session!r}."
+                f"`session` must be one of {self._VALID_SESSIONS}, got {session!r}."
             )
-        if data_type not in self.VALID_DATA_TYPES:
+        if data_type not in self._VALID_DATA_TYPES:
             raise ValueError(
-                f"`data_type` must be one of {self.VALID_DATA_TYPES}, got {data_type!r}."
+                f"`data_type` must be one of {self._VALID_DATA_TYPES}, got {data_type!r}."
             )
         if montage is not None and not (
             montage in get_builtin_montages()
@@ -223,15 +220,13 @@ class NFRealtime(ModalityMixin):
             raise ValueError("`subjects_fs_dir` must be None or an existing directory.")
         if not isinstance(filtering, bool):
             raise ValueError("`filtering` must be a boolean.")
-        if artifact_correction not in self.VALID_ARTIFACT_METHODS:
+        if artifact_correction not in self._VALID_ARTIFACT_METHODS:
             raise ValueError(
                 f"`artifact_correction` must be one of "
-                f"{self.VALID_ARTIFACT_METHODS}, got {artifact_correction!r}."
+                f"{self._VALID_ARTIFACT_METHODS}, got {artifact_correction!r}."
             )
         if artifact_correction == "lms" and data_type == "meg":
             raise ValueError("LMS artifact correction is only supported for EEG.")
-        if not isinstance(save_raw, bool):
-            raise ValueError("`save_raw` must be a boolean.")
         if not isinstance(save_nf_signal, bool):
             raise ValueError("`save_nf_signal` must be a boolean.")
 
@@ -259,7 +254,6 @@ class NFRealtime(ModalityMixin):
         self.h_freq = h_freq
         self.artifact_correction = artifact_correction
         self.ref_channel = ref_channel
-        self.save_raw = save_raw
         self.save_nf_signal = save_nf_signal
         self.config_file = config
         self.verbose = verbose
@@ -464,6 +458,7 @@ class NFRealtime(ModalityMixin):
         show_nf_signal: bool = True,
         time_window: float = 10.0,
         show_brain_activation: bool = False,
+        brain_surf: str = "inflated",
         brain_mode: str = "power",
         brain_freq_range: tuple[float, float] = (8.0, 13.0),
         use_ring_buffer: bool = False,
@@ -517,9 +512,13 @@ class NFRealtime(ModalityMixin):
         time_window : float, default 10.0
             Visible time range in seconds for the NF signal plot.
         show_brain_activation : bool, default False
-            Show the :class:`~ant.viz.BrainPlot` 3-D brain activation
+            Show the :class:`~ant.viz.BrainPlot` 3D brain activation
             display (requires ``subjects_fs_dir`` and a fitted inverse
             operator).
+        brain_surf : {"inflated", "pial", "white", "sphere"}, default "pial"
+            Cortical surface geometry for the brain display.
+            ``"pial"`` shows the true cortical folding; ``"inflated"``
+            unfolds gyri/sulci for easier label inspection.
         brain_mode : {"power", "activation"}, default "power"
             Source-space display mode.  ``"power"`` shows mean squared
             amplitude; ``"activation"`` shows mean amplitude.
@@ -670,6 +669,7 @@ class NFRealtime(ModalityMixin):
             brain_plot = BrainPlot(
                 subjects_fs_dir=self.subjects_fs_dir,
                 clim=[0, 0.6],
+                surf=brain_surf,
             )
 
         if show_raw_signal:
@@ -939,6 +939,17 @@ class NFRealtime(ModalityMixin):
 
     @property
     def modality_params(self) -> dict:
+        """Per-modality parameter overrides applied during the NF session.
+
+        A flat or nested dict that maps modality keys (e.g. ``"sensor_power"``)
+        to keyword arguments forwarded to the corresponding feature extractor.
+        ``None`` is accepted on assignment and normalised to ``{}``.
+
+        Example
+        -------
+        >>> nf.modality_params = {"sensor_power": {"frange": [10, 12]},
+        ...                       "erd_ers": {"frange": [8, 13]}}
+        """
         return self._modality_params
 
     @modality_params.setter
@@ -959,16 +970,49 @@ class NFRealtime(ModalityMixin):
         return raw
 
     def get_blink_template(
-        self, max_iter: int = 800, method: str = "infomax"
+        self,
+        max_iter: int = 800,
+        method: str = "infomax",
+        n_components: Union[int, float, None] = 0.95,
+        fit_params: Optional[dict] = None,
+        random_state: Optional[int] = 0,
+        iclabel_threshold: float = 0.5,
     ) -> None:
         """Identify the eye-blink ICA component from baseline EEG.
 
         Sets ``self.blink_template`` (ndarray) — the spatial template vector
         for the blink component, used by artifact correction during the main
         session.
+
+        Parameters
+        ----------
+        max_iter : int, default 800
+            Maximum number of ICA fitting iterations.
+        method : str, default "infomax"
+            ICA algorithm passed to :class:`mne.preprocessing.ICA`.
+            Common choices: ``"infomax"``, ``"fastica"``, ``"picard"``.
+        n_components : int | float | None, default 0.95
+            Number of PCA components before ICA.  A float in (0, 1) retains
+            enough components to explain that fraction of variance.  ``None``
+            uses all channels.  Falls back to ``5`` if the initial fit fails.
+        fit_params : dict | None, default None
+            Extra keyword arguments forwarded to the ICA solver.  ``None``
+            defaults to ``{"extended": True}`` for infomax (recommended).
+        random_state : int | None, default 0
+            Seed for reproducible ICA solutions.
+        iclabel_threshold : float, default 0.5
+            Minimum ICLabel probability for a component to be classified as
+            ``"eye blink"``.  Lower values are more permissive; higher values
+            require stronger confidence.
         """
         self.blink_template = create_blink_template(
-            self.raw_baseline, max_iter=max_iter, method=method
+            self.raw_baseline,
+            max_iter=max_iter,
+            method=method,
+            n_components=n_components,
+            fit_params=fit_params,
+            random_state=random_state,
+            iclabel_threshold=iclabel_threshold,
         )
 
     def run_orica(
@@ -984,16 +1028,61 @@ class NFRealtime(ModalityMixin):
     ) -> None:
         """Initialise an Online Recursive ICA (ORICA) instance.
 
+        ORICA is a streaming, adaptive ICA algorithm that updates its
+        unmixing matrix incrementally as each new EEG block arrives —
+        without ever storing the full recording.  It is the preferred
+        real-time alternative to offline ICA when the signal statistics
+        change over time (non-stationarity).
+
         Parameters
         ----------
         n_channels : int
+            Number of EEG/MEG channels.  Must match the channel count
+            of the data passed to each subsequent :meth:`~ant.tools.ORICA.partial_fit`
+            or :meth:`~ant.tools.ORICA.fit_transform` call.
         learning_rate : float, default 0.1
+            Step size for the online natural-gradient update of the
+            unmixing matrix W.  Larger values adapt faster but may
+            oscillate; values in [0.01, 0.2] are typically stable.
         block_size : int, default 256
+            Number of samples per update block.  Smaller blocks give
+            finer temporal resolution at the cost of noisier gradient
+            estimates.  Must be ≥ ``n_channels``.
         online_whitening : bool, default True
+            If ``True``, a recursive PCA whitening step is applied to
+            each block before the ICA update, keeping the algorithm
+            numerically stable as signal variance drifts.
         calibrate_pca : bool, default False
+            If ``True``, run a batch PCA on the first block to
+            initialise the whitening matrix before switching to
+            online updates.  Recommended when starting cold with no
+            prior covariance estimate.
         forgetfac : float, default 1.0
+            Exponential forgetting factor for the online covariance
+            estimate (1.0 = no forgetting; 0.99 → slowly decaying
+            influence of older samples).  Values < 1 help track
+            gradual changes in the mixing matrix.
         nonlinearity : str, default "tanh"
+            Score function used in the natural-gradient ICA update.
+            ``"tanh"`` works well for super-Gaussian sources (spikes,
+            blinks); ``"logcosh"`` is a smooth approximation with
+            similar properties.
         random_state : int | None, default None
+            Seed for reproducible initialisation of the unmixing matrix W.
+            ``None`` uses a random seed.
+
+        See Also
+        --------
+        ant.tools.ORICA : The underlying ORICA implementation.
+        NFRealtime.get_blink_template : Compute a blink spatial template
+            to guide component identification.
+
+        Notes
+        -----
+        :meth:`run_orica` is called automatically inside
+        :meth:`record_baseline` when ``artifact_correction="orica"``
+        is set on the :class:`NFRealtime` instance.  Call it manually
+        only if you need to tune the ORICA hyperparameters.
         """
         self.orica = ORICA(
             n_channels=n_channels,
@@ -1011,6 +1100,7 @@ class NFRealtime(ModalityMixin):
         self,
         band: tuple[float, float] = (8.0, 13.0),
         shrinkage: float = 0.01,
+        use_leadfield: bool = True,
         verbose: Union[bool, str, None] = None,
     ) -> None:
         """Fit a :class:`~ant.tools.GEDAIDenoiser` from the recorded baseline.
@@ -1021,15 +1111,27 @@ class NFRealtime(ModalityMixin):
         Parameters
         ----------
         band : tuple of float, default (8.0, 13.0)
-            Target frequency band ``(low_Hz, high_Hz)`` for the GED.
-            The band-filtered baseline covariance is used as the
-            signal matrix; the broadband baseline covariance is the
-            reference.
+            Target frequency band ``(low_Hz, high_Hz)`` used when fitting
+            in band-filter mode (``use_leadfield=False``).  Ignored when
+            ``use_leadfield=True``.
         shrinkage : float, default 0.01
-            Tikhonov regularisation strength applied to the broadband
+            Tikhonov regularisation strength applied to the reference
             covariance before solving the generalised eigenvalue problem.
             Larger values improve numerical stability at the cost of
-            slightly less discriminative filters.
+            slightly less discriminative spatial filters.
+        use_leadfield : bool, default True
+            If ``True`` and a forward solution is available
+            (i.e., :meth:`compute_inv_operator` has been called), fit in
+            **leadfield mode** — the true GEDAI algorithm (Ros et al., 2025).
+            The forward gain matrix :math:`\\mathbf{L}` is used as the
+            reference covariance :math:`\\mathbf{R} = \\mathbf{L}\\mathbf{L}^\\top`,
+            so components that best explain the theoretical brain-source
+            model are kept and non-leadfield-aligned components (artifacts)
+            are removed.
+
+            If ``False``, or if no forward solution is available, falls back
+            to band-filter mode: the GEP is solved between the band-filtered
+            and broadband EEG covariances (Cohen, 2022).
         verbose : bool | str | None, default None
             Override the instance-level verbosity for this call.
 
@@ -1041,11 +1143,28 @@ class NFRealtime(ModalityMixin):
         See Also
         --------
         ant.tools.GEDAIDenoiser : The underlying GED denoiser class.
+        NFRealtime.compute_inv_operator : Computes the forward solution
+            required for leadfield mode.
+
+        References
+        ----------
+        Ros, T., Férat, V., Huang, Y., et al. (2025). Return of the GEDAI:
+        Unsupervised EEG Denoising based on Leadfield Filtering. *bioRxiv*.
+        https://doi.org/10.1101/2025.10.04.680449
 
         Examples
         --------
+        Leadfield mode (recommended — requires forward solution):
+
         >>> nf.record_baseline(baseline_duration=120)
-        >>> nf.fit_gedai(band=(8, 13))
+        >>> nf.compute_inv_operator()          # builds the forward model
+        >>> nf.fit_gedai(use_leadfield=True)
+        >>> nf.record_main(duration=600, artifact_correction="gedai")
+
+        Band-filter mode (no MRI required):
+
+        >>> nf.record_baseline(baseline_duration=120)
+        >>> nf.fit_gedai(band=(8, 13), use_leadfield=False)
         >>> nf.record_main(duration=600, artifact_correction="gedai")
         """
         if not hasattr(self, "raw_baseline") or self.raw_baseline is None:
@@ -1053,23 +1172,86 @@ class NFRealtime(ModalityMixin):
 
         n_channels = len(self.rec_info["ch_names"])
         self.gedai = GEDAIDenoiser(n_channels=n_channels, shrinkage=shrinkage)
-        self.gedai.fit_from_raw(
-            data=self.raw_baseline.get_data(),
-            sfreq=self._sfreq,
-            band=band,
-        )
 
-    def compute_inv_operator(self) -> None:
+        if use_leadfield and hasattr(self, "fwd") and self.fwd is not None:
+            L = self.fwd["sol"]["data"]  # shape (n_ch, n_sources)
+            self.gedai.fit_from_leadfield(
+                data=self.raw_baseline.get_data(),
+                leadfield=L,
+            )
+            logger.info("GEDAI fitted in leadfield mode (Ros et al., 2025).")
+        else:
+            if use_leadfield:
+                logger.warning(
+                    "use_leadfield=True but no forward solution found. "
+                    "Falling back to band-filter mode. "
+                    "Call compute_inv_operator() first to enable leadfield mode."
+                )
+            self.gedai.fit_from_raw(
+                data=self.raw_baseline.get_data(),
+                sfreq=self._sfreq,
+                band=band,
+            )
+            logger.info("GEDAI fitted in band-filter mode.")
+
+    def compute_inv_operator(
+        self,
+        loose: float = 0.2,
+        depth: float = 0.8,
+        noise_cov_method: str = "empirical",
+        reg: float = 0.1,
+    ) -> None:
         """Compute and save the inverse operator for source localisation.
 
-        Saves inverse operator, forward solution and noise covariance to
-        ``<subject_dir>/inv/``.
+        Wraps MNE's forward-solution and inverse-operator pipeline.
+        Results are saved to ``<subjects_dir>/<subject_id>/inv/``.
+
+        Parameters
+        ----------
+        loose : float, default 0.2
+            Orientation constraint for cortical source dipoles.
+            ``0`` = fixed (normal to surface), ``1`` = fully free,
+            ``0.2`` = loose (recommended — allows slight tangential
+            component while favouring surface-normal currents).
+        depth : float | None, default 0.8
+            Depth-weighting exponent to compensate for the MNE bias
+            towards superficial sources.  ``None`` disables depth
+            weighting; ``0.8`` is the MNE default.  Higher values
+            suppress surface bias more aggressively.
+        noise_cov_method : str, default "empirical"
+            Method passed to :func:`mne.compute_raw_covariance` for
+            estimating the noise covariance from the baseline recording.
+            Common options: ``"empirical"`` (sample covariance),
+            ``"shrunk"`` (Ledoit-Wolf shrinkage — more stable when
+            the number of channels is close to or exceeds the number
+            of samples), ``"diagonal_fixed"`` (diagonal regularisation).
+        reg : float, default 0.1
+            Per-channel-type regularisation added to the noise covariance
+            diagonal via :func:`mne.cov.regularize`.  Applied to all
+            channel types present in the recording (EEG, MEG mag, MEG grad).
+            Set to ``0`` to skip regularisation.  Helps numerical stability
+            when the baseline recording is short relative to the number of
+            channels.
+
+        Raises
+        ------
+        RuntimeError
+            If :meth:`record_baseline` has not been called yet.
+
+        See Also
+        --------
+        mne.make_inverse_operator : Underlying MNE function.
+        mne.compute_raw_covariance : Noise covariance estimation.
         """
         self.inv, self.fwd, self.noise_cov = _compute_inv_operator(
             self.raw_baseline,
             subject_fs_id=self.subject_fs_id,
             subjects_fs_dir=self.subjects_fs_dir,
             data_type=self.data_type,
+            loose=loose,
+            depth=depth,
+            noise_cov_method=noise_cov_method,
+            reg=reg,
         )
         inv_dir = self.subject_dir / "inv"
         write_inverse_operator(
@@ -1178,22 +1360,67 @@ class NFRealtime(ModalityMixin):
     # Reporting
     # ------------------------------------------------------------------
 
-    def create_report(self, overwrite: bool = True) -> None:
+    def create_report(
+        self,
+        overwrite: bool = True,
+        include_psd: bool = True,
+        include_nf_signal: bool = True,
+        open_browser: bool = False,
+    ) -> Path:
         """Generate an HTML MNE report for the session.
+
+        Produces a self-contained HTML file containing baseline recording
+        info, sensor layouts, optional PSD, NF feature time-series, and
+        brain-label diagrams for source-space modalities.
 
         Parameters
         ----------
         overwrite : bool, default True
+            Overwrite an existing report file with the same name.
+        include_psd : bool, default True
+            If ``True``, add a baseline power-spectral-density plot
+            (1–40 Hz) to the report.
+        include_nf_signal : bool, default True
+            If ``True`` and :attr:`nf_data` is populated (i.e.,
+            :meth:`record_main` has been run), add a time-series plot
+            of the NF feature values for each modality.
+        open_browser : bool, default False
+            If ``True``, open the saved report in the default web browser
+            immediately after saving.
+
+        Returns
+        -------
+        report_path : pathlib.Path
+            Full path of the saved HTML report file.
+
+        Raises
+        ------
+        RuntimeError
+            If :meth:`record_baseline` has not been called yet.
         """
         modalities = (
             [self.modality] if isinstance(self.modality, str) else list(self.modality)
         )
         report = Report(title=f"Neurofeedback Session — {', '.join(modalities)}")
-        report.add_raw(self.raw_baseline, title="Baseline recording", psd=False, butterfly=False)
 
-        source_modalities = {
-            "source_power", "source_connectivity", "source_graph",
-        }
+        # ── Baseline recording ────────────────────────────────────────────
+        report.add_raw(
+            self.raw_baseline,
+            title="Baseline recording",
+            psd=False,
+            butterfly=False,
+        )
+
+        # ── Baseline PSD ─────────────────────────────────────────────────
+        if include_psd:
+            fig_psd, ax_psd = plt.subplots(figsize=(10, 4))
+            self.raw_baseline.compute_psd(fmax=40.0).plot(axes=ax_psd, show=False)
+            ax_psd.set_title("Baseline PSD (1–40 Hz)")
+            report.add_figure(fig=fig_psd, title="Baseline PSD")
+            plt.close(fig_psd)
+
+        # ── Sensor layouts & brain labels per modality ────────────────────
+        source_modalities = {"source_power", "source_connectivity", "source_graph"}
 
         for mod in modalities:
             params = self.mod_params_dict.get(mod, {})
@@ -1209,6 +1436,7 @@ class NFRealtime(ModalityMixin):
                 ax2.axis("off")
                 self.rec_info["bads"] = []
                 report.add_figure(fig=fig, title=f"Sensors — {mod}")
+                plt.close(fig)
             else:
                 if mod == "source_power":
                     fig_brain = plot_glass_brain(bl1=params.get("brain_label"))
@@ -1218,9 +1446,49 @@ class NFRealtime(ModalityMixin):
                         bl2=params.get("brain_label_2"),
                     )
                 report.add_figure(fig=fig_brain, title=f"Brain labels — {mod}")
+                plt.close(fig_brain)
+
+        # ── NF signal time-series ─────────────────────────────────────────
+        if include_nf_signal and hasattr(self, "nf_data") and self.nf_data:
+            fig_nf, axes_nf = plt.subplots(
+                len(modalities), 1,
+                figsize=(12, 2.5 * len(modalities)),
+                sharex=True,
+                squeeze=False,
+            )
+            for i, mod in enumerate(modalities):
+                vals = self.nf_data.get(mod, [])
+                ax = axes_nf[i, 0]
+                ax.plot(vals, lw=1.5)
+                ax.set_ylabel(mod, fontsize=9)
+                ax.grid(True, alpha=0.3)
+            axes_nf[-1, 0].set_xlabel("Window index")
+            fig_nf.suptitle("NF feature time-series", fontsize=11)
+            fig_nf.tight_layout()
+            report.add_figure(fig=fig_nf, title="NF signal")
+            plt.close(fig_nf)
+
+        # ── Summary table ─────────────────────────────────────────────────
+        n_windows = max(
+            (len(v) for v in self.nf_data.values() if isinstance(v, list)),
+            default=0,
+        ) if hasattr(self, "nf_data") else 0
+        summary_html = (
+            "<table border='1' cellpadding='4' style='border-collapse:collapse'>"
+            f"<tr><th>Subject</th><td>{self.subject_id}</td></tr>"
+            f"<tr><th>Visit</th><td>{self.visit}</td></tr>"
+            f"<tr><th>Session</th><td>{self.session}</td></tr>"
+            f"<tr><th>Modalities</th><td>{', '.join(modalities)}</td></tr>"
+            f"<tr><th>NF windows</th><td>{n_windows}</td></tr>"
+            f"<tr><th>Artifact correction</th><td>{self.artifact_correction}</td></tr>"
+            "</table>"
+        )
+        report.add_html(html=summary_html, title="Session summary")
 
         fname = (
             f"subject_{self.subject_id}_visit_{self.visit}"
             f"_modality_{'_'.join(modalities)}.html"
         )
-        report.save(self.subject_dir / "reports" / fname, overwrite=overwrite)
+        report_path = self.subject_dir / "reports" / fname
+        report.save(report_path, overwrite=overwrite, open_browser=open_browser)
+        return report_path
