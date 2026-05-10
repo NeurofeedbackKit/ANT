@@ -26,6 +26,7 @@ except ImportError:
     _pyvista_available = False
 from nibabel.freesurfer import read_morph_data
 
+import mne
 from mne import (
     make_forward_solution,
     compute_raw_covariance,
@@ -338,11 +339,15 @@ def estimate_aperiodic_component(
 
 
 def _compute_inv_operator(
-                raw_baseline,
-                subject_fs_id="fsaverage",
-                subjects_fs_dir=None,
-                data_type="eeg",
-                ):
+    raw_baseline,
+    subject_fs_id="fsaverage",
+    subjects_fs_dir=None,
+    data_type="eeg",
+    loose=0.2,
+    depth=0.8,
+    noise_cov_method="empirical",
+    reg=0.1,
+):
         """
         Compute the inverse operator for EEG/MEG source localization.
 
@@ -426,8 +431,15 @@ def _compute_inv_operator(
                                 meg=(data_type == "meg"),
                                 eeg=(data_type == "eeg"),
                                 )
-        noise_cov = compute_raw_covariance(raw_fwd, method="empirical")
-        inverse_operator = make_inverse_operator(raw_fwd.info, fwd, noise_cov)
+        noise_cov = compute_raw_covariance(raw_fwd, method=noise_cov_method)
+        if reg > 0.0:
+            noise_cov = mne.cov.regularize(
+                noise_cov, raw_fwd.info,
+                eeg=reg, mag=reg, grad=reg, verbose=False,
+            )
+        inverse_operator = make_inverse_operator(
+            raw_fwd.info, fwd, noise_cov, loose=loose, depth=depth
+        )
 
         return inverse_operator, fwd, noise_cov
 
@@ -711,46 +723,79 @@ def _make_tapped_delay(ref, n_taps):
         
         return X
 
-def create_blink_template(raw, max_iter=800, method="infomax"):
-        """
-        Create a template for eye blink ICA component from raw EEG data.
+def create_blink_template(
+    raw,
+    max_iter=800,
+    method="infomax",
+    n_components=0.95,
+    fit_params=None,
+    random_state=0,
+    iclabel_threshold=0.5,
+):
+    """Create a template for the eye-blink ICA component from raw EEG data.
 
-        Parameters
-        ----------
-        raw : mne.io.Raw
-                The raw EEG data.
-        max_iter : int, optional
-                Maximum number of iterations for the ICA fitting. Default is 800.
-        method : str, optional
-                ICA method to use. Default is "infomax".
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        Raw EEG data (already filtered and with a montage set).
+    max_iter : int, default 800
+        Maximum ICA fitting iterations.
+    method : str, default "infomax"
+        ICA algorithm (``"infomax"``, ``"fastica"``, ``"picard"``).
+    n_components : int | float | None, default 0.95
+        PCA dimensionality before ICA.  Float in (0, 1) → variance fraction.
+        Falls back to ``5`` if the initial fit raises an exception.
+    fit_params : dict | None, default None
+        Extra solver arguments.  ``None`` uses ``{"extended": True}`` for
+        infomax (recommended for biological signals).
+    random_state : int | None, default 0
+        Random seed for reproducibility.
+    iclabel_threshold : float, default 0.5
+        Minimum ICLabel ``"eye blink"`` probability required to accept a
+        component as a blink source.
 
-        Returns
-        -------
-        template_blink_comp : np.ndarray
-                The spatial topography of the ICA component corresponding to the blink
-                (shape: n_channels x 1). If no blink component is detected, returns None.
-        """
-        ica = ICA(n_components=0.95, max_iter=max_iter, method=method, fit_params=dict(extended=True), random_state=0)
-        
-        try:
-                ica.fit(raw)
-        except Exception:
-                ica = ICA(n_components=5, max_iter=max_iter, method=method, fit_params=dict(extended=True), random_state=0)
-                ica.fit(raw)
+    Returns
+    -------
+    template_blink_comp : np.ndarray or None
+        Spatial topography of the blink component (shape: n_channels,), or
+        ``None`` if no component exceeds *iclabel_threshold*.
+    """
+    _fit_params = fit_params if fit_params is not None else {"extended": True}
 
-        ic_dict = label_components(raw, ica, method="iclabel")
-        ic_labels = ic_dict["labels"]
-        ic_probs = ic_dict["y_pred_proba"]
+    ica = ICA(
+        n_components=n_components,
+        max_iter=max_iter,
+        method=method,
+        fit_params=_fit_params,
+        random_state=random_state,
+    )
+    try:
+        ica.fit(raw)
+    except Exception:
+        ica = ICA(
+            n_components=5,
+            max_iter=max_iter,
+            method=method,
+            fit_params=_fit_params,
+            random_state=random_state,
+        )
+        ica.fit(raw)
 
-        # Find indices of components labeled as "eye blink"
-        eye_indices = [i for i, lbl in enumerate(ic_labels) if lbl == "eye blink"]
+    ic_dict = label_components(raw, ica, method="iclabel")
+    ic_labels = ic_dict["labels"]
+    ic_probs = ic_dict["y_pred_proba"]
 
-        template_blink_comp = None
-        if eye_indices:
-                blink_idx = max(eye_indices, key=lambda i: ic_probs[i])
-                template_blink_comp = ica.get_components()[:, blink_idx]
+    eye_indices = [
+        i for i, lbl in enumerate(ic_labels)
+        if lbl == "eye blink" and ic_probs[i] >= iclabel_threshold
+    ]
 
-        return template_blink_comp
+    template_blink_comp = None
+    if eye_indices:
+        blink_idx = max(eye_indices, key=lambda i: ic_probs[i])
+        template_blink_comp = ica.get_components()[:, blink_idx]
+
+    return template_blink_comp
 
 def setup_surface(subjects_dir, hemi_distance=100.0, surf="inflated"):
         """Fetch fsaverage5 surfaces and prepare a PyVista mesh for both hemispheres.
