@@ -1,4 +1,4 @@
-"""Real-time 3-D brain activation display.
+"""Real-time 3D brain activation display.
 
 Built on PyVista with interactive sliders, hemisphere toggles, surface
 switching, view presets, and screenshot support.
@@ -6,7 +6,7 @@ switching, view presets, and screenshot support.
 Classes
 -------
 BrainPlot
-    Interactive real-time 3-D brain surface with NF activity overlay.
+    Interactive real-time 3D brain surface with NF activity overlay.
 """
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ _KEY_HELP = (
 
 
 class BrainPlot:
-    """Interactive real-time 3-D brain activation display.
+    """Interactive real-time 3D brain activation display.
 
     Renders bilateral ``fsaverage5`` cortical surfaces with a colour-mapped
     activity overlay.  Designed to run alongside
