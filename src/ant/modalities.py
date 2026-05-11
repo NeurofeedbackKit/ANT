@@ -679,3 +679,144 @@ class ModalityMixin:
         total = psd_band.sum(axis=1, keepdims=True) + 1e-300
         centroid_per_ch = (psd_band * freqs_band[np.newaxis, :]).sum(axis=1) / total.squeeze()
         return float(centroid_per_ch.mean())
+
+    # ------------------------------------------------------------------
+    # ERD/ERS laterality index
+    # ------------------------------------------------------------------
+
+    def _laterality_erd_ers_prep(self) -> dict:
+        """Prep: detect hemispheric channel indices + compute baseline powers."""
+        # requires raw_baseline
+        if not hasattr(self, "raw_baseline") or self.raw_baseline is None:
+            raise RuntimeError(
+                "laterality_erd_ers requires a completed baseline recording. "
+                "Call record_baseline() first."
+            )
+        ch_names = self.rec_info["ch_names"]
+
+        def _is_left(name):
+            for i in range(len(name)-1, -1, -1):
+                if name[i].isdigit():
+                    return int(name[i]) % 2 == 1
+            return False
+        def _is_right(name):
+            for i in range(len(name)-1, -1, -1):
+                if name[i].isdigit():
+                    return int(name[i]) % 2 == 0
+            return False
+
+        lh_idx = [i for i, ch in enumerate(ch_names) if _is_left(ch)]
+        rh_idx = [i for i, ch in enumerate(ch_names) if _is_right(ch)]
+        if not lh_idx or not rh_idx:
+            warn("laterality_erd_ers: hemispheric auto-detection failed; splitting by index.", UserWarning, stacklevel=2)
+            mid = len(ch_names) // 2
+            lh_idx = list(range(mid))
+            rh_idx = list(range(mid, len(ch_names)))
+
+        baseline_data = self.raw_baseline.get_data()
+        frange = tuple(self.params["frange"])
+        method = self.params["method"]
+        baseline_lh = float(compute_bandpower(baseline_data[lh_idx], self._sfreq, frange, method=method, relative=False).mean())
+        baseline_rh = float(compute_bandpower(baseline_data[rh_idx], self._sfreq, frange, method=method, relative=False).mean())
+
+        return {
+            "sfreq": self._sfreq,
+            "frange": frange,
+            "method": method,
+            "lh_idx": lh_idx,
+            "rh_idx": rh_idx,
+            "baseline_lh": baseline_lh,
+            "baseline_rh": baseline_rh,
+        }
+
+    @timed
+    def _laterality_erd_ers(
+        self,
+        data: np.ndarray,
+        sfreq: float,
+        frange: tuple,
+        method: str,
+        lh_idx: list,
+        rh_idx: list,
+        baseline_lh: float,
+        baseline_rh: float,
+    ) -> float:
+        """Baseline-normalised inter-hemispheric ERD/ERS asymmetry (%).
+
+        Computes the ERD/ERS ratio for each hemisphere separately
+        (normalised by its own baseline power) and returns the signed
+        difference:
+
+            feature = ERD_ERS_right − ERD_ERS_left
+
+        * Positive → right hemisphere more activated (ERS) or less suppressed.
+        * Negative → left hemisphere more activated (or right more suppressed).
+
+        Motor imagery example: right-hand imagery produces left-hemisphere
+        alpha ERD, so the feature becomes strongly negative during the task
+        and recovers toward zero at rest.
+        """
+        lh_now = compute_bandpower(data[lh_idx], sfreq, frange, method=method, relative=False).mean()
+        rh_now = compute_bandpower(data[rh_idx], sfreq, frange, method=method, relative=False).mean()
+        erd_lh = (lh_now - baseline_lh) / (baseline_lh + 1e-300) * 100.0
+        erd_rh = (rh_now - baseline_rh) / (baseline_rh + 1e-300) * 100.0
+        return float(erd_rh - erd_lh)
+
+    # ------------------------------------------------------------------
+    # wPLI sensor connectivity
+    # ------------------------------------------------------------------
+
+    def _wpli_sensor_prep(self) -> dict:
+        ch_names = self.rec_info["ch_names"]
+        chs = self.params["channels"]
+        # chs is [["C3", "F3"], ["C4", "F4"]] → pairs (C3,C4), (F3,F4)
+        ch_pairs = [
+            (ch_names.index(a), ch_names.index(b))
+            for a, b in zip(chs[0], chs[1])
+        ]
+        return {
+            "ch_pairs": ch_pairs,
+            "sfreq": self._sfreq,
+            "frange": tuple(self.params["frange"]),
+        }
+
+    @timed
+    def _wpli_sensor(
+        self,
+        data: np.ndarray,
+        ch_pairs: list,
+        sfreq: float,
+        frange: tuple,
+    ) -> float:
+        """Weighted Phase Lag Index (wPLI) between sensor pairs.
+
+        More robust to volume conduction and common reference artifacts than
+        PLV or PLI because it weights phase differences by their imaginary
+        component magnitude, suppressing near-zero-lag common-source coupling.
+
+        wPLI is computed per channel pair over the frequency bins inside
+        ``frange`` and then averaged:
+
+        .. math::
+
+            \\mathrm{wPLI}_{ij} =
+            \\frac{\\lvert \\mathbb{E}[\\mathrm{Im}(C_{ij})] \\rvert}
+                  {\\mathbb{E}[\\lvert \\mathrm{Im}(C_{ij}) \\rvert]}
+
+        where :math:`C_{ij}(f) = X_i(f)\\overline{X_j(f)}` is the
+        cross-spectrum and the expectation :math:`\\mathbb{E}` is over
+        frequency bins within the band.
+        """
+        n = data.shape[1]
+        freqs = np.fft.rfftfreq(n, d=1.0 / sfreq)
+        mask = (freqs >= frange[0]) & (freqs <= frange[1])
+        if not mask.any():
+            return 0.0
+        Xfft = np.fft.rfft(data, axis=1)[:, mask]   # (n_ch, n_freq_band)
+        wpli_vals = []
+        for i, j in ch_pairs:
+            cross = Xfft[i] * np.conj(Xfft[j])
+            im_c = np.imag(cross)
+            denom = np.mean(np.abs(im_c)) + 1e-300
+            wpli_vals.append(abs(np.mean(im_c)) / denom)
+        return float(np.mean(wpli_vals))
