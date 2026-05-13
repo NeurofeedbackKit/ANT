@@ -41,24 +41,25 @@ classifiers = [
 
 # Core runtime dependencies (always required)
 dependencies = [
-    "mne>=1.6",
-    "mne-lsl>=1.2",
+    "mne>=1.7",
+    "mne-lsl>=1.7",
     "mne-connectivity>=0.6",
     "mne-features>=0.3",
     "mne-icalabel>=0.4",
     "numpy>=1.26,<3",
-    "scipy>=1.13",
+    "scipy>=1.11",
     "matplotlib>=3.8",
     "nibabel>=5.0",
-    "PyQt6",
-    "pyqtgraph",
-    "qtpy",
-    "fooof>=1.0",
+    "PyQt6>=6.6",
+    "pyqtgraph>=0.13",
+    "qtpy>=2.4",
+    "pyserial>=3.0",       # required by mne-lsl / liblsl
+    "fooof>=1.0",          # spectral parameterisation (specparam when stable)
     "pyunlocbox>=0.5.2,<0.6",
-    "padasip>=1.2",
     "pactools>=0.3",
     "pyyaml>=6.0",
     "python-osc>=1.8",
+    "imageio[ffmpeg]>=2.28",
 ]
 
 # ---------------------------------------------------------------------------
@@ -71,6 +72,7 @@ dependencies = [
 viz = [
     "pyvista>=0.44",
     "pyvistaqt>=0.11.1",
+    "vtk>=9.3",
 ]
 
 # Testing only (fast install)
@@ -103,6 +105,7 @@ full = [
     # viz
     "pyvista>=0.44",
     "pyvistaqt>=0.11.1",
+    "vtk>=9.3",
     # dev
     "pytest",
     "pytest-cov",
