@@ -39,29 +39,37 @@ Key capabilities
 
     <div style="height:20px;"></div>
 
-.. raw:: html
+.. tabs::
 
-    <!-- Demo video -->
-    <div style="text-align:center; margin-bottom: 20px;">
-        <video width="680" height="392" autoplay muted loop
-               style="border-radius: 12px; border: 2px solid rgba(200,200,200,0.3);
-                      box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
-            <source src="_static/nf_demo.mov" type="video/quicktime">
-        </video>
-    </div>
+   .. tab:: NF Signal
 
-    <div style="display:flex; justify-content:center; gap:16px; margin-top:10px;">
-        <video width="332" height="192" autoplay muted loop
-               style="border-radius: 12px; border: 2px solid rgba(200,200,200,0.3);
-                      box-shadow: 0 6px 15px rgba(0,0,0,0.3);">
-            <source src="_static/brain.mov" type="video/quicktime">
-        </video>
-        <video width="332" height="192" autoplay muted loop
-               style="border-radius: 12px; border: 2px solid rgba(200,200,200,0.3);
-                      box-shadow: 0 6px 15px rgba(0,0,0,0.3);">
-            <source src="_static/VisualTree.mp4" type="video/mp4">
-        </video>
-    </div>
+      .. raw:: html
+
+         <div style="text-align:center; margin: 20px 0;">
+             <video width="100%" style="max-width: 850px; border-radius: 15px; display: block; margin: 0 auto;" autoplay muted loop>
+                 <source src="_static/NFSignal.mov" type="video/quicktime">
+             </video>
+         </div>
+
+   .. tab:: Topo Plot
+
+      .. raw:: html
+
+         <div style="text-align:center; margin: 20px 0;">
+             <video width="100%" style="max-width: 850px; border-radius: 15px; display: block; margin: 0 auto;" autoplay muted loop>
+                 <source src="_static/TopoPlot.mov" type="video/quicktime">
+             </video>
+         </div>
+
+   .. tab:: Brain Plot
+
+      .. raw:: html
+
+         <div style="text-align:center; margin: 20px 0;">
+             <video width="100%" style="max-width: 850px; border-radius: 15px; display: block; margin: 0 auto;" autoplay muted loop>
+                 <source src="_static/BrainPlot.mov" type="video/quicktime">
+             </video>
+         </div>
 
 .. toctree::
    :hidden:
