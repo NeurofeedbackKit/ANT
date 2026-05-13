@@ -163,11 +163,6 @@ class NFSignalPlot(QMainWindow):
     verbose : bool | str | None, default None
         Verbosity level.  See :func:`~ant._logging.set_log_level`.
 
-    Attributes
-    ----------
-    push : callable
-        Append one new sample per modality and redraw.
-
     See Also
     --------
     ant.viz.BrainPlot : 3D brain activation display.
@@ -487,7 +482,7 @@ class NFSignalPlot(QMainWindow):
             self._btn_record.setChecked(False)
             return
         self._video_writer = imageio.get_writer(
-            path, fps=30, macro_block_size=None
+            path, fps=30, macro_block_size=None, plugin="ffmpeg"
         )
         self._video_path = path
         self._recording = True
@@ -509,14 +504,14 @@ class NFSignalPlot(QMainWindow):
         if self._video_writer is None:
             return
         try:
-            from pyqtgraph import functions as fn
             from PyQt6.QtGui import QImage
-            exp = pg.exporters.ImageExporter(self._glw.scene())
-            exp.parameters()["width"] = max(self._glw.width(), 640)
-            qimg = exp.export(toBytes=True)
-            qimg = qimg.convertToFormat(QImage.Format.Format_RGB888)
-            arr = fn.ndarray_from_qimage(qimg)
-            self._video_writer.append_data(arr)
+            img = self._glw.grab().toImage().convertToFormat(QImage.Format.Format_RGB888)
+            w, h = img.width(), img.height()
+            ptr = img.bits()
+            ptr.setsize(h * w * 3)
+            arr = np.frombuffer(ptr, dtype=np.uint8).reshape((h, w, 3)).copy()
+            # Ensure even dimensions required by H.264
+            self._video_writer.append_data(arr[: h - h % 2, : w - w % 2])
         except Exception:
             pass
 
