@@ -8,7 +8,8 @@ Requirements
 
 - Python ≥ 3.11
 - A running `Lab Streaming Layer (LSL) <https://labstreaminglayer.org>`_ stream
-  **or** a BrainVision ``.vhdr`` file for mock mode
+  **or** any MNE-readable file for mock mode
+  (``.fif``, ``.vhdr``, ``.edf``, ``.bdf``, ``.set``, …)
 - FreeSurfer subjects directory *(only for source-localisation and brain-plot features)*
 
 pip (recommended)
@@ -31,50 +32,56 @@ Editable / development install
     cd ANT
     pip install -e ".[dev]"
 
-uv (fast Rust-based installer)
--------------------------------
+uv — recommended fast installer
+---------------------------------
 
-`uv <https://docs.astral.sh/uv/>`_ is a drop-in replacement for pip and
-respects ``pyproject.toml`` fully.
+`uv <https://docs.astral.sh/uv/>`_ resolves and installs packages in Rust —
+typically **10–20× faster** than plain ``pip``.  It reads ``pyproject.toml``
+directly and handles all extras.
 
 .. code-block:: bash
 
-    # Install uv (once)
+    # Install uv once
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
     # Install ANT into an active environment
     uv pip install ANT
     uv pip install "ANT[full]"   # all extras (viz, dev, docs)
 
-.. note::
-
-   ``uv add ANT`` is for adding ANT as a dependency *of another project*.
-   If you are working inside the ANT source tree, use ``uv pip install`` or
-   the editable install below.
-
-.. code-block:: bash
-
-    # Editable install from source
+    # Editable install from source (recommended for development)
     git clone https://github.com/payamsash/ANT.git
     cd ANT
     uv pip install -e ".[dev]"
-    uv pip install -e ".[full]"
+
+.. note::
+
+   ``uv add ANT`` is for adding ANT as a dependency *of another project*.
+   Inside the ANT source tree use ``uv pip install -e .`` instead.
 
 conda / mamba
 -------------
 
-The provided ``environment.yml`` creates a complete conda environment:
+The provided ``environment.yml`` creates a complete conda environment.
+**mamba** (or micromamba) is strongly recommended over plain ``conda``
+because it uses a faster C++ dependency solver — environment creation
+typically completes in under 2 minutes instead of 10–20 minutes.
 
 .. code-block:: bash
 
-    # Create environment (first time)
+    # Install mamba into base (once)
+    conda install -n base -c conda-forge mamba
+
+    # Create the ANT environment
+    mamba env create -f environment.yml   # ~2 min
+
+    # Or with plain conda (slower)
     conda env create -f environment.yml
 
     # Activate
     conda activate ant
 
     # Update after pulling new changes
-    conda env update -f environment.yml --prune
+    mamba env update -f environment.yml --prune
 
 Verifying
 ---------
@@ -82,7 +89,7 @@ Verifying
 .. code-block:: bash
 
     ANT info     # prints ANT and dependency versions
-    ANT demo     # runs a 60-second mock NF session
+    ANT demo     # runs a 120-second mock NF session
 
 Optional extras
 ---------------

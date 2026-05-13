@@ -7,8 +7,3 @@ ant.viz.NFSignalPlot
    :inherited-members: False
 
 
-   .. rubric:: Methods
-
-   .. autosummary::
-
-      ~NFSignalPlot.push

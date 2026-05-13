@@ -1,0 +1,1168 @@
+{
+ "NFRealtime": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant.realtime_nf",
+   "module_short": "ant",
+   "name": "NFRealtime"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant.modalities",
+   "module_short": "ant.modalities",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime"
+  }
+ ],
+ "Path": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "Path"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "Path"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib._abc",
+   "module_short": "pathlib._abc",
+   "name": "PathBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PathBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "PurePath"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PurePath"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib._abc",
+   "module_short": "pathlib._abc",
+   "name": "PurePathBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PurePathBase"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "Path"
+  }
+ ],
+ "ant.NFRealtime": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime"
+  }
+ ],
+ "ant.NFRealtime.create_report": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.NFRealtime",
+   "module_short": "ant.NFRealtime",
+   "name": "create_report"
+  }
+ ],
+ "ant.NFRealtime.save": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.NFRealtime",
+   "module_short": "ant.NFRealtime",
+   "name": "save"
+  }
+ ],
+ "ant.tools.simulate_raw": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "simulate_raw"
+  }
+ ],
+ "ant.viz.BrainPlot": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.viz",
+   "module_short": "ant",
+   "name": "BrainPlot"
+  }
+ ],
+ "ant.viz.NFSignalPlot": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.viz",
+   "module_short": "ant",
+   "name": "NFSignalPlot"
+  }
+ ],
+ "ant.viz.TopoPlot": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.viz",
+   "module_short": "ant",
+   "name": "TopoPlot"
+  }
+ ],
+ "ax": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes"
+  }
+ ],
+ "ax.axhline": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.axhline"
+  }
+ ],
+ "ax.fill_between": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.fill_between"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.fill_between"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.fill_between"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.fill_between"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.fill_between"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.fill_between"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.fill_between"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.fill_between"
+  }
+ ],
+ "ax.legend": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.legend"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.legend"
+  }
+ ],
+ "ax.plot": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.plot"
+  }
+ ],
+ "ax.set_title": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_title"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_title"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.set_title"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.set_title"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.set_title"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.set_title"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.set_title"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.set_title"
+  }
+ ],
+ "ax.set_xlabel": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_xlabel"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.set_xlabel"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.set_xlabel"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.set_xlabel"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.set_xlabel"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.set_xlabel"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.set_xlabel"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.set_xlabel"
+  }
+ ],
+ "ax.spines": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.spines",
+   "module_short": "matplotlib.spines",
+   "name": "Spines"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Spines"
+  }
+ ],
+ "axes": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "axes.flat": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "flatiter"
+  }
+ ],
+ "color": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "str"
+  }
+ ],
+ "fig": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "Figure"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Figure"
+  }
+ ],
+ "fig.suptitle": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "Figure.suptitle"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Figure.suptitle"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.figure",
+   "module_short": "matplotlib.figure",
+   "name": "FigureBase.suptitle"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "FigureBase.suptitle"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.suptitle"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.suptitle"
+  }
+ ],
+ "fname_sim": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  }
+ ],
+ "kind": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "str"
+  }
+ ],
+ "labels": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "dict"
+  }
+ ],
+ "labels.get": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "mne_lsl.lsl.PlayerLSL": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_lsl.lsl",
+   "module_short": "mne_lsl.lsl",
+   "name": "PlayerLSL"
+  }
+ ],
+ "mod": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "str"
+  }
+ ],
+ "nf": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.realtime_nf",
+   "module_short": "ant",
+   "name": "NFRealtime"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime"
+  }
+ ],
+ "nf.connect_to_lsl": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.realtime_nf",
+   "module_short": "ant",
+   "name": "NFRealtime.connect_to_lsl"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime.connect_to_lsl"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.modalities",
+   "module_short": "ant.modalities",
+   "name": "ModalityMixin.connect_to_lsl"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ModalityMixin.connect_to_lsl"
+  }
+ ],
+ "nf.create_report": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.realtime_nf",
+   "module_short": "ant",
+   "name": "NFRealtime.create_report"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime.create_report"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.modalities",
+   "module_short": "ant.modalities",
+   "name": "ModalityMixin.create_report"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ModalityMixin.create_report"
+  }
+ ],
+ "nf.nf_data.items": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "nf.record_baseline": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.realtime_nf",
+   "module_short": "ant",
+   "name": "NFRealtime.record_baseline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime.record_baseline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.modalities",
+   "module_short": "ant.modalities",
+   "name": "ModalityMixin.record_baseline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ModalityMixin.record_baseline"
+  }
+ ],
+ "nf.record_main": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.realtime_nf",
+   "module_short": "ant",
+   "name": "NFRealtime.record_main"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime.record_main"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.modalities",
+   "module_short": "ant.modalities",
+   "name": "ModalityMixin.record_main"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ModalityMixin.record_main"
+  }
+ ],
+ "nf.save": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.realtime_nf",
+   "module_short": "ant",
+   "name": "NFRealtime.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "NFRealtime.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.modalities",
+   "module_short": "ant.modalities",
+   "name": "ModalityMixin.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ModalityMixin.save"
+  }
+ ],
+ "np.arange": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "arange"
+  }
+ ],
+ "np.mean": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "mean"
+  }
+ ],
+ "palette": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "list"
+  }
+ ],
+ "path": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  }
+ ],
+ "plt.show": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "show"
+  }
+ ],
+ "plt.subplots": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "subplots"
+  }
+ ],
+ "report_path": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  }
+ ],
+ "saved": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "dict"
+  }
+ ],
+ "saved.items": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "simulate_raw": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "simulate_raw"
+  }
+ ],
+ "subjects_dir": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  }
+ ],
+ "subjects_dir.mkdir": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "PosixPath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "Path.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "Path.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib._local",
+   "name": "PurePosixPath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PurePosixPath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._abc",
+   "module_short": "pathlib._abc",
+   "name": "PathBase.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PathBase.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib._local",
+   "name": "PurePath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PurePath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._abc",
+   "module_short": "pathlib._abc",
+   "name": "PurePathBase.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PurePathBase.mkdir"
+  }
+ ],
+ "t": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "tempfile.mkdtemp": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tempfile",
+   "module_short": "tempfile",
+   "name": "mkdtemp"
+  }
+ ],
+ "tmp": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib._local",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath"
+  }
+ ],
+ "vals": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "list"
+  }
+ ]
+}

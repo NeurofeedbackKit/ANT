@@ -3,12 +3,12 @@
 Command-Line Interface
 ======================
 
-ANT provides a ``ant`` shell command with four sub-commands.
+ANT provides an ``ANT`` shell command with four sub-commands.
 
 .. code-block:: text
 
-    ant --help
-    ant --version
+    ANT --help
+    ANT --version
     ANT info
     ANT demo [options]
     ANT baseline --subject ID --subjects-dir DIR [options]
@@ -33,11 +33,14 @@ Print the installed ANT version and all key dependency versions.
 ------------
 
 Launch a full demo NF session from simulated EEG (no amplifier needed).
+The real-time scalp topomap (δ/θ/α/β/γ) is shown by default; the 3D brain
+display is opt-in (requires FreeSurfer ``fsaverage5``).
 
 .. code-block:: console
 
     $ ANT demo
     $ ANT demo --duration 120 --modality sensor_power erd_ers
+    $ ANT demo --no-topo
     $ ANT demo --brain --subjects-fs-dir /path/to/fsaverage
 
 Options:
@@ -50,10 +53,10 @@ Options:
      - Default
      - Description
    * - ``--duration``
-     - 60
+     - 120
      - Session duration in seconds
    * - ``--modality``
-     - sensor_power
+     - sensor_power band_ratio entropy hjorth
      - NF modality(ies) to demonstrate
    * - ``--winsize``
      - 1.0
@@ -64,6 +67,9 @@ Options:
    * - ``--no-raw``
      - —
      - Disable raw stream viewer
+   * - ``--no-topo``
+     - —
+     - Disable the real-time scalp topomap (on by default)
    * - ``--brain``
      - —
      - Enable 3D brain display
@@ -73,6 +79,9 @@ Options:
    * - ``--surf``
      - inflated
      - Brain surface geometry
+   * - ``--no-save``
+     - —
+     - Skip saving NF data and session report
 
 ``ANT baseline``
 ----------------
@@ -106,7 +115,7 @@ Options:
      - Use simulated data instead of live LSL
    * - ``--fname``
      - —
-     - BrainVision ``.vhdr`` file (with ``--mock``)
+     - Any MNE-readable file (.fif, .vhdr, .edf, .bdf, …) for ``--mock``
    * - ``--montage``
      - easycap-M1
      - EEG montage name or ``.bvct`` path
@@ -122,7 +131,11 @@ Run a closed-loop NF main session.
 .. code-block:: console
 
     $ ANT run --subject sub01 --subjects-dir /data --duration 600 \
-              --modality sensor_power erd_ers --show-nf-signal
+              --modality sensor_power erd_ers
+
+    # With topomap display
+    $ ANT run --subject sub01 --subjects-dir /data --duration 600 \
+              --modality sensor_power --topo
 
     # With OSC output to Max/MSP
     $ ANT run --subject sub01 --subjects-dir /data --duration 600 \
@@ -163,6 +176,9 @@ Options (in addition to baseline flags):
    * - ``--no-raw``
      - —
      - Disable raw stream viewer
+   * - ``--topo``
+     - —
+     - Enable real-time scalp topomap (δ/θ/α/β/γ bands)
    * - ``--brain``
      - —
      - Enable 3D brain display
@@ -216,108 +232,4 @@ Available NF modalities
    * - ``source_graph``
      - Graph-Laplacian learning from source connectivity
 
-Mathematical background
------------------------
-
-.. _hjorth-equations:
-
-Hjorth parameters
-~~~~~~~~~~~~~~~~~
-
-Hjorth parameters are pure time-domain descriptors computed from the variance
-of a signal :math:`x(t)` and its successive derivatives.
-
-Let :math:`x_i` denote channel :math:`i` after bandpass filtering.
-Define sample variances:
-
-.. math::
-
-   \sigma^2_x = \operatorname{Var}(x), \quad
-   \sigma^2_{x'} = \operatorname{Var}\!\left(\tfrac{dx}{dt}\right), \quad
-   \sigma^2_{x''} = \operatorname{Var}\!\left(\tfrac{d^2x}{dt^2}\right).
-
-The three Hjorth parameters are:
-
-.. math::
-
-   \text{Activity}  &= \sigma^2_x \\[4pt]
-   \text{Mobility}  &= \sqrt{\frac{\sigma^2_{x'}}{\sigma^2_x}} \\[4pt]
-   \text{Complexity}&= \frac{\sqrt{\sigma^2_{x''}/\sigma^2_{x'}}}
-                             {\sqrt{\sigma^2_{x'}/\sigma^2_x}}
-
-**Mobility** approximates the dominant frequency of the signal (in units of
-rad/sample); **Complexity** quantifies how closely the signal resembles a pure
-sine wave — a pure oscillation has complexity ≈ 1.
-
-ANT reports the mean of Mobility and Complexity averaged across all channels
-in the selected electrode set.
-
-.. _graph-equations:
-
-Graph-Laplacian learning
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The ``sensor_graph`` and ``source_graph`` modalities estimate a sparse
-graph :math:`\mathcal{G} = (\mathcal{V}, \mathbf{W})` whose edge weights
-encode functional coupling between nodes (channels or brain regions).
-
-Given a signal matrix :math:`\mathbf{X} \in \mathbb{R}^{p \times n}` (
-:math:`p` nodes, :math:`n` samples), ANT uses the
-**log-degree barrier** graph learning problem (Kalofolias, 2016):
-
-.. math::
-
-   \min_{\mathbf{W} \geq 0,\,\mathbf{W} = \mathbf{W}^\top}
-   \;\alpha \operatorname{tr}(\mathbf{X}^\top \mathbf{L} \mathbf{X})
-   \;-\; \beta \mathbf{1}^\top \log(\mathbf{W}\mathbf{1})
-   \;+\; \tfrac{1}{2}\|\mathbf{W}\|_F^2
-
-where :math:`\mathbf{L} = \operatorname{Diag}(\mathbf{W}\mathbf{1}) - \mathbf{W}`
-is the combinatorial graph Laplacian and the log-degree term prevents
-degenerate (all-zero) solutions.
-
-* :math:`\alpha` — data-fidelity weight (larger → smoother, more connected graph)
-* :math:`\beta` — log-degree regularisation (larger → more uniform node degrees)
-
-The NF value is the edge weight :math:`W_{ij}` between the two specified
-nodes (e.g. a left–right electrode pair or two brain-atlas parcels), centred
-by subtracting a small offset so that values oscillate around zero.
-
-The optimisation is solved via the proximal splitting scheme of
-``pyunlocbox``.
-
-.. _spectral-centroid-equations:
-
-Spectral centroid
-~~~~~~~~~~~~~~~~~
-
-The spectral centroid estimates the *centre of mass* of the power spectrum
-within a frequency band, giving a single-number proxy for the dominant
-frequency of the signal at any given moment.
-
-Given channel data :math:`x_i(t)` and its one-sided power spectral density
-:math:`S_i(f)` (estimated via Welch's method), the spectral centroid for
-channel :math:`i` is:
-
-.. math::
-
-   f_{\mathrm{centroid},i} =
-   \frac{\displaystyle\sum_{f \,\in\, [f_1,\, f_2]} f\; S_i(f)}
-        {\displaystyle\sum_{f \,\in\, [f_1,\, f_2]} S_i(f)}
-
-where :math:`[f_1, f_2]` is the target frequency band.
-
-ANT reports the **mean centroid across channels** in the selected electrode
-set as the NF feature:
-
-.. math::
-
-   SC = \frac{1}{N_{\mathrm{ch}}} \sum_{i=1}^{N_{\mathrm{ch}}}
-        f_{\mathrm{centroid},i}
-
-**Interpretation** — :math:`SC` shifts upward when neural activity moves
-toward the upper edge of the band (e.g., during cognitive load in the
-alpha band) and downward when activity consolidates near the lower edge.
-Tracking :math:`SC` within the alpha band (8–12 Hz) is sensitive to
-individual alpha-peak frequency (IAF) dynamics without requiring explicit
-peak detection.
+For the mathematical background of every modality, see :doc:`modalities`.

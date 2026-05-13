@@ -20,7 +20,7 @@ chunk-by-chunk) during the closed-loop session.
 Adaptive LMS filter
 -------------------
 
-**Class:** no public API — used internally via ``artifact_correction="lms"``
+**Class:** :class:`ant.tools.AdaptiveLMSFilter`
 
 The Least Mean Squares (LMS) algorithm
 :footcite:p:`Widrow1960` is a stochastic gradient-descent adaptive filter

@@ -17,9 +17,3 @@ ant.viz.BrainPlot
       ~BrainPlot.update_from_arrays
 
 
-   .. rubric:: Attributes
-
-   .. autosummary::
-
-      ~BrainPlot.plotter
-      ~BrainPlot.surf

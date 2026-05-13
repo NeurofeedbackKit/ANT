@@ -24,6 +24,7 @@ Visualisation
 
    ant.viz.NFSignalPlot
    ant.viz.BrainPlot
+   ant.viz.TopoPlot
 
 Artifact correction
 -------------------
@@ -32,6 +33,7 @@ Artifact correction
    :toctree: generated/
    :nosignatures:
 
+   ant.tools.AdaptiveLMSFilter
    ant.tools.ORICA
    ant.tools.GEDAIDenoiser
    ant.tools.ASRDenoiser
@@ -45,6 +47,8 @@ NF Protocols
    :nosignatures:
 
    ant.protocols.ThresholdProtocol
+   ant.protocols.ZScoreProtocol
+   ant.protocols.PercentileProtocol
 
 OSC output
 ----------
@@ -62,8 +66,7 @@ Tools & utilities
    :toctree: generated/
    :nosignatures:
 
-   ant.tools.simulation.simulate_raw
-   ant.tools.simulation.simulate_eeg_raw
+   ant.tools.simulate_raw
 
 Logging
 -------

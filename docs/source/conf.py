@@ -21,10 +21,8 @@ release = '1.0.0'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
-    "sphinx_autodoc_typehints",
     "numpydoc",
     "sphinx_gallery.gen_gallery",
     "sphinxcontrib.bibtex",
@@ -55,12 +53,8 @@ autodoc_member_order = "bysource"
 # numpydoc
 numpydoc_show_class_members = False
 numpydoc_class_members_toctree = False
-
-# Napoleon (NumPy-style docstrings)
-napoleon_numpy_docstring = True
-napoleon_google_docstring = False
-napoleon_use_param = False
-napoleon_use_rtype = False
+numpydoc_xref_param_type = True       # makes types clickable cross-references
+numpydoc_xref_ignore = {"optional", "default", "or"}
 
 # ---------------------------------------------------------------------------
 # HTML output

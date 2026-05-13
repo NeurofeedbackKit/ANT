@@ -70,6 +70,7 @@ Key capabilities
    api
    cli
    denoising
+   modalities
 
 .. toctree::
    :hidden:
