@@ -39,6 +39,7 @@ from ant.tools import ORICA, GEDAIDenoiser
 from ant.tools.lms import AdaptiveLMSFilter
 from ant.tools.asr import ASRDenoiser
 from ant.tools.maxwell import RTMaxwellFilter
+from ant.tools.bad_channel_detector import BadChannelDetector
 from ant.osc import OSCSender
 from ant.protocols import ThresholdProtocol, ZScoreProtocol, PercentileProtocol, LinearTrendProtocol
 from ant.lsl_output import LSLSender
@@ -57,6 +58,7 @@ __all__ = [
     "ZScoreProtocol",
     "PercentileProtocol",
     "LinearTrendProtocol",
+    "BadChannelDetector",
     "OSCSender",
     "LSLSender",
     "set_log_level",
