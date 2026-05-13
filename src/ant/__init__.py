@@ -34,23 +34,31 @@ except PackageNotFoundError:
 
 from ant._logging import logger, set_log_level  # noqa: F401 — public API
 from ant.realtime_nf import NFRealtime
-from ant.viz import BrainPlot, NFSignalPlot
+from ant.viz import BrainPlot, NFSignalPlot, TopoPlot
 from ant.tools import ORICA, GEDAIDenoiser
+from ant.tools.lms import AdaptiveLMSFilter
 from ant.tools.asr import ASRDenoiser
 from ant.tools.maxwell import RTMaxwellFilter
 from ant.osc import OSCSender
-from ant.protocols import ThresholdProtocol
+from ant.protocols import ThresholdProtocol, ZScoreProtocol, PercentileProtocol, LinearTrendProtocol
+from ant.lsl_output import LSLSender
 
 __all__ = [
     "NFRealtime",
     "BrainPlot",
     "NFSignalPlot",
+    "TopoPlot",
     "ORICA",
     "GEDAIDenoiser",
+    "AdaptiveLMSFilter",
     "ASRDenoiser",
     "RTMaxwellFilter",
     "ThresholdProtocol",
+    "ZScoreProtocol",
+    "PercentileProtocol",
+    "LinearTrendProtocol",
     "OSCSender",
+    "LSLSender",
     "set_log_level",
     "logger",
     "__version__",
