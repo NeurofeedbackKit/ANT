@@ -4,8 +4,8 @@ Usage
 -----
 ::
 
-    ant --help
-    ant --version
+    ANT --help
+    ANT --version
     ANT info
     ANT demo [options]
     ANT baseline [options]
@@ -13,12 +13,11 @@ Usage
 
 Install note
 ------------
-After ``pip install -e .`` add the entry-point to ``pyproject.toml``::
+After ``pip install -e .`` the entry-point in ``pyproject.toml`` exposes
+the ``ANT`` shell command::
 
     [project.scripts]
-    ant = "ant.cli:main"
-
-Then ``ant`` becomes a shell command.
+    ANT = "ant.cli:main"
 """
 from __future__ import annotations
 
@@ -33,14 +32,14 @@ import textwrap
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="ant",
+        prog="ANT",
         description=textwrap.dedent("""\
             Advanced Neurofeedback Toolbox (ANT)
             ─────────────────────────────────────
             Real-time M/EEG neurofeedback for research and clinical use.
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Use 'ant <command> --help' for per-command options.",
+        epilog="Use 'ANT <command> --help' for per-command options.",
     )
     parser.add_argument(
         "--version", action="store_true",
@@ -125,10 +124,18 @@ def _add_demo_parser(sub):
         help="Disable the 3D brain activation display even if FreeSurfer is found.",
     )
     p.add_argument(
+        "--no-topo", action="store_true",
+        help="Disable the real-time scalp topomap display.",
+    )
+    p.add_argument(
         "--surf",
         choices=["inflated", "pial", "white", "sphere"],
         default="inflated",
         help="Cortical surface geometry for brain display (default: inflated).",
+    )
+    p.add_argument(
+        "--no-save", action="store_true",
+        help="Skip saving NF data and report at the end of the demo.",
     )
     return p
 
@@ -214,6 +221,10 @@ def _add_run_parser(sub):
         help="Show the 3D brain activation display.",
     )
     p.add_argument(
+        "--topo", action="store_true",
+        help="Show the real-time scalp topomap display.",
+    )
+    p.add_argument(
         "--surf",
         choices=["inflated", "pial", "white", "sphere"],
         default="inflated",
@@ -234,6 +245,19 @@ def _add_run_parser(sub):
     p.add_argument(
         "--osc-prefix", metavar="PREFIX", default="/ant",
         help="OSC address prefix (default: /ant).",
+    )
+    p.add_argument(
+        "--lsl-output", action="store_true",
+        help=(
+            "Broadcast NF values as an LSL stream outlet named 'ANT_NF'.  "
+            "Any LSL-aware application (PsychoPy, Psychtoolbox, OpenViBE, …) "
+            "can subscribe to this stream.  Faster and more reliable than OSC "
+            "for same-machine feedback."
+        ),
+    )
+    p.add_argument(
+        "--lsl-stream-name", metavar="NAME", default="ANT_NF",
+        help="LSL outlet stream name (default: ANT_NF).  Only used with --lsl-output.",
     )
     return p
 
@@ -308,8 +332,17 @@ def _cmd_demo(args) -> None:
     import tempfile
     from pathlib import Path
 
-    tmp = tempfile.mkdtemp(prefix="ant_demo_")
-    subjects_dir = tmp
+    tmp = Path(tempfile.mkdtemp(prefix="ant_demo_"))
+    subjects_dir = str(tmp)
+
+    # Use the bundled pericalcarine simulation (loops automatically via n_repeat=inf)
+    _pkg_root = Path(__file__).parent.parent.parent  # repo root
+    fname_sim = _pkg_root / "data" / "simulated" / "pericalcarine-lh_10Hz_1-raw.fif"
+    if not fname_sim.is_file():
+        raise FileNotFoundError(
+            f"Demo simulation file not found: {fname_sim}\n"
+            "Re-run from the ANT repository root or reinstall the package."
+        )
 
     # Resolve FreeSurfer subjects directory: explicit arg → env vars → known paths
     subjects_fs_dir = getattr(args, "subjects_fs_dir", None)
@@ -328,7 +361,9 @@ def _cmd_demo(args) -> None:
                 subjects_fs_dir = str(_d)
                 break
 
-    show_brain = (subjects_fs_dir is not None) and not getattr(args, "no_brain", False)
+    show_brain = (subjects_fs_dir is not None) and not getattr(args, "no_brain", True)
+    show_topo = not getattr(args, "no_topo", False)
+    do_save = not getattr(args, "no_save", True)
     if show_brain:
         print(f"Brain activation: using {subjects_fs_dir}")
 
@@ -337,17 +372,16 @@ def _cmd_demo(args) -> None:
         visit=1,
         session="main",
         subjects_dir=subjects_dir,
-        montage="easycap-M1",
+        montage="biosemi64",
         data_type="eeg",
         subjects_fs_dir=subjects_fs_dir if show_brain else None,
         verbose=args.verbose,
     )
-    nf.connect_to_lsl(mock_lsl=True, verbose=args.verbose)
+    nf.connect_to_lsl(mock_lsl=True, fname=str(fname_sim), verbose=args.verbose)
 
-    needs_baseline = any(m in args.modality for m in ["erd_ers"]) or show_brain
-    if needs_baseline:
-        print("Recording brief baseline …")
-        nf.record_baseline(baseline_duration=10, verbose=args.verbose)
+    # Always record a brief baseline so the report and ERD/ERS work
+    print("Recording brief baseline (10 s) …")
+    nf.record_baseline(baseline_duration=10, verbose=args.verbose)
 
     nf.record_main(
         duration=args.duration,
@@ -355,10 +389,22 @@ def _cmd_demo(args) -> None:
         winsize=args.winsize,
         show_nf_signal=not args.no_signal,
         show_raw_signal=not args.no_raw,
+        show_topo=show_topo,
         show_brain_activation=show_brain,
         brain_surf=getattr(args, "surf", "pial"),
+        save_raw=do_save,
         verbose=args.verbose,
     )
+
+    if do_save:
+        saved = nf.save()
+        for kind, path in saved.items():
+            print(f"  [{kind}] → {path}")
+        try:
+            report_path = nf.create_report()
+            print(f"  [report] → {report_path}")
+        except Exception as exc:
+            print(f"  [report] skipped ({exc})")
 
 
 def _cmd_baseline(args) -> None:
@@ -431,6 +477,12 @@ def _cmd_run(args) -> None:
         )
         print(f"OSC output → {osc_sender.target}  prefix={osc_sender.prefix}")
 
+    lsl_sender = None
+    if getattr(args, "lsl_output", False):
+        from ant.lsl_output import LSLSender
+        lsl_sender = LSLSender(stream_name=getattr(args, "lsl_stream_name", "ANT_NF"))
+        print(f"LSL output → stream '{lsl_sender.stream_name}'")
+
     try:
         nf.record_main(
             duration=args.duration,
@@ -438,14 +490,18 @@ def _cmd_run(args) -> None:
             winsize=args.winsize,
             show_nf_signal=not args.no_signal,
             show_raw_signal=not args.no_raw,
+            show_topo=args.topo,
             show_brain_activation=args.brain,
             use_ring_buffer=args.ring_buffer,
             osc_sender=osc_sender,
+            lsl_sender=lsl_sender,
             verbose=args.verbose,
         )
     finally:
         if osc_sender is not None:
             osc_sender.close()
+        if lsl_sender is not None:
+            lsl_sender.close()
 
     print(f"Session complete.  Data saved to: {nf.subject_dir}")
 
