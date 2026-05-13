@@ -1,15 +1,18 @@
 # Advanced Neurofeedback Toolbox — Conda environment
 #
-# Usage
-# -----
-# Create environment:
+# Fastest creation:
+#   mamba env create -f environment.yml   (install mamba once: conda install -n base -c conda-forge mamba)
+#
+# Standard conda:
 #   conda env create -f environment.yml
 #
 # Activate:
 #   conda activate ant
 #
 # Update after pulling changes:
-#   conda env update -f environment.yml --prune
+#   mamba env update -f environment.yml --prune
+#
+# Tip: uv is even faster for pure-pip installs — see docs/source/install.rst.
 
 name: ant
 
@@ -21,36 +24,36 @@ dependencies:
   # Python
   - python=3.11
 
-  # Core scientific stack (conda-forge builds are fastest)
-  - numpy>=1.24,<3
-  - scipy>=1.10
-  - matplotlib>=3.7
+  # Core scientific stack — conda-forge builds are pre-compiled and fast
+  - numpy>=1.26,<3
+  - scipy>=1.11
+  - matplotlib>=3.8
   - nibabel>=5.0
 
   # MNE ecosystem (conda-forge)
-  - mne>=1.6
+  - mne>=1.7
   - mne-connectivity>=0.6
   - mne-features>=0.3
 
   # Qt / visualisation
-  - pyqt>=6.4
+  - pyqt>=6.6
   - pyqtgraph>=0.13
-  - pyvista>=0.42
+  - pyvista>=0.44
   - pyvistaqt>=0.11
 
-  # General utilities
+  # Utilities
   - pyyaml>=6.0
   - pip
 
-  # Packages only available via pip
+  # Packages only available (or faster) via pip
   - pip:
-    - mne-lsl>=1.2
+    - mne-lsl>=1.7
     - mne-icalabel>=0.4
     - fooof>=1.0
-    - pyunlocbox>=0.5.2
-    - padasip>=1.2
+    - pyunlocbox>=0.5.2,<0.6
     - pactools>=0.3
+    - python-osc>=1.8
+    - imageio[ffmpeg]>=2.28
+    - qtpy>=2.4
     # Install ANT itself in editable mode
     - -e .
-    # OSC output (optional — remove if not needed)
-    # - python-osc>=1.8
