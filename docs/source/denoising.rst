@@ -384,6 +384,74 @@ from transient artifacts.
 
 ----
 
+.. _denoising-riemannian-potato:
+
+Riemannian Potato — Online Artifact Detection
+---------------------------------------------
+
+**Class:** :class:`ant.tools.RiemannianPotatoDetector`
+
+The *Riemannian Potato* :footcite:p:`Barachant2014,Barthelemy2019` is a
+covariance-based method for **detecting** — rather than correcting —
+artifactual data windows in real time.  It operates on the manifold of
+symmetric positive-definite (SPD) matrices by computing the Riemannian
+distance from each incoming covariance matrix to the geometric mean of a
+clean calibration set.  When this distance exceeds a z-score threshold,
+the window is flagged as an artifact and can be discarded or buffered for
+later ICA clean-up.
+
+**Why Riemannian geometry?**  Standard Euclidean distances on covariance
+matrices are sensitive to the arbitrary scaling of individual channels.
+The Riemannian (affine-invariant) metric is scale-invariant: multiplying
+all channels by any positive constant leaves the distance unchanged.  This
+makes the potato robust to amplitude drift and electrode-impedance changes
+across sessions.
+
+**Algorithm.**  Let :math:`\Sigma_t` be the sample covariance matrix of
+window :math:`t` and :math:`\bar{\Sigma}` be the geometric mean of
+calibration covariances.  The z-score is:
+
+.. math::
+
+    z_t = \frac{\delta(\Sigma_t, \bar{\Sigma}) - \mu_\delta}{\sigma_\delta}
+
+where :math:`\delta` is the Riemannian distance and :math:`\mu_\delta`,
+:math:`\sigma_\delta` are the mean and standard deviation of distances
+computed over the calibration set.  Window :math:`t` is declared an
+artifact when :math:`z_t > \theta` (default :math:`\theta = 3`).
+
+.. note::
+
+   The Riemannian Potato is a **detection** method, not a correction method.
+   It identifies and rejects artifactual windows; it does not reconstruct
+   clean signal from contaminated data.  Pair it with
+   :class:`~ant.tools.ORICA` or :class:`~ant.tools.ASRDenoiser` when online
+   *correction* is needed.
+
+**Usage example**::
+
+    from ant.tools import RiemannianPotatoDetector
+
+    # Calibrate on 60 clean 1-second windows
+    detector = RiemannianPotatoDetector(threshold=3.0)
+    detector.fit(clean_windows)       # shape (n_windows, n_ch, n_samples)
+
+    while streaming:
+        window = stream.get_data(1.0)
+        is_clean, z_score = detector.detect(window)
+        if is_clean:
+            compute_nf_feature(window)
+        else:
+            logger.debug("Artifact detected (z=%.2f) — window skipped", z_score)
+
+**When to use.**  Any EEG or MEG setup where transient artifacts (blinks,
+muscle bursts, electrode pops) need to be excluded from the NF feature
+computation.  Particularly effective when reliable reference channels for
+LMS are unavailable.  Requires a short clean calibration phase (≥ 30 windows
+recommended) before streaming begins.
+
+----
+
 .. _denoising-comparison:
 
 Method comparison
@@ -435,6 +503,12 @@ Method comparison
      - No
      - Yes (rolling)
      - Disconnected / noisy channels
+   * - RiemannianPotatoDetector
+     - EEG / MEG
+     - Yes (N windows)
+     - No
+     - No (detection only)
+     - Transient artifacts (blinks, muscle, pops)
 
 ----
 

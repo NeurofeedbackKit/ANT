@@ -4,40 +4,77 @@
         <img src="_static/ANT_Logo_Horizontal.svg" alt="ANT Logo" width="500"/>
     </div>
 
-.. raw:: html
-
-    <div style="height:20px;"></div>
-
-**Advanced Neurofeedback Toolbox (ANT)** is an open-source Python package for
-**real-time M/EEG neurofeedback**, built on MNE-Python and the Lab Streaming
-Layer (LSL).  It covers the full closed-loop pipeline — from amplifier to
-3D brain display — in a single, researcher-friendly API.
+**Advanced Neurofeedback Toolbox (ANT)** is an open-source Python library for
+**real-time M/EEG neurofeedback**, built on `MNE-Python <https://mne.tools>`_
+and the `Lab Streaming Layer <https://labstreaminglayer.org>`_ (LSL).
+It covers the full closed-loop pipeline — from amplifier to 3-D brain display —
+in a single, researcher-friendly API designed for both clinical and basic-science
+applications.
 
 .. raw:: html
 
-    <div style="height:10px;"></div>
+    <div style="height:16px;"></div>
 
 Key capabilities
 ----------------
 
-- **Real-time NF feature extraction** — 17 modalities (alpha power,
-  ERD/ERS, Hjorth, spectral centroid, CFC, wPLI, graph metrics, …)
-- **Sensor-space & source-space** processing with MNE inverse operators
-- **Live artifact correction** — ORICA, adaptive LMS, GEDAI, ASR, Maxwell/tSSS
-- **Real-time quality control** — :class:`~ant.tools.BadChannelDetector`
-  flags flat, noisy, or de-correlated channels on every incoming window
-- **NF protocols** — threshold, z-score, percentile, and linear-trend reward
-  criteria with rolling statistics
-- **Three parallel visualisation windows** — StreamViewer, NF signal plot,
-  3D brain surface
-- **OSC and LSL output** — broadcast feedback values via OSC (Max/MSP,
-  SuperCollider) or LSL (:class:`~ant.lsl_output.LSLSender`) for
-  lower-latency same-machine feedback
-- **CLI** — run full sessions with a single ``ANT run`` command
+.. list-table::
+   :widths: 5 45
+   :header-rows: 0
+
+   * - 🧠
+     - **17 real-time NF modalities** — sensor power, ERD/ERS, Hjorth parameters,
+       spectral centroid and peak, band ratio, cross-frequency coupling (CFC),
+       weighted Phase Lag Index (wPLI), graph-theory metrics, and more.
+       See :doc:`modalities` for the full list.
+
+   * - 📡
+     - **Sensor-space and source-space** processing using
+       `MNE <https://mne.tools>`_ inverse operators (eLORETA, MNE, dSPM).
+       Compute and stream cortical-source activity with a single parameter.
+
+   * - 🔧
+     - **Live artifact correction** —
+       :class:`~ant.tools.ORICA` (online ICA),
+       :class:`~ant.tools.AdaptiveLMS` (adaptive least-mean-squares),
+       :class:`~ant.tools.GEDAIDenoiser` (generalised eigendecomposition),
+       :class:`~ant.tools.ASRDenoiser` (artifact subspace reconstruction), and
+       :class:`~ant.tools.RTMaxwellFilter` (real-time Maxwell/SSS filtering for MEG).
+       See :doc:`denoising` for algorithm details and benchmarks.
+
+   * - 🔍
+     - **Real-time quality control** — :class:`~ant.tools.BadChannelDetector`
+       flags flat, noisy, or de-correlated channels on every incoming window
+       using a robust rolling-vote mechanism — no baseline recording required.
+
+   * - 🎯
+     - **Adaptive NF protocols** — :class:`~ant.protocols.ThresholdProtocol`,
+       :class:`~ant.protocols.ZScoreProtocol`,
+       :class:`~ant.protocols.PercentileProtocol`, and
+       :class:`~ant.protocols.LinearTrendProtocol`
+       give fine-grained control over when to issue a reward.
+
+   * - 🖥️
+     - **Three parallel visualisation windows** — a scrolling
+       :class:`~ant.viz.NFSignalPlot`, a live
+       `MNE-style <https://mne.tools/stable/visualization.html>`_ topographic map,
+       and an interactive :class:`~ant.viz.BrainPlot` (3-D cortical surface with
+       colour-mapped activity, hemisphere toggles, and surface switching).
+
+   * - 📤
+     - **Dual feedback output** — broadcast values via OSC (Max/MSP,
+       SuperCollider, TouchDesigner) with :class:`~ant.osc.OSCSender`, or over
+       `LSL <https://labstreaminglayer.org>`_ with :class:`~ant.lsl_output.LSLSender`
+       for low-latency same-machine integration with PsychoPy, OpenViBE, BCI2000,
+       and other LSL-aware apps.
+
+   * - ⌨️
+     - **CLI** — launch full NF sessions with a single ``ANT run`` command,
+       driven by a YAML config file. See :doc:`cli`.
 
 .. raw:: html
 
-    <div style="height:20px;"></div>
+    <div style="height:16px;"></div>
 
 .. tabs::
 
@@ -94,17 +131,43 @@ Key capabilities
 
 .. raw:: html
 
-    <div style="height:30px;"></div>
+    <div style="height:24px;"></div>
 
 Quick install
 -------------
 
-.. code-block:: bash
+.. tabs::
 
-    pip install ANT                 # core (OSC output included)
-    pip install "ANT[full]"         # all extras (viz, dev, docs)
+   .. tab:: pip
 
-See :doc:`install` for conda / uv and editable-install instructions.
+      .. code-block:: bash
+
+          pip install ANT                 # core  (MNE, LSL, OSC included)
+          pip install "ANT[full]"         # + 3-D viz, dev tools, docs
+
+   .. tab:: uv
+
+      .. code-block:: bash
+
+          # Install uv once
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+
+          uv pip install ANT
+          uv pip install "ANT[full]"      # + 3-D viz, dev tools, docs
+
+          # Editable install from source
+          git clone https://github.com/payamsash/ANT.git
+          cd ANT && uv pip install -e ".[dev]"
+
+   .. tab:: conda / mamba
+
+      .. code-block:: bash
+
+          mamba create -n ant python=3.11
+          mamba activate ant
+          pip install "ANT[full]"
+
+See :doc:`install` for full instructions.
 
 Quick start
 -----------
@@ -113,13 +176,38 @@ Quick start
 
     from ant import NFRealtime
 
-    nf = NFRealtime("sub01", visit=1, session="main",
-                    subjects_dir="/data/subjects",
-                    montage="easycap-M1")
-    nf.connect_to_lsl(mock_lsl=True)              # or real amplifier
-    nf.record_main(duration=300,
-                   modality=["sensor_power", "erd_ers"],
-                   show_nf_signal=True)
+    nf = NFRealtime(
+        "sub01",
+        visit=1,
+        session="main",
+        subjects_dir="/data/subjects",
+        montage="easycap-M1",
+    )
+    nf.connect_to_lsl(mock_lsl=True)          # or connect to a real amplifier
+    nf.record_main(
+        duration=300,
+        modality=["sensor_power", "erd_ers"],
+        show_nf_signal=True,
+    )
+
+Pipeline overview
+-----------------
+
+.. code-block:: none
+
+    Amplifier / mock LSL stream
+          ↓  (mne-lsl StreamInlet)
+    BadChannelDetector       ← flags flat / noisy channels every window
+          ↓
+    Artifact correction      ← ORICA / LMS / GEDAI / ASR / RT-SSS
+          ↓
+    Feature extraction       ← 17 NF modalities  (sensor or source space)
+          ↓
+    NF protocol              ← Threshold / Z-score / Percentile / LinearTrend
+          ↓  ↘
+    NFSignalPlot    BrainPlot        ← live visualisation
+          ↓
+    OSCSender / LSLSender    ← feedback to stimulus software
 
 Cite
 ----
@@ -161,4 +249,4 @@ If you use ANT, please cite :footcite:`shabestari2025advances`.
     :width: 320
 
 Development was supported by the
-`Swiss National Science Foundation <https://www.snf.ch/en>`_ (grant number - 208164).
+`Swiss National Science Foundation <https://www.snf.ch/en>`_ (grant number — 208164).

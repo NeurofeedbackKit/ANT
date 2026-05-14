@@ -25,24 +25,22 @@ _MOCK_MODULES = [
     "pyqtgraph.exporters",
     "pyvista",
     "pyvistaqt",
-    "pylsl",
-    "mne_lsl",
-    "mne_lsl.lsl",
-    "mne_lsl.player",
-    "mne_lsl.stream",
+    "pylsl",          # not installed standalone; mne_lsl bundles its own bindings
     "pactools",
     "pyunlocbox",
     "python_osc",
     "python_osc.udp_client",
     "python_osc.dispatcher",
     "python_osc.osc_server",
-    "nibabel",
-    "nibabel.freesurfer",
     "mne_icalabel",
     # matplotlib Qt backends (topo_plot.py imports FigureCanvasQTAgg directly)
     "matplotlib.backends.backend_qtagg",
     "matplotlib.backends.backend_qt5agg",
     "matplotlib.backends.qt_compat",
+    # optional heavy deps
+    "pyriemann",
+    "pyriemann.clustering",
+    "pyriemann.estimation",
 ]
 for _mod in _MOCK_MODULES:
     sys.modules.setdefault(_mod, MagicMock())

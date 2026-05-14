@@ -45,7 +45,7 @@ tmp = Path(tempfile.mkdtemp(prefix="ant_laterality_"))
 fname_sim = tmp / "right_alpha.fif"
 
 simulate_raw(
-    brain_label="occipital",   # right-lateralised source
+    brain_label="lateraloccipital-rh",   # right-lateralised source
     frequency=10.0,
     amplitude=1.5e-6,
     duration=4.0,

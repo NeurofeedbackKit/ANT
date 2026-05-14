@@ -69,7 +69,7 @@ spatial distribution across the scalp.
     fname_sim = tmp / "right_alpha.fif"
 
     simulate_raw(
-        brain_label="occipital",   # right-lateralised source
+        brain_label="lateraloccipital-rh",   # right-lateralised source
         frequency=10.0,
         amplitude=1.5e-6,
         duration=4.0,
@@ -92,7 +92,7 @@ spatial distribution across the scalp.
 
     /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:214: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       add_noise(raw, cov, iir_filter=iir_filter, verbose=verbose)
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:225: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_gcv7pxnt/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:225: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_c8_qp4zx/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       raw.save(fname=Path(fname_save), overwrite=True)
 
 
@@ -246,9 +246,9 @@ spatial distribution across the scalp.
 
 
 
-    <tr class="mne-repr-section-header general-bca946cb-0ee8-44bd-9425-073bb4b3f1ae"
+    <tr class="mne-repr-section-header general-e7fd29d0-3859-4fd8-b770-644ea58d1048"
          title="Hide section" 
-        onclick="toggleVisibility('general-bca946cb-0ee8-44bd-9425-073bb4b3f1ae')">
+        onclick="toggleVisibility('general-e7fd29d0-3859-4fd8-b770-644ea58d1048')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -260,26 +260,26 @@ spatial distribution across the scalp.
     </tr>
 
 
-    <tr class="repr-element general-bca946cb-0ee8-44bd-9425-073bb4b3f1ae ">
+    <tr class="repr-element general-e7fd29d0-3859-4fd8-b770-644ea58d1048 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>RawArray</td>
     </tr>
-    <tr class="repr-element general-bca946cb-0ee8-44bd-9425-073bb4b3f1ae ">
+    <tr class="repr-element general-e7fd29d0-3859-4fd8-b770-644ea58d1048 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-bca946cb-0ee8-44bd-9425-073bb4b3f1ae ">
+    <tr class="repr-element general-e7fd29d0-3859-4fd8-b770-644ea58d1048 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-bca946cb-0ee8-44bd-9425-073bb4b3f1ae ">
+    <tr class="repr-element general-e7fd29d0-3859-4fd8-b770-644ea58d1048 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -294,9 +294,9 @@ spatial distribution across the scalp.
 
 
 
-    <tr class="mne-repr-section-header acquisition-3cde3d36-4840-453b-9982-a10609454333"
+    <tr class="mne-repr-section-header acquisition-b23e27b6-7890-4b32-9f0b-d5a6db09077e"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-3cde3d36-4840-453b-9982-a10609454333')">
+        onclick="toggleVisibility('acquisition-b23e27b6-7890-4b32-9f0b-d5a6db09077e')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -308,7 +308,7 @@ spatial distribution across the scalp.
     </tr>
 
 
-    <tr class="repr-element acquisition-3cde3d36-4840-453b-9982-a10609454333 ">
+    <tr class="repr-element acquisition-b23e27b6-7890-4b32-9f0b-d5a6db09077e ">
         <td class="mne-repr-section-toggle"></td>
         <td>Duration</td>
         <td>00:00:15 (HH:MM:SS)</td>
@@ -321,14 +321,14 @@ spatial distribution across the scalp.
 
 
 
-    <tr class="repr-element acquisition-3cde3d36-4840-453b-9982-a10609454333 ">
+    <tr class="repr-element acquisition-b23e27b6-7890-4b32-9f0b-d5a6db09077e ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>256.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element acquisition-3cde3d36-4840-453b-9982-a10609454333 ">
+    <tr class="repr-element acquisition-b23e27b6-7890-4b32-9f0b-d5a6db09077e ">
         <td class="mne-repr-section-toggle"></td>
         <td>Time points</td>
         <td>3,840</td>
@@ -343,9 +343,9 @@ spatial distribution across the scalp.
 
 
 
-    <tr class="mne-repr-section-header channels-5c5c9949-d4f8-43d9-a5f6-612993bb49bb"
+    <tr class="mne-repr-section-header channels-364b2661-2693-45dd-b17c-c5a469d7e217"
          title="Hide section" 
-        onclick="toggleVisibility('channels-5c5c9949-d4f8-43d9-a5f6-612993bb49bb')">
+        onclick="toggleVisibility('channels-364b2661-2693-45dd-b17c-c5a469d7e217')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -358,7 +358,7 @@ spatial distribution across the scalp.
 
 
     
-    <tr class="repr-element channels-5c5c9949-d4f8-43d9-a5f6-612993bb49bb ">
+    <tr class="repr-element channels-364b2661-2693-45dd-b17c-c5a469d7e217 ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -371,7 +371,7 @@ spatial distribution across the scalp.
     </tr>
 
 
-    <tr class="repr-element channels-5c5c9949-d4f8-43d9-a5f6-612993bb49bb ">
+    <tr class="repr-element channels-364b2661-2693-45dd-b17c-c5a469d7e217 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -386,9 +386,9 @@ spatial distribution across the scalp.
 
 
 
-    <tr class="mne-repr-section-header filters-a0e9d6c6-35ce-447b-b4e7-7495405e87c3"
+    <tr class="mne-repr-section-header filters-57fd0241-4a6c-437c-963e-19c6dcea22dd"
          title="Hide section" 
-        onclick="toggleVisibility('filters-a0e9d6c6-35ce-447b-b4e7-7495405e87c3')">
+        onclick="toggleVisibility('filters-57fd0241-4a6c-437c-963e-19c6dcea22dd')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -400,14 +400,14 @@ spatial distribution across the scalp.
     </tr>
 
 
-    <tr class="repr-element filters-a0e9d6c6-35ce-447b-b4e7-7495405e87c3 ">
+    <tr class="repr-element filters-57fd0241-4a6c-437c-963e-19c6dcea22dd ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-a0e9d6c6-35ce-447b-b4e7-7495405e87c3 ">
+    <tr class="repr-element filters-57fd0241-4a6c-437c-963e-19c6dcea22dd ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>128.00 Hz</td>
@@ -454,7 +454,7 @@ seed the :class:`~ant.protocols.ZScoreProtocol`'s running statistics.
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/realtime_nf.py:415: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_gcv7pxnt/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/realtime_nf.py:415: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_c8_qp4zx/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       Player(
     /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/tools.py:445: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       inverse_operator = make_inverse_operator(
@@ -495,7 +495,7 @@ Extract the ``laterality`` modality for 45 seconds.
  .. code-block:: none
 
 
-    {'nf_data': PosixPath('/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_gcv7pxnt/subjects/sub01/neurofeedback/sub-sub01_vis-01_ses-main_20260512T075426_nf.json')}
+    {'nf_data': PosixPath('/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_c8_qp4zx/subjects/sub01/neurofeedback/sub-sub01_vis-01_ses-main_20260514T120442_nf.json')}
 
 
 
@@ -545,7 +545,7 @@ whose z-score exceeds ``zscore_threshold``.
 
  .. code-block:: none
 
-    n_evaluated: 118670  |  μ=0.0778  σ=0.1679  |  current z=0.61
+    n_evaluated: 92121  |  μ=0.0346  σ=0.1666  |  current z=0.07
 
 
 
@@ -612,7 +612,7 @@ z-scored version with reward events highlighted as vertical bars.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 21.466 seconds)
+   **Total running time of the script:** (1 minutes 23.517 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_alpha_laterality_nf.py:

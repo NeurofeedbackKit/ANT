@@ -1,0 +1,42 @@
+
+
+Examples using ``ant.tools.ORICA.denoise``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+.. start-sphx-glr-thumbnails
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example builds a 32-channel EEG recording, injects realistic artifacts, and compares five artifact handling approaches side-by-side:">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_artifact_comparison_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/plot_artifact_comparison`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Real-time artifact correction comparison</div>
+    </div>
+
+
+.. only:: not html
+
+ * :doc:`/auto_examples/plot_artifact_comparison`
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+

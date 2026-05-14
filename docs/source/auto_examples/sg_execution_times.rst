@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.541** total execution time for 4 files **from auto_examples**:
+**01:23.517** total execution time for 6 files **from auto_examples**:
 
 .. container::
 
@@ -32,15 +32,21 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_artifact_comparison.py` (``plot_artifact_comparison.py``)
-     - 00:00.541
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_alpha_laterality_nf.py` (``plot_alpha_laterality_nf.py``)
+     - 01:23.517
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_artifact_comparison.py` (``plot_artifact_comparison.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_bad_channel_detection.py` (``plot_bad_channel_detection.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_complete_nf_session.py` (``plot_complete_nf_session.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_maxwell_realtime.py` (``plot_maxwell_realtime.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_motor_imagery_nf.py` (``plot_motor_imagery_nf.py``)
      - 00:00.000
      - 0.0

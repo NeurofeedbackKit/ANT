@@ -1,0 +1,353 @@
+"""
+Motor imagery neurofeedback — ERD/ERS laterality
+===================================================
+
+Motor imagery (MI) neurofeedback trains participants to modulate the
+**event-related desynchronisation** (ERD) of the sensorimotor mu (8–12 Hz)
+and beta (13–30 Hz) rhythms over the motor cortex.  Imagining left-hand
+movement produces ERD over the *contralateral* (right) hemisphere (C4), and
+vice versa for right-hand imagery (C3).
+
+This example demonstrates ANT's MI-NF workflow using the
+`PhysioNet EEG Motor Movement/Imagery Dataset <https://physionet.org/content/eegmmidb/1.0.0/>`_,
+loaded via :func:`mne.datasets.eegbci.load_data`:
+
+1. Load runs 6, 10, 14 (imagined left vs. right fist) for subject 1.
+2. Extract 4-second epochs time-locked to the imagery cue.
+3. Compute per-trial **ERD/ERS (%)** in the 8–30 Hz band for C3 and C4.
+4. Derive a **laterality index**: ``(C4 − C3) / (C4 + C3)`` — positive for
+   right-hand imagery, negative for left-hand imagery.
+5. Run a live NF session by streaming the continuous recording over LSL,
+   computing C3/C4 laterality on every 2-second window, and driving a
+   :class:`~ant.protocols.ZScoreProtocol` reward gate in real time.
+
+.. note::
+
+   The example downloads ~15 MB of data on first run via
+   :func:`mne.datasets.eegbci.load_data`.
+"""
+
+# %%
+# Load PhysioNet EEGBCI motor imagery data
+# -----------------------------------------
+
+import os
+import tempfile
+import time
+
+import matplotlib.pyplot as plt
+import mne
+import numpy as np
+
+from ant.protocols import ZScoreProtocol
+
+mne.set_log_level("WARNING")
+plt.style.use("default")
+
+# Runs 6, 10, 14 = imagined left/right fist movement for subject 1
+SUBJECT = 1
+RUNS    = [6, 10, 14]
+files   = mne.datasets.eegbci.load_data(SUBJECT, RUNS, verbose=False)
+raws    = [mne.io.read_raw_edf(f, preload=True, verbose=False) for f in files]
+raw     = mne.concatenate_raws(raws)
+mne.datasets.eegbci.standardize(raw)
+
+SFREQ = raw.info["sfreq"]   # 160 Hz
+
+raw.filter(l_freq=1.0, h_freq=40.0, verbose=False)
+
+print(f"Channels: {raw.info['nchan']}  |  sfreq: {SFREQ:.0f} Hz  |  "
+      f"Duration: {raw.times[-1]:.0f} s")
+
+# %%
+# Extract imagined-movement epochs
+# ----------------------------------
+# Event codes:
+#   T0 = rest, T1 = left-fist imagery, T2 = right-fist imagery
+
+events, event_id = mne.events_from_annotations(raw, verbose=False)
+print(f"Event IDs: {event_id}")
+
+MI_LEFT  = event_id["T1"]
+MI_RIGHT = event_id["T2"]
+
+TMIN, TMAX = -0.5, 4.0
+BASELINE   = (-0.5, 0.0)
+
+epochs = mne.Epochs(
+    raw,
+    events,
+    event_id={"left": MI_LEFT, "right": MI_RIGHT},
+    tmin=TMIN, tmax=TMAX,
+    baseline=BASELINE,
+    picks=["C3", "Cz", "C4"],
+    preload=True,
+    verbose=False,
+)
+
+print(f"Epochs: {len(epochs)}  |  "
+      f"left={len(epochs['left'])}  right={len(epochs['right'])}")
+
+# %%
+# Compute ERD/ERS in the mu + beta band (8–30 Hz)
+# -------------------------------------------------
+# ERD/ERS is defined relative to a pre-cue baseline power:
+#
+# .. math::
+#
+#    \text{ERD/ERS}(\%) = \frac{P_{\text{active}} - P_{\text{baseline}}}{P_{\text{baseline}}} \times 100
+#
+# Values < 0 = desynchronisation (ERD, power decrease during imagery).
+# Values > 0 = synchronisation (ERS, rebound after imagery offset).
+
+from scipy.signal import butter, sosfiltfilt
+
+def _band_power(data, sfreq, fmin=8.0, fmax=30.0):
+    sos = butter(4, [fmin, fmax], btype="bandpass", fs=sfreq, output="sos")
+    filtered = sosfiltfilt(sos, data, axis=-1)
+    return np.mean(filtered ** 2, axis=-1)
+
+
+t_epoch   = epochs.times
+base_mask = (t_epoch >= BASELINE[0]) & (t_epoch < BASELINE[1])
+act_mask  = (t_epoch >= 0.5) & (t_epoch <= 3.5)
+
+ch_idx = {ch: i for i, ch in enumerate(["C3", "Cz", "C4"])}
+
+erd_data = {}
+for label in ("left", "right"):
+    ep_data = epochs[label].get_data()
+    base_pw = _band_power(ep_data[:, :, base_mask], SFREQ)
+    act_pw  = _band_power(ep_data[:, :, act_mask],  SFREQ)
+    erd_data[label] = (act_pw - base_pw) / (base_pw + 1e-30) * 100.0
+
+for label in ("left", "right"):
+    c3_erd = erd_data[label][:, ch_idx["C3"]].mean()
+    c4_erd = erd_data[label][:, ch_idx["C4"]].mean()
+    print(f"{label:5s} imagery — C3 ERD: {c3_erd:+.1f}%  C4 ERD: {c4_erd:+.1f}%")
+
+# %%
+# Time-frequency analysis
+# ------------------------
+# MNE's Morlet wavelet gives the full time-frequency representation for the
+# grand average of each class and channel.
+
+freqs    = np.arange(4.0, 41.0, 1.0)
+n_cycles = freqs / 2.0
+
+tfr = {}
+for label in ("left", "right"):
+    tfr[label] = mne.time_frequency.tfr_array_morlet(
+        epochs[label].get_data(),
+        sfreq=SFREQ,
+        freqs=freqs,
+        n_cycles=n_cycles,
+        output="power",
+    ).mean(axis=0)   # (n_ch, n_freqs, n_times)
+
+# %%
+# Online NF session via LSL streaming
+# -------------------------------------
+# The filtered continuous recording is broadcast over a local LSL stream with
+# :class:`~mne_lsl.player.PlayerLSL`.  :class:`~mne_lsl.stream.StreamLSL`
+# reads it in 2-second windows — the same pipeline a live BCI system would use.
+# C3/C4 mu/beta laterality is computed on each window and fed to a
+# :class:`~ant.protocols.ZScoreProtocol`.
+#
+# Falls back to epoch-by-epoch simulation when ``mne_lsl`` is unavailable.
+
+protocol = ZScoreProtocol(
+    direction="up",
+    warmup_windows=20,
+    zscore_threshold=0.5,
+)
+
+lat_stream    = []
+reward_stream = []
+
+WIN_SECS  = 2.0
+WIN_SAMPS = round(SFREQ * WIN_SECS)
+sos_mu    = butter(4, [8.0, 30.0], btype="bandpass", fs=SFREQ, output="sos")
+
+_streaming_used = False
+
+try:
+    from mne_lsl.player import PlayerLSL
+    from mne_lsl.stream import StreamLSL
+    if not (hasattr(PlayerLSL, "__mro__") and "MagicMock" not in str(type(PlayerLSL))):
+        raise ImportError("mne_lsl is mocked")
+
+    # Save the full filtered recording (all channels) to stream
+    _raw_full = mne.concatenate_raws(
+        [mne.io.read_raw_edf(f, preload=True, verbose=False) for f in files]
+    )
+    mne.datasets.eegbci.standardize(_raw_full)
+    _raw_full.filter(l_freq=1.0, h_freq=40.0, verbose=False)
+
+    STREAM_NAME = "ANT_MI_demo"
+    with tempfile.NamedTemporaryFile(suffix="_raw.fif", delete=False) as _f:
+        _tmp_path = _f.name
+    _raw_full.save(_tmp_path, overwrite=True, verbose=False)
+
+    _player = PlayerLSL(_tmp_path, chunk_size=WIN_SAMPS, name=STREAM_NAME, n_repeat=1)
+    _player.start()
+    time.sleep(0.5)
+
+    _stream = StreamLSL(bufsize=6.0, name=STREAM_NAME)
+    _stream.connect(acquisition_delay=0.005, timeout=10.0)
+
+    # Channel indices in the streamed data
+    _chs       = list(_stream.info["ch_names"])
+    _c3_idx    = _chs.index("C3")
+    _c4_idx    = _chs.index("C4")
+    _sfreq_lsl = float(_stream.info["sfreq"])
+    print(f"Streaming: {STREAM_NAME}  |  sfreq={_sfreq_lsl:.0f} Hz  |  n_ch={len(_chs)}")
+
+    _t_deadline = time.perf_counter() + _raw_full.times[-1] + 15.0
+    while time.perf_counter() < _t_deadline:
+        if _stream.n_new_samples < WIN_SAMPS:
+            time.sleep(0.01)
+            continue
+        _chunk, _ = _stream.get_data(winsize=WIN_SECS)    # (n_ch, WIN_SAMPS)
+        _filt     = sosfiltfilt(sos_mu, _chunk, axis=-1)
+        c3_pw  = float(np.mean(_filt[_c3_idx] ** 2))
+        c4_pw  = float(np.mean(_filt[_c4_idx] ** 2))
+        lat    = (c4_pw - c3_pw) / (c4_pw + c3_pw + 1e-30)
+        lat_stream.append(lat)
+        crossed, _mag = protocol.evaluate(lat)
+        reward_stream.append(crossed)
+
+    _stream.disconnect()
+    try:
+        _player.stop()
+    except RuntimeError:
+        pass
+    os.unlink(_tmp_path)
+    _streaming_used = True
+    print(f"Streamed {len(lat_stream)} windows via LSL")
+
+except Exception as _exc:
+    print(f"LSL streaming unavailable ({_exc}), using epoch-by-epoch fallback.")
+    for label in ("left", "right"):
+        ep_data = epochs[label].get_data()
+        for ep in ep_data:
+            filt   = sosfiltfilt(sos_mu, ep, axis=-1)
+            n_wins = ep.shape[1] // WIN_SAMPS
+            for w in range(n_wins):
+                sl    = slice(w * WIN_SAMPS, (w + 1) * WIN_SAMPS)
+                c3_pw = float(np.mean(filt[ch_idx["C3"], sl] ** 2))
+                c4_pw = float(np.mean(filt[ch_idx["C4"], sl] ** 2))
+                lat   = (c4_pw - c3_pw) / (c4_pw + c3_pw + 1e-30)
+                lat_stream.append(lat)
+                crossed, _mag = protocol.evaluate(lat)
+                reward_stream.append(crossed)
+
+lat_arr    = np.array(lat_stream)
+reward_arr = np.array(reward_stream)
+mode       = "LSL stream" if _streaming_used else "epoch-by-epoch"
+print(f"NF windows : {len(lat_arr)}  |  rewards : {reward_arr.sum()}  "
+      f"({100*reward_arr.mean():.0f} % of post-warmup)  [{mode}]")
+
+# %%
+# Figure 1 — ERD/ERS bar chart and TFR
+# ----------------------------------------
+
+fig1, axes = plt.subplots(2, 3, figsize=(15, 10),
+                           gridspec_kw={"hspace": 0.40, "wspace": 0.35})
+fig1.suptitle(
+    "Motor Imagery Neurofeedback — ERD/ERS and Time-Frequency Response\n"
+    "PhysioNet EEGBCI · Subject 1 · Imagined left vs. right fist",
+    fontsize=12, fontweight="bold", y=0.99,
+)
+
+# --- Row 0: ERD/ERS bar chart ---
+ax_bar = axes[0, 1]
+x      = np.arange(3)
+w      = 0.33
+colors = {"left": "#1565C0", "right": "#C62828"}
+
+for i_label, (label, color) in enumerate(colors.items()):
+    vals = [erd_data[label][:, ch_idx[ch]].mean() for ch in ["C3", "Cz", "C4"]]
+    bars = ax_bar.bar(x + (i_label - 0.5) * w, vals, w,
+                      color=color, alpha=0.80, label=f"{label} imagery")
+    for bar, val in zip(bars, vals):
+        ax_bar.text(bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + (1 if val >= 0 else -4),
+                    f"{val:+.0f}%", ha="center", fontsize=9)
+
+ax_bar.axhline(0, color="black", lw=0.8, ls="--", alpha=0.5)
+ax_bar.set_xticks(x)
+ax_bar.set_xticklabels(["C3", "Cz", "C4"], fontsize=12)
+ax_bar.set_ylabel("ERD/ERS (%)", fontsize=11)
+ax_bar.set_title("ERD/ERS (8–30 Hz band)\nvs. pre-cue baseline", fontsize=10)
+ax_bar.legend(fontsize=10, frameon=False)
+ax_bar.spines[["top", "right"]].set_visible(False)
+axes[0, 0].axis("off")
+axes[0, 2].axis("off")
+
+# --- Row 1: TFR heatmaps ---
+tfr_pairs = [("left", "C3"), ("right", "C4"), ("right", "C3")]
+vmax = max(
+    np.percentile(np.abs(tfr["left"]), 97),
+    np.percentile(np.abs(tfr["right"]), 97),
+)
+
+for ax, (label, ch) in zip(axes[1, :], tfr_pairs):
+    ci        = ch_idx[ch]
+    tf        = tfr[label][ci]
+    base_cols = (t_epoch >= BASELINE[0]) & (t_epoch <= 0.0)
+    base_mean = tf[:, base_cols].mean(axis=1, keepdims=True)
+    tf_norm   = (tf - base_mean) / (base_mean + 1e-30) * 100.0
+
+    im = ax.imshow(
+        tf_norm, aspect="auto", origin="lower",
+        extent=[t_epoch[0], t_epoch[-1], freqs[0], freqs[-1]],
+        cmap="RdBu_r", vmin=-vmax * 10, vmax=vmax * 10,
+    )
+    ax.axvline(0, color="k", lw=1.0, ls="--")
+    ax.set_xlabel("Time (s)", fontsize=10)
+    ax.set_ylabel("Frequency (Hz)", fontsize=10)
+    ax.set_title(f"{label.capitalize()} imagery — {ch}\nERD = blue, ERS = red",
+                 fontsize=10)
+    plt.colorbar(im, ax=ax, label="Power change (%)", shrink=0.85)
+
+fig1.tight_layout()
+
+# %%
+# Figure 2 — Online NF simulation
+# ----------------------------------
+# Laterality index over the session and reward delivery events.
+
+fig2, (ax_lat, ax_hist) = plt.subplots(1, 2, figsize=(14, 6),
+                                        gridspec_kw={"wspace": 0.30})
+fig2.suptitle(
+    "Motor Imagery NF Session — LSL Streaming\n"
+    "Laterality (C4−C3)/(C4+C3) · ZScoreProtocol rewards",
+    fontsize=12, fontweight="bold",
+)
+
+windows = np.arange(len(lat_arr))
+ax_lat.plot(windows, lat_arr, color="#607D8B", lw=0.9, alpha=0.7, label="Laterality")
+ax_lat.scatter(windows[reward_arr], lat_arr[reward_arr],
+               s=30, color="#D32F2F", zorder=5, label="Reward")
+ax_lat.axhline(0, color="k", lw=0.7, ls="--", alpha=0.5)
+ax_lat.axvline(20, color="#FF6F00", lw=1.2, ls=":", label="Warmup end")
+ax_lat.set_xlabel("Window index", fontsize=11)
+ax_lat.set_ylabel("Laterality index", fontsize=11)
+ax_lat.set_title(f"Laterality stream and reward events  ({mode})", fontsize=11)
+ax_lat.legend(fontsize=10, frameon=False)
+ax_lat.spines[["top", "right"]].set_visible(False)
+
+half = len(lat_arr) // 2
+ax_hist.hist(lat_arr[:half], bins=25, alpha=0.65, color="#1565C0",
+             density=True, label="First half")
+ax_hist.hist(lat_arr[half:], bins=25, alpha=0.65, color="#C62828",
+             density=True, label="Second half")
+ax_hist.axvline(0, color="k", lw=0.8, ls="--")
+ax_hist.set_xlabel("Laterality index", fontsize=11)
+ax_hist.set_ylabel("Density", fontsize=11)
+ax_hist.set_title("Laterality distribution", fontsize=11)
+ax_hist.legend(fontsize=10, frameon=False)
+ax_hist.spines[["top", "right"]].set_visible(False)
+
+fig2.tight_layout()

@@ -2,40 +2,28 @@
 Real-time artifact correction comparison
 =========================================
 
-EEG recordings are routinely contaminated by ocular, muscular, and
-electrode artifacts.  ANT provides three complementary real-time
-artifact correction methods:
+This example builds a 32-channel EEG recording, injects realistic artifacts,
+and compares five artifact handling approaches side-by-side:
 
-* :class:`~ant.tools.AdaptiveLMSFilter` — Widrow–Hoff LMS adaptive filter
-  that uses a reference channel (EOG) to cancel eye-blink artifacts online,
-  requiring no calibration baseline.
-* :class:`~ant.tools.ASRDenoiser` — Artifact Subspace Reconstruction (ASR)
-  that learns clean signal statistics from a baseline and suppresses
-  components that deviate beyond a threshold.
-* :class:`~ant.tools.GEDAIDenoiser` — Generalised Eigendecomposition-based
-  Artifact Identification (GEDAI) that finds spatial filters maximising
-  signal in a target frequency band relative to broadband activity.
-
-This example uses :func:`mne.simulation.add_eog` to inject **physically
-realistic** blink artifacts (dipole forward model on the standard 10-20
-montage), adds synthetic cardiac QRS and muscle burst artifacts, then applies
-all three correctors and evaluates their performance using Pearson correlation
-and SNR gain against the known clean signal.
+* :class:`~ant.tools.AdaptiveLMSFilter` — reference-based adaptive filter.
+* :class:`~ant.tools.ASRDenoiser` — baseline-calibrated subspace rejection.
+* :class:`~ant.tools.GEDAIDenoiser` — band-selective eigendecomposition.
+* :class:`~ant.tools.ORICA` — online independent component analysis.
+* :class:`~ant.tools.RiemannianPotatoDetector` — Riemannian covariance-based
+  **artifact detection** (flags windows; does not reconstruct the signal).
 """
 
 # %%
-# Synthetic EEG construction with standard 10-20 montage
-# --------------------------------------------------------
-# We build a 32-channel, 256 Hz, 30-second recording using the standard 10-20
-# montage so that MNE's simulation functions can project artifacts onto sensor
-# positions realistically via dipole forward modelling.
+# Synthetic EEG with 10-20 montage
+# ---------------------------------
 
 import numpy as np
 import matplotlib.pyplot as plt
 import mne
 from scipy.signal import welch, butter, sosfiltfilt
 
-from ant.tools import AdaptiveLMSFilter, ASRDenoiser, GEDAIDenoiser
+from ant.tools import AdaptiveLMSFilter, ASRDenoiser, GEDAIDenoiser, ORICA
+from ant.tools import RiemannianPotatoDetector
 
 rng = np.random.default_rng(42)
 mne.set_log_level("WARNING")
@@ -45,7 +33,7 @@ SFREQ = 256.0
 DURATION = 30.0
 N_TIMES = int(SFREQ * DURATION)
 t = np.arange(N_TIMES) / SFREQ
-N_CAL = int(5.0 * SFREQ)   # first 5 s kept clean for ASR / GEDAI calibration
+N_CAL = int(5.0 * SFREQ)   # first 5 s kept clean for ASR/GEDAI calibration
 
 EEG_NAMES = [
     "Fp1", "Fp2", "F7",  "F3",  "Fz",  "F4",  "F8",
@@ -60,7 +48,6 @@ N_EEG = len(EEG_NAMES)   # 32
 
 
 def _pink_noise(n_ch, n_times, rng_, amplitude=5e-6):
-    """1/f-shaped noise via spectral shaping of white noise."""
     freqs = np.fft.rfftfreq(n_times)
     freqs[0] = 1.0
     wn = rng_.standard_normal((n_ch, n_times))
@@ -71,68 +58,43 @@ def _pink_noise(n_ch, n_times, rng_, amplitude=5e-6):
 
 
 data_clean = _pink_noise(N_EEG, N_TIMES, rng, amplitude=5e-6)
-# 10 Hz alpha on posterior channels
-posterior = [EEG_NAMES.index(c) for c in ["O1", "Oz", "O2", "P3", "Pz", "P4"]
-             if c in EEG_NAMES]
+posterior = [EEG_NAMES.index(c) for c in ["O1", "Oz", "O2", "P3", "Pz", "P4"]]
 data_clean[posterior] += 3e-6 * np.sin(2 * np.pi * 10.0 * t)
 
-# Create MNE RawArray with standard 10-20 montage
-info = mne.create_info(ch_names=EEG_NAMES, sfreq=SFREQ, ch_types="eeg",
-                       verbose=False)
+info = mne.create_info(ch_names=EEG_NAMES, sfreq=SFREQ, ch_types="eeg", verbose=False)
 raw_clean = mne.io.RawArray(data_clean, info, verbose=False)
 raw_clean.set_montage(
     mne.channels.make_standard_montage("standard_1020"),
     match_case=False, on_missing="ignore", verbose=False,
 )
 
-print(f"Signal: {N_EEG} EEG  |  {DURATION:.0f} s  |  {SFREQ:.0f} Hz")
-print(f"EEG RMS : {data_clean.std(axis=1).mean()*1e6:.2f} µV")
-
 # %%
-# Artifact injection using MNE simulation + manual ECG / muscle
-# --------------------------------------------------------------
-# :func:`mne.simulation.add_eog` projects a realistic blink dipole
-# (placed behind the eyes) onto all scalp channels using the 10-20 montage.
-# Cardiac and muscle artifacts are added manually — ``add_ecg`` requires MEG
-# channels, so we inject a synthetic QRS waveform with a realistic scalp
-# distribution instead.
-#
-# The first 5 s are restored to clean after artifact simulation so that ASR
-# and GEDAI have an artifact-free calibration baseline.
+# Artifact injection
+# ------------------
 
 raw_noisy = raw_clean.copy()
-
-# Physically realistic blink artifacts via MNE dipole forward model
 mne.simulation.add_eog(raw_noisy, random_state=42, verbose=False)
-
-# Restore clean baseline (t < 5 s) required for ASR / GEDAI calibration
 raw_noisy._data[:, :N_CAL] = data_clean[:, :N_CAL]
+data_noisy_eeg = raw_noisy.get_data()
 
-data_noisy_eeg = raw_noisy.get_data()   # (32, N_TIMES)
-
-# Cardiac (QRS) artifacts — periodic at ~70 BPM, strongest on temporal channels
-heart_rate = 70.0 / 60.0  # Hz
+heart_rate = 70.0 / 60.0
 beat_times = np.arange(5.0, DURATION, 1.0 / heart_rate)
 
 
 def _qrs(t_rel):
-    """Simple QRS + P + T waveform (amplitude ≈ 1)."""
-    p = 0.15 * np.exp(-((t_rel + 0.15) / 0.025) ** 2)
-    q = -0.10 * np.exp(-((t_rel - 0.005) / 0.008) ** 2)
-    r = 1.00 * np.exp(-((t_rel) / 0.012) ** 2)
-    s = -0.20 * np.exp(-((t_rel + 0.020) / 0.012) ** 2)
-    tw = 0.25 * np.exp(-((t_rel - 0.22) / 0.06) ** 2)
+    p  = 0.15 * np.exp(-((t_rel + 0.15) / 0.025) ** 2)
+    q  = -0.10 * np.exp(-((t_rel - 0.005) / 0.008) ** 2)
+    r  = 1.00  * np.exp(-((t_rel) / 0.012) ** 2)
+    s  = -0.20 * np.exp(-((t_rel + 0.020) / 0.012) ** 2)
+    tw = 0.25  * np.exp(-((t_rel - 0.22) / 0.06) ** 2)
     return p + q + r + s + tw
 
 
-# Spatial pattern: cardiac field strongest on temporal / parietal channels
 ecg_pattern = np.zeros(N_EEG)
 for ch in ["T7", "T8", "TP9", "TP10", "P7", "P8", "CP5", "CP6"]:
-    if ch in EEG_NAMES:
-        ecg_pattern[EEG_NAMES.index(ch)] = 1.0
+    ecg_pattern[EEG_NAMES.index(ch)] = 1.0
 for ch in ["C3", "Cz", "C4", "P3", "Pz", "P4"]:
-    if ch in EEG_NAMES:
-        ecg_pattern[EEG_NAMES.index(ch)] = 0.5
+    ecg_pattern[EEG_NAMES.index(ch)] = 0.5
 ecg_pattern /= ecg_pattern.max()
 
 for tb in beat_times:
@@ -142,7 +104,6 @@ for tb in beat_times:
     qrs_wave[beat_mask] = _qrs(t_rel[beat_mask])
     data_noisy_eeg += np.outer(ecg_pattern * 2e-6, qrs_wave)
 
-# Muscle bursts on temporal channels (bandpass-filtered noise)
 sos_emg = butter(4, [40.0, 120.0], btype="bandpass", fs=SFREQ, output="sos")
 for t0 in [8.0, 18.0]:
     i0, i1 = int(t0 * SFREQ), int((t0 + 1.0) * SFREQ)
@@ -151,25 +112,18 @@ for t0 in [8.0, 18.0]:
         burst = sosfiltfilt(sos_emg, rng.standard_normal(i1 - i0) * 30e-6)
         data_noisy_eeg[ci, i0:i1] += burst
 
-# Construct EOG reference for LMS: blink component extracted from Fp1 + Fp2
-# (frontal channels closest to the eyes have the strongest blink artifact)
 fp1_idx = EEG_NAMES.index("Fp1")
 fp2_idx = EEG_NAMES.index("Fp2")
 eog_ref = 0.5 * (data_noisy_eeg[fp1_idx] + data_noisy_eeg[fp2_idx])
-eog_ref += rng.standard_normal(N_TIMES) * 0.05e-6  # small sensor noise
+eog_ref += rng.standard_normal(N_TIMES) * 0.05e-6
+data_noisy = np.vstack([data_noisy_eeg, eog_ref[np.newaxis]])  # (33, N_TIMES)
 
-# Full data array: 32 EEG + 1 EOG reference (index 32)
-data_noisy = np.vstack([data_noisy_eeg, eog_ref[np.newaxis]])   # (33, N_TIMES)
-
-print(f"Frontal ch RMS  clean={data_clean[:7].std()*1e6:.1f} µV  "
-      f"noisy={data_noisy[:7].std()*1e6:.1f} µV")
+print(f"Clean EEG RMS : {data_clean.std(axis=1).mean()*1e6:.2f} µV")
+print(f"Noisy EEG RMS : {data_noisy[:N_EEG].std(axis=1).mean()*1e6:.2f} µV")
 
 # %%
-# LMS filter (Adaptive Least Mean Squares)
-# -----------------------------------------
-# The LMS filter uses the frontal EOG reference (channel 32, constructed as
-# the average of Fp1 and Fp2) to adaptively cancel eye-blink artifacts.
-# It adapts online from the first sample — no baseline needed.
+# LMS adaptive filter
+# --------------------
 
 lms = AdaptiveLMSFilter(ref_ch_idx=N_EEG, n_taps=8, mu=0.005)
 chunk_size = int(SFREQ)
@@ -177,63 +131,109 @@ data_lms = np.zeros_like(data_noisy)
 for k in range(N_TIMES // chunk_size):
     sl = slice(k * chunk_size, (k + 1) * chunk_size)
     data_lms[:, sl] = lms.transform(data_noisy[:, sl])
-
 print(f"LMS  frontal RMS = {data_lms[:7].std()*1e6:.1f} µV")
 
 # %%
 # ASR (Artifact Subspace Reconstruction)
 # ----------------------------------------
-# ASR learns clean signal statistics from the first 5 seconds and suppresses
-# windows whose amplitude deviates beyond ``cutoff`` standard deviations.
 
 asr = ASRDenoiser(cutoff=5.0)
 asr.fit(data_noisy[:N_EEG, :N_CAL], sfreq=SFREQ, window_len=1.0)
-
 data_asr = data_noisy.copy()
 data_asr[:N_EEG, N_CAL:] = asr.transform(data_noisy[:N_EEG, N_CAL:])
-
 print(f"ASR  frontal RMS = {data_asr[:7].std()*1e6:.1f} µV")
 
 # %%
-# GEDAI (Generalised Eigendecomposition Artifact Identification)
-# ---------------------------------------------------------------
-# GEDAI fits a generalised eigenvalue problem on the brain-signal band
-# (8–30 Hz) vs broadband.  Components with the **smallest** eigenvalues
-# (least band-specific, i.e. most artifact-like) are identified by
-# :meth:`~ant.tools.GEDAIDenoiser.find_noise_components` and zeroed out.
+# GEDAI
+# ------
 
 gedai = GEDAIDenoiser(n_channels=N_EEG)
 gedai.fit_from_raw(data_noisy[:N_EEG, :N_CAL], sfreq=SFREQ, band=(8.0, 30.0))
-
-n_noise = max(2, int(0.20 * N_EEG))   # bottom 20 % of 32 = 6 components
+n_noise = max(2, int(0.20 * N_EEG))
 artifact_idx = gedai.find_noise_components(n_noise=n_noise)
-
 data_gedai = data_noisy.copy()
 data_gedai[:N_EEG] = gedai.denoise(data_noisy[:N_EEG], artifact_idx)
-
 print(f"GEDAI frontal RMS = {data_gedai[:7].std()*1e6:.1f} µV  "
       f"(removed {len(artifact_idx)} components)")
 
 # %%
+# ORICA — Online ICA
+# -------------------
+# :class:`~ant.tools.ORICA` updates its ICA unmixing matrix online each chunk.
+# After processing the full recording we identify artifact components by their
+# Pearson correlation with the frontal EOG reference, then use
+# :meth:`~ant.tools.ORICA.denoise` to back-project with those components
+# zeroed out.
+
+orica = ORICA(n_channels=N_EEG, learning_rate=0.005, block_size=chunk_size)
+orica_sources_list = []
+
+for k in range(N_TIMES // chunk_size):
+    sl = slice(k * chunk_size, (k + 1) * chunk_size)
+    src = orica.transform(data_noisy[:N_EEG, sl])
+    orica_sources_list.append(src)
+
+# Full source matrix: (n_components, n_times)
+sources_full = np.concatenate(orica_sources_list, axis=1)
+
+# Identify artifact components by correlation with EOG reference
+corr_eog = np.array([
+    np.corrcoef(sources_full[i], eog_ref)[0, 1]
+    for i in range(N_EEG)
+])
+n_art = max(1, int(0.10 * N_EEG))  # remove top 10 % most EOG-correlated
+art_comps = list(np.argsort(np.abs(corr_eog))[::-1][:n_art])
+
+# Back-project via built-in denoise (zeros artifact ICs, reconstructs sensor data)
+data_orica = orica.denoise(data_noisy[:N_EEG], art_comps)
+print(f"ORICA frontal RMS = {data_orica[:7].std()*1e6:.1f} µV  "
+      f"(zeroed {n_art} component(s), max |r_eog|={np.abs(corr_eog).max():.3f})")
+
+# %%
+# Riemannian Potato — artifact detection
+# ----------------------------------------
+# The :class:`~ant.tools.RiemannianPotatoDetector` flags windows whose
+# covariance matrix is too far from the clean calibration set in the
+# Riemannian metric.  It does **not** reconstruct the signal; instead
+# it marks windows as clean or artifactual so the NF engine can skip them.
+
+potato = RiemannianPotatoDetector(threshold=3.0)
+# Calibrate on the first 5 s (N_CAL samples) split into 1-s windows
+cal_windows = np.array([
+    data_noisy[:N_EEG, k * chunk_size:(k + 1) * chunk_size]
+    for k in range(N_CAL // chunk_size)
+])
+potato.fit(cal_windows)
+
+potato_clean = []   # True = clean window
+potato_z     = []   # z-score per window
+for k in range(N_TIMES // chunk_size):
+    sl = slice(k * chunk_size, (k + 1) * chunk_size)
+    is_clean, z = potato.detect(data_noisy[:N_EEG, sl])
+    potato_clean.append(is_clean)
+    potato_z.append(z)
+
+potato_clean = np.array(potato_clean)
+potato_z     = np.array(potato_z)
+n_rejected   = int((~potato_clean).sum())
+pct_rejected = 100.0 * n_rejected / len(potato_clean)
+print(f"Riemannian Potato: {n_rejected}/{len(potato_clean)} windows flagged "
+      f"({pct_rejected:.0f} %)")
+
+# %%
 # Evaluation metrics
-# ------------------
-# Both metrics are computed over the post-baseline window (t > 5 s) on the
-# 32 EEG channels:
-#
-# * **Pearson r** — mean cross-channel correlation with the clean signal.
-# * **SNR gain (dB)** — ``10 · log₁₀(pre-correction noise / post-correction
-#   noise)``.  Positive = noise reduced; negative = noise increased.
+# -------------------
 
 eval_sl = slice(N_CAL, None)
-clean_ref  = data_clean[:, eval_sl]
-noisy_ref  = data_noisy[:N_EEG, eval_sl]
+clean_ref = data_clean[:, eval_sl]
+noisy_ref = data_noisy[:N_EEG, eval_sl]
 
 
 def _pearson_mean(a, b):
     az = a - a.mean(axis=1, keepdims=True)
     bz = b - b.mean(axis=1, keepdims=True)
     num = (az * bz).sum(axis=1)
-    den = np.sqrt((az**2).sum(axis=1) * (bz**2).sum(axis=1)) + 1e-30
+    den = np.sqrt((az ** 2).sum(axis=1) * (bz ** 2).sum(axis=1)) + 1e-30
     return float((num / den).mean())
 
 
@@ -247,6 +247,7 @@ methods = {
     "LMS"  : data_lms[:N_EEG, eval_sl],
     "ASR"  : data_asr[:N_EEG, eval_sl],
     "GEDAI": data_gedai[:N_EEG, eval_sl],
+    "ORICA": data_orica[:, eval_sl],
 }
 
 metrics = {}
@@ -258,74 +259,77 @@ for name, corr in methods.items():
 
 # %%
 # Figure 1 — Time-series comparison
-# -----------------------------------
-# Three channel rows compare the clean reference, the noisy signal, and all
-# three corrected signals over the first 20 s.  Eye blinks (generated by
-# :func:`mne.simulation.add_eog`) are clearly visible in the frontal channel;
-# muscle bursts appear at 8 s and 18 s in the temporal channel.
+# ------------------------------------
 
 COLORS = {
     "Clean": "#555555", "Noisy": "#D32F2F",
-    "LMS": "#1565C0",   "ASR": "#2E7D32",  "GEDAI": "#E65100",
+    "LMS": "#1565C0", "ASR": "#2E7D32",
+    "GEDAI": "#E65100", "ORICA": "#6A1B9A",
 }
 
 t20 = t[t <= 20.0]
 s20 = slice(0, len(t20))
 
 fig1, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True,
-                           gridspec_kw={"hspace": 0.15})
+                           gridspec_kw={"hspace": 0.18})
 fig1.suptitle(
     "Real-time Artifact Correction — Time-series (0–20 s)\n"
-    "Artifacts: eye blinks (MNE dipole forward model), cardiac QRS (synthetic), muscle bursts",
+    "LMS · ASR · GEDAI · ORICA  vs. clean reference",
     fontsize=13, fontweight="bold", y=0.99,
 )
 
 ch_rows = [
     (EEG_NAMES.index("Fp1"), "Frontal — Fp1 (blink + cardiac)"),
-    (EEG_NAMES.index("T7"),  "Temporal — T7 (muscle burst region)"),
+    (EEG_NAMES.index("T7"),  "Temporal — T7 (muscle burst at 8 s and 18 s)"),
 ]
 
 for ax, (ch, title) in zip(axes[:2], ch_rows):
     ax.plot(t20, data_clean[ch, s20] * 1e6,
-            color=COLORS["Clean"], lw=1.8, label="Clean", zorder=5)
+            color=COLORS["Clean"], lw=2.0, label="Clean", zorder=5)
     ax.plot(t20, data_noisy[ch, s20] * 1e6,
-            color=COLORS["Noisy"], lw=0.9, alpha=0.55, label="Noisy", zorder=2)
-    for mname, mdata in [("LMS", data_lms), ("ASR", data_asr), ("GEDAI", data_gedai)]:
+            color=COLORS["Noisy"], lw=0.8, alpha=0.50, label="Noisy", zorder=2)
+    for mname, mdata in [("LMS", data_lms), ("ASR", data_asr),
+                         ("GEDAI", data_gedai), ("ORICA", data_orica)]:
         ax.plot(t20, mdata[ch, s20] * 1e6, color=COLORS[mname],
-                lw=1.3, alpha=0.92, label=mname, zorder=4)
+                lw=1.2, alpha=0.9, label=mname, zorder=4)
     ax.set_ylabel("µV", fontsize=10)
     ax.set_title(title, fontsize=10, loc="left", pad=3)
-    ax.legend(fontsize=9, frameon=False, loc="upper right", ncol=5)
+    ax.legend(fontsize=9, frameon=False, loc="upper right", ncol=6)
     ax.spines[["top", "right"]].set_visible(False)
 
-# EOG reference row
+# Riemannian Potato rejection mask
 ax3 = axes[2]
-ax3.plot(t20, data_clean[fp1_idx, s20] * 1e6,
-         color=COLORS["Clean"], lw=1.8, label="Clean Fp1")
-ax3.plot(t20, eog_ref[s20] * 1e6,
-         color=COLORS["Noisy"], lw=0.9, alpha=0.7, label="EOG reference (avg Fp1/Fp2)")
-ax3.set_ylabel("µV", fontsize=10)
+window_centers = (np.arange(len(potato_clean)) + 0.5) * (chunk_size / SFREQ)
+window_centers_20 = window_centers[window_centers <= 20.0]
+is_art = ~potato_clean[:len(window_centers_20)]
+
+for i, (wc, art) in enumerate(zip(window_centers_20, is_art)):
+    color = "#D32F2F" if art else "#2E7D32"
+    ax3.axvspan(wc - 0.5, wc + 0.5, alpha=0.35, color=color, linewidth=0)
+
+ax3.plot(window_centers_20, potato_z[:len(window_centers_20)],
+         color="#6A1B9A", lw=1.5, zorder=3, label="Riemannian z-score")
+ax3.axhline(3.0, color="#D32F2F", lw=1.2, ls="--", label="threshold = 3.0")
+ax3.set_ylabel("z-score", fontsize=10)
 ax3.set_xlabel("Time (s)", fontsize=10)
-ax3.set_title("EOG reference channel — used by LMS adaptive filter", fontsize=10,
-              loc="left", pad=3)
-ax3.legend(fontsize=9, frameon=False, loc="upper right")
+ax3.set_title(
+    "Riemannian Potato detection — green = clean window · red = artifact window",
+    fontsize=10, loc="left", pad=3,
+)
+ax3.legend(fontsize=9, frameon=False)
 ax3.spines[["top", "right"]].set_visible(False)
 
 fig1.tight_layout()
 
 # %%
-# Figure 2 — Power spectral density and quantitative metrics
-# -----------------------------------------------------------
-# The PSD panel shows the spectral impact of each corrector.  Note that LMS
-# primarily suppresses low-frequency blink energy (<5 Hz), while ASR and
-# GEDAI attenuate broadband and high-frequency components respectively.
-# The bar chart summarises Pearson correlation and SNR gain per method.
+# Figure 2 — PSD and quantitative metrics
+# ------------------------------------------
 
-fig2, (ax_psd, ax_bar) = plt.subplots(1, 2, figsize=(14, 7),
+fig2, (ax_psd, ax_bar) = plt.subplots(1, 2, figsize=(15, 7),
                                        gridspec_kw={"wspace": 0.32})
 fig2.suptitle(
-    "Artifact Correction — Spectral Analysis and Quantitative Metrics\n"
-    "Each method targets different artifact types; ASR is the best all-rounder",
+    "Artifact Correction — PSD and Quantitative Metrics\n"
+    "LMS · ASR · GEDAI · ORICA  |  Pearson r with clean signal · SNR gain",
     fontsize=12, fontweight="bold",
 )
 
@@ -333,17 +337,17 @@ psd_kw = dict(fs=SFREQ, nperseg=int(4 * SFREQ), noverlap=int(2 * SFREQ))
 psd_sets = [
     ("Clean",  data_clean,          COLORS["Clean"],  dict(lw=2.4, ls="-")),
     ("Noisy",  data_noisy[:N_EEG],  COLORS["Noisy"],  dict(lw=1.2, ls="-", alpha=0.6)),
-    ("LMS",    data_lms[:N_EEG],    COLORS["LMS"],    dict(lw=1.6, ls="--")),
-    ("ASR",    data_asr[:N_EEG],    COLORS["ASR"],    dict(lw=1.6, ls="-.")),
-    ("GEDAI",  data_gedai[:N_EEG],  COLORS["GEDAI"],  dict(lw=1.6, ls=":")),
+    ("LMS",    data_lms[:N_EEG],    COLORS["LMS"],    dict(lw=1.5, ls="--")),
+    ("ASR",    data_asr[:N_EEG],    COLORS["ASR"],    dict(lw=1.5, ls="-.")),
+    ("GEDAI",  data_gedai[:N_EEG],  COLORS["GEDAI"],  dict(lw=1.5, ls=":")),
+    ("ORICA",  data_orica,          COLORS["ORICA"],  dict(lw=1.5, ls=(0, (3, 1, 1, 1)))),
 ]
 
 for label, dat, col, kw in psd_sets:
     psds = [welch(dat[i], **psd_kw)[1] for i in range(dat.shape[0])]
     f_arr = welch(dat[0], **psd_kw)[0]
-    mean_psd = np.mean(psds, axis=0)
     mask = (f_arr >= 1.0) & (f_arr <= 120.0)
-    ax_psd.semilogy(f_arr[mask], mean_psd[mask], color=col, label=label, **kw)
+    ax_psd.semilogy(f_arr[mask], np.mean(psds, axis=0)[mask], color=col, label=label, **kw)
 
 ax_psd.set_xlabel("Frequency (Hz)", fontsize=11)
 ax_psd.set_ylabel("PSD  (V²/Hz)", fontsize=11)
@@ -361,22 +365,19 @@ w = 0.33
 b1 = ax_bar.bar(x - w / 2, r_vals,   w, color=bar_cols, alpha=0.85, label="Pearson r")
 b2 = ax_bar.bar(x + w / 2, snr_vals, w, color=bar_cols, alpha=0.40,
                 edgecolor=bar_cols, linewidth=1.8, label="SNR gain (dB)")
-
 for bar, val in zip(b1, r_vals):
-    ax_bar.text(bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.006, f"{val:.3f}",
-                ha="center", va="bottom", fontsize=9)
+    ax_bar.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.006,
+                f"{val:.3f}", ha="center", va="bottom", fontsize=9)
 for bar, val in zip(b2, snr_vals):
     offset = 0.12 if val >= 0 else -0.7
-    ax_bar.text(bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + offset, f"{val:+.1f}",
-                ha="center", va="bottom", fontsize=9)
+    ax_bar.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + offset,
+                f"{val:+.1f}", ha="center", va="bottom", fontsize=9)
 
 ax_bar.axhline(0, color="black", lw=0.8, ls="--", alpha=0.5)
 ax_bar.set_xticks(x)
 ax_bar.set_xticklabels(names, fontsize=12)
 ax_bar.set_ylabel("Metric value", fontsize=11)
-ax_bar.set_title("Pearson r with clean  |  SNR gain (dB)", fontsize=11)
+ax_bar.set_title("Pearson r with clean signal  |  SNR gain (dB)", fontsize=11)
 ax_bar.legend(fontsize=10, frameon=False)
 ax_bar.spines[["top", "right"]].set_visible(False)
 

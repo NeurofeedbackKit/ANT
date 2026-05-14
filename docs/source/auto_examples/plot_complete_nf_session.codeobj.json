@@ -36,69 +36,27 @@
    "name": "NFRealtime"
   }
  ],
- "Path": [
+ "Path.home": [
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "pathlib._local",
+   "module": "pathlib",
    "module_short": "pathlib",
-   "name": "Path"
+   "name": "Path.home"
   },
   {
    "is_class": true,
    "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
-   "name": "Path"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePath"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePath"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase"
+   "name": "PurePath.home"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "Path"
+   "module": "pathlib.Path",
+   "module_short": "pathlib.Path",
+   "name": "home"
   }
  ],
  "ant.NFRealtime": [
@@ -642,13 +600,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -919,13 +870,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -964,13 +908,6 @@
   }
  ],
  "report_path": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
@@ -1017,13 +954,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -1033,23 +963,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.mkdir"
   },
   {
    "is_class": false,
@@ -1061,13 +977,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.mkdir"
@@ -1075,44 +984,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.mkdir"
   }
  ],
  "t": [
@@ -1124,36 +998,43 @@
    "name": "ndarray"
   }
  ],
- "tempfile.mkdtemp": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "builtins",
-   "module_short": "builtins",
-   "name": "function"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "tempfile",
-   "module_short": "tempfile",
-   "name": "mkdtemp"
-  }
- ],
  "tmp": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
+  }
+ ],
+ "tmp.mkdir": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PosixPath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "Path.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PurePosixPath.mkdir"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "pathlib",
+   "module_short": "pathlib",
+   "name": "PurePath.mkdir"
   }
  ],
  "vals": [

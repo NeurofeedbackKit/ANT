@@ -152,6 +152,66 @@
    "name": "int"
   }
  ],
+ "ORICA": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant.tools.orica",
+   "module_short": "ant",
+   "name": "ORICA"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant",
+   "name": "ORICA"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ORICA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant",
+   "name": "ORICA"
+  }
+ ],
+ "RiemannianPotatoDetector": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant.tools.riemannian_potato",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "RiemannianPotatoDetector"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector"
+  }
+ ],
  "SFREQ": [
   {
    "is_class": false,
@@ -224,13 +284,63 @@
    "name": "GEDAIDenoiser"
   }
  ],
- "ant.tools.GEDAIDenoiser.find_noise_components": [
+ "ant.tools.ORICA": [
   {
    "is_class": false,
    "is_explicit": true,
-   "module": "ant.tools.GEDAIDenoiser",
-   "module_short": "ant.tools.GEDAIDenoiser",
-   "name": "find_noise_components"
+   "module": "ant.tools",
+   "module_short": "ant",
+   "name": "ORICA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.tools",
+   "module_short": "ant",
+   "name": "ORICA"
+  }
+ ],
+ "ant.tools.ORICA.denoise": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.tools.ORICA",
+   "module_short": "ant.tools.ORICA",
+   "name": "denoise"
+  }
+ ],
+ "ant.tools.RiemannianPotatoDetector": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector"
+  }
+ ],
+ "art": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "bool"
+  }
+ ],
+ "art_comps": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "list"
   }
  ],
  "artifact_idx": [
@@ -603,6 +713,122 @@
    "module": "matplotlib",
    "module_short": "matplotlib",
    "name": "Axes"
+  }
+ ],
+ "ax3.axhline": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.axhline"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.axhline"
+  }
+ ],
+ "ax3.axvspan": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.axvspan"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "Axes.axvspan"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Axes.axvspan"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes._base",
+   "module_short": "matplotlib.axes._base",
+   "name": "_AxesBase.axvspan"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.axes",
+   "module_short": "matplotlib.axes",
+   "name": "_AxesBase.axvspan"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "_AxesBase.axvspan"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.artist",
+   "module_short": "matplotlib.artist",
+   "name": "Artist.axvspan"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Artist.axvspan"
   }
  ],
  "ax3.legend": [
@@ -1984,6 +2210,15 @@
    "name": "butter"
   }
  ],
+ "cal_windows": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
  "ch": [
   {
    "is_class": false,
@@ -2038,7 +2273,25 @@
    "name": "str"
   }
  ],
+ "color": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "str"
+  }
+ ],
  "corr": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "corr_eog": [
   {
    "is_class": false,
    "is_explicit": false,
@@ -2129,6 +2382,15 @@
   }
  ],
  "data_noisy_eeg": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "data_orica": [
   {
    "is_class": false,
    "is_explicit": false,
@@ -2509,6 +2771,15 @@
    "name": "float"
   }
  ],
+ "i": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
+  }
+ ],
  "i0": [
   {
    "is_class": false,
@@ -2548,6 +2819,24 @@
    "module": "mne",
    "module_short": "mne",
    "name": "Info"
+  }
+ ],
+ "is_art": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "is_clean": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "bool"
   }
  ],
  "k": [
@@ -2633,15 +2922,6 @@
   }
  ],
  "mdata": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "numpy",
-   "module_short": "numpy",
-   "name": "ndarray"
-  }
- ],
- "mean_psd": [
   {
    "is_class": false,
    "is_explicit": false,
@@ -3030,30 +3310,27 @@
    "module": "mne.simulation",
    "module_short": "mne.simulation",
    "name": "add_eog"
-  },
+  }
+ ],
+ "n_art": [
   {
    "is_class": false,
-   "is_explicit": true,
-   "module": "mne.simulation",
-   "module_short": "mne.simulation",
-   "name": "add_eog"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "mne.simulation",
-   "module_short": "mne.simulation",
-   "name": "add_eog"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "mne.simulation",
-   "module_short": "mne.simulation",
-   "name": "add_eog"
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
   }
  ],
  "n_noise": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "int"
+  }
+ ],
+ "n_rejected": [
   {
    "is_class": false,
    "is_explicit": false,
@@ -3089,6 +3366,22 @@
    "name": "ndarray"
   }
  ],
+ "np.abs": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ufunc"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "abs"
+  }
+ ],
  "np.arange": [
   {
    "is_class": false,
@@ -3103,6 +3396,70 @@
    "module": "numpy",
    "module_short": "numpy",
    "name": "arange"
+  }
+ ],
+ "np.argsort": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "argsort"
+  }
+ ],
+ "np.array": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "array"
+  }
+ ],
+ "np.concatenate": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "concatenate"
+  }
+ ],
+ "np.corrcoef": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "corrcoef"
   }
  ],
  "np.exp": [
@@ -3253,6 +3610,13 @@
   {
    "is_class": false,
    "is_explicit": false,
+   "module": "_cython_3_2_4",
+   "module_short": "_cython_3_2_4",
+   "name": "cython_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
    "module": "numpy.random",
    "module_short": "numpy.random",
    "name": "default_rng"
@@ -3379,6 +3743,102 @@
    "name": "float"
   }
  ],
+ "orica": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools.orica",
+   "module_short": "ant",
+   "name": "ORICA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant",
+   "name": "ORICA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ORICA"
+  }
+ ],
+ "orica.denoise": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools.orica",
+   "module_short": "ant",
+   "name": "ORICA.denoise"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant",
+   "name": "ORICA.denoise"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ORICA.denoise"
+  }
+ ],
+ "orica.transform": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools.orica",
+   "module_short": "ant",
+   "name": "ORICA.transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant",
+   "name": "ORICA.transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "ORICA.transform"
+  }
+ ],
+ "orica_sources_list": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "list"
+  }
+ ],
+ "orica_sources_list.append": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
+ "pct_rejected": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
+  }
+ ],
  "plt.style.use": [
   {
    "is_class": false,
@@ -3418,6 +3878,111 @@
    "module": "builtins",
    "module_short": "builtins",
    "name": "list"
+  }
+ ],
+ "potato": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools.riemannian_potato",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "RiemannianPotatoDetector"
+  }
+ ],
+ "potato.detect": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools.riemannian_potato",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector.detect"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector.detect"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "RiemannianPotatoDetector.detect"
+  }
+ ],
+ "potato.fit": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools.riemannian_potato",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector.fit"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant.tools",
+   "module_short": "ant.tools",
+   "name": "RiemannianPotatoDetector.fit"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "ant",
+   "module_short": "ant",
+   "name": "RiemannianPotatoDetector.fit"
+  }
+ ],
+ "potato_clean": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "potato_clean.append": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "potato_z": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "potato_z.append": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
   }
  ],
  "psd_kw": [
@@ -4475,6 +5040,24 @@
    "name": "sosfiltfilt"
   }
  ],
+ "sources_full": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "src": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
  "t": [
   {
    "is_class": false,
@@ -4547,6 +5130,15 @@
    "name": "float"
   }
  ],
+ "wc": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "float64"
+  }
+ ],
  "welch": [
   {
    "is_class": false,
@@ -4563,6 +5155,24 @@
    "name": "welch"
   }
  ],
+ "window_centers": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "window_centers_20": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
  "x": [
   {
    "is_class": false,
@@ -4570,6 +5180,15 @@
    "module": "numpy",
    "module_short": "numpy",
    "name": "ndarray"
+  }
+ ],
+ "z": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "float"
   }
  ]
 }

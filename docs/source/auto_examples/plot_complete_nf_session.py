@@ -62,7 +62,6 @@ for documentation purposes.
 # mimicking the type of EEG a participant might produce during an alpha
 # neurofeedback session.
 
-import tempfile
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -71,12 +70,14 @@ import numpy as np
 from ant import NFRealtime
 from ant.tools import simulate_raw
 
-tmp = Path(tempfile.mkdtemp(prefix="ant_example_"))
+# Results land in ~/ANT_session_results — inspect subject dir and HTML report there
+tmp = Path.home() / "ANT_session_results"
+tmp.mkdir(parents=True, exist_ok=True)
 
 # 5-minute simulation: 10 Hz alpha bursts, biosemi64 layout
 fname_sim = tmp / "simulated_eeg.fif"
 simulate_raw(
-    brain_label="occipital",
+    brain_label="lateraloccipital-lh",
     frequency=10.0,
     amplitude=1e-6,
     duration=5.0,
@@ -97,7 +98,7 @@ print(f"Simulated EEG saved to: {fname_sim}")
 # stream handle, inverse operator, and recorded NF data.
 
 subjects_dir = tmp / "subjects"
-subjects_dir.mkdir()
+subjects_dir.mkdir(exist_ok=True)
 
 nf = NFRealtime(
     subject_id="sub01",

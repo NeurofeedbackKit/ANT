@@ -1,32 +1,7 @@
 :orphan:
 
 Examples Gallery
-===================================================
-
-This gallery contains executable examples demonstrating the full
-capabilities of the **Advanced Neurofeedback Toolbox (ANT)**.
-
-**Complete NF session** — Simulate EEG, run the full closed-loop pipeline,
-save NF data and create an HTML report.  Shows all four modalities as a
-matplotlib figure.  Works without an amplifier via ANT's built-in mock LSL
-player.
-
-**Alpha laterality NF** — Simulate right-lateralised alpha, extract the
-laterality modality, and drive a :class:`~ant.protocols.ZScoreProtocol`
-for adaptive reward delivery.  Demonstrates ANT's protocol API.
-
-**Artifact correction comparison** — Synthesise a 32-channel EEG recording
-with eye-blink, muscle, and dead-electrode artifacts, then compare
-:class:`~ant.tools.AdaptiveLMSFilter`, :class:`~ant.tools.ASRDenoiser`, and
-:class:`~ant.tools.GEDAIDenoiser` side-by-side with time-series, PSD, and
-quantitative SNR-gain metrics.  No amplifier or MNE dataset needed.
-
-**Real-time Maxwell filtering** — Load the MNE sample MEG dataset, fit
-:class:`~ant.tools.RTMaxwellFilter` on the sensor geometry, and apply
-Signal Space Separation (SSS) chunk-by-chunk.  Compares RT-SSS with offline
-:func:`mne.preprocessing.maxwell_filter` via time-series, PSD, and
-per-channel Pearson correlation.  Requires the MNE sample dataset
-(downloaded automatically by :func:`mne.datasets.sample.data_path`).
+================
 
 
 .. raw:: html
@@ -76,6 +51,40 @@ per-channel Pearson correlation.  Requires the MNE sample dataset
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="EEG and MEG recordings often contain disconnected, noisy, or poorly coupled channels that contaminate downstream artifact correction and NF feature extraction.  BadChannelDetector evaluates independent criteria per incoming window and uses a rolling majority-vote to flag persistently bad channels — no baseline recording is needed.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_bad_channel_detection_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/plot_bad_channel_detection`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Real-time bad channel detection</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Motor imagery (MI) neurofeedback trains participants to modulate the event-related desynchronisation (ERD) of the sensorimotor mu (8–12 Hz) and beta (13–30 Hz) rhythms over the motor cortex.  Imagining left-hand movement produces ERD over the contralateral (right) hemisphere (C4), and vice versa for right-hand imagery (C3).">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_motor_imagery_nf_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/plot_motor_imagery_nf`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Motor imagery neurofeedback — ERD/ERS laterality</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="Signal Space Separation (SSS) is the gold-standard preprocessing step for MEG data, suppressing external interference while preserving brain signals. ANT&#x27;s RTMaxwellFilter pre-computes the SSS projection operator once from sensor geometry and applies it as a single matrix multiply per incoming chunk — zero added latency, numerically equivalent to offline MNE processing.">
 
 .. only:: html
@@ -87,13 +96,13 @@ per-channel Pearson correlation.  Requires the MNE sample dataset
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Real-time Maxwell filtering (SSS) on MEG data</div>
+      <div class="sphx-glr-thumbnail-title">Real-time Maxwell filtering (SSS) with LSL streaming</div>
     </div>
 
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="EEG recordings are routinely contaminated by ocular, muscular, and electrode artifacts.  ANT provides three complementary real-time artifact correction methods:">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example builds a 32-channel EEG recording, injects realistic artifacts, and compares five artifact handling approaches side-by-side:">
 
 .. only:: html
 
@@ -120,6 +129,8 @@ per-channel Pearson correlation.  Requires the MNE sample dataset
 
    /auto_examples/plot_complete_nf_session
    /auto_examples/plot_alpha_laterality_nf
+   /auto_examples/plot_bad_channel_detection
+   /auto_examples/plot_motor_imagery_nf
    /auto_examples/plot_maxwell_realtime
    /auto_examples/plot_artifact_comparison
 

@@ -81,12 +81,11 @@ has a 10 Hz alpha component whose amplitude is modulated every few seconds,
 mimicking the type of EEG a participant might produce during an alpha
 neurofeedback session.
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-93
+.. GENERATED FROM PYTHON SOURCE LINES 64-94
 
 .. code-block:: Python
 
 
-    import tempfile
     from pathlib import Path
 
     import matplotlib.pyplot as plt
@@ -95,12 +94,14 @@ neurofeedback session.
     from ant import NFRealtime
     from ant.tools import simulate_raw
 
-    tmp = Path(tempfile.mkdtemp(prefix="ant_example_"))
+    # Results land in ~/ANT_session_results — inspect subject dir and HTML report there
+    tmp = Path.home() / "ANT_session_results"
+    tmp.mkdir(parents=True, exist_ok=True)
 
     # 5-minute simulation: 10 Hz alpha bursts, biosemi64 layout
     fname_sim = tmp / "simulated_eeg.fif"
     simulate_raw(
-        brain_label="occipital",
+        brain_label="lateraloccipital-lh",
         frequency=10.0,
         amplitude=1e-6,
         duration=5.0,
@@ -124,25 +125,25 @@ neurofeedback session.
 
     /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:214: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       add_noise(raw, cov, iir_filter=iir_filter, verbose=verbose)
-    Simulated EEG saved to: /var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_example_6gc_rg9m/simulated_eeg.fif
+    Simulated EEG saved to: /Users/payamsadeghishabestari/ANT_session_results/simulated_eeg.fif
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-98
+.. GENERATED FROM PYTHON SOURCE LINES 95-99
 
 Set up the NF session
 ---------------------
 :class:`~ant.NFRealtime` holds all session state: subject metadata, LSL
 stream handle, inverse operator, and recorded NF data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-112
+.. GENERATED FROM PYTHON SOURCE LINES 99-113
 
 .. code-block:: Python
 
 
     subjects_dir = tmp / "subjects"
-    subjects_dir.mkdir()
+    subjects_dir.mkdir(exist_ok=True)
 
     nf = NFRealtime(
         subject_id="sub01",
@@ -161,7 +162,7 @@ stream handle, inverse operator, and recorded NF data.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-118
+.. GENERATED FROM PYTHON SOURCE LINES 114-119
 
 Connect to the mock LSL stream
 --------------------------------
@@ -169,7 +170,7 @@ Connect to the mock LSL stream
 simulated FIF file as a real-time LSL stream at its original sampling rate.
 Replace ``mock_lsl=False`` and remove ``fname`` to connect to a live amplifier.
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-121
+.. GENERATED FROM PYTHON SOURCE LINES 119-122
 
 .. code-block:: Python
 
@@ -183,7 +184,7 @@ Replace ``mock_lsl=False`` and remove ``fname`` to connect to a live amplifier.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-132
+.. GENERATED FROM PYTHON SOURCE LINES 123-133
 
 Record a resting-state baseline
 ---------------------------------
@@ -196,7 +197,7 @@ The 10-second baseline is used to:
 For this headless example we use only sensor-space modalities so the inverse
 operator step is skipped (``compute_inv=False``).
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-135
+.. GENERATED FROM PYTHON SOURCE LINES 133-136
 
 .. code-block:: Python
 
@@ -219,7 +220,7 @@ operator step is skipped (``compute_inv=False``).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-141
+.. GENERATED FROM PYTHON SOURCE LINES 137-142
 
 Run the closed-loop NF loop
 ----------------------------
@@ -227,7 +228,7 @@ Four modalities are computed in parallel on each 1-second window.
 All display windows are disabled here; see the note at the top of the
 example for how to enable them interactively.
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-153
+.. GENERATED FROM PYTHON SOURCE LINES 142-154
 
 .. code-block:: Python
 
@@ -250,7 +251,7 @@ example for how to enable them interactively.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-160
+.. GENERATED FROM PYTHON SOURCE LINES 155-161
 
 Save data and generate the HTML report
 ----------------------------------------
@@ -259,7 +260,7 @@ file and disconnects the stream.  :meth:`~ant.NFRealtime.create_report`
 builds a self-contained MNE HTML report with baseline recording info,
 PSD, and the NF feature plots.
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-168
+.. GENERATED FROM PYTHON SOURCE LINES 161-169
 
 .. code-block:: Python
 
@@ -279,20 +280,20 @@ PSD, and the NF feature plots.
 
  .. code-block:: none
 
-      [nf_data] → /var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_example_6gc_rg9m/subjects/sub01/neurofeedback/sub-sub01_vis-01_ses-main_20260512T074605_nf.json
-      [report] → /var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_example_6gc_rg9m/subjects/sub01/reports/subject_sub01_visit_1_modality_sensor_power_erd_ers_hjorth_spectral_centroid.html
+      [nf_data] → /Users/payamsadeghishabestari/ANT_session_results/subjects/sub01/neurofeedback/sub-sub01_vis-01_ses-main_20260514T115731_nf.json
+      [report] → /Users/payamsadeghishabestari/ANT_session_results/subjects/sub01/reports/subject_sub01_visit_1_modality_sensor_power_erd_ers_hjorth_spectral_centroid.html
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-173
+.. GENERATED FROM PYTHON SOURCE LINES 170-174
 
 Inspect the NF feature time-series
 -------------------------------------
 After the session, ``nf.nf_data`` is a dict mapping modality name to a list
 of scalar values — one per analysis window.  We plot all four modalities.
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-199
+.. GENERATED FROM PYTHON SOURCE LINES 174-200
 
 .. code-block:: Python
 
@@ -337,7 +338,7 @@ of scalar values — one per analysis window.  We plot all four modalities.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 15.695 seconds)
+   **Total running time of the script:** (1 minutes 5.391 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_complete_nf_session.py:

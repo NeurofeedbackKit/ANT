@@ -21,35 +21,22 @@
 Real-time artifact correction comparison
 =========================================
 
-EEG recordings are routinely contaminated by ocular, muscular, and
-electrode artifacts.  ANT provides three complementary real-time
-artifact correction methods:
+This example builds a 32-channel EEG recording, injects realistic artifacts,
+and compares five artifact handling approaches side-by-side:
 
-* :class:`~ant.tools.AdaptiveLMSFilter` — Widrow–Hoff LMS adaptive filter
-  that uses a reference channel (EOG) to cancel eye-blink artifacts online,
-  requiring no calibration baseline.
-* :class:`~ant.tools.ASRDenoiser` — Artifact Subspace Reconstruction (ASR)
-  that learns clean signal statistics from a baseline and suppresses
-  components that deviate beyond a threshold.
-* :class:`~ant.tools.GEDAIDenoiser` — Generalised Eigendecomposition-based
-  Artifact Identification (GEDAI) that finds spatial filters maximising
-  signal in a target frequency band relative to broadband activity.
+* :class:`~ant.tools.AdaptiveLMSFilter` — reference-based adaptive filter.
+* :class:`~ant.tools.ASRDenoiser` — baseline-calibrated subspace rejection.
+* :class:`~ant.tools.GEDAIDenoiser` — band-selective eigendecomposition.
+* :class:`~ant.tools.ORICA` — online independent component analysis.
+* :class:`~ant.tools.RiemannianPotatoDetector` — Riemannian covariance-based
+  **artifact detection** (flags windows; does not reconstruct the signal).
 
-This example uses :func:`mne.simulation.add_eog` to inject **physically
-realistic** blink artifacts (dipole forward model on the standard 10-20
-montage), adds synthetic cardiac QRS and muscle burst artifacts, then applies
-all three correctors and evaluates their performance using Pearson correlation
-and SNR gain against the known clean signal.
+.. GENERATED FROM PYTHON SOURCE LINES 17-19
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-32
+Synthetic EEG with 10-20 montage
+---------------------------------
 
-Synthetic EEG construction with standard 10-20 montage
---------------------------------------------------------
-We build a 32-channel, 256 Hz, 30-second recording using the standard 10-20
-montage so that MNE's simulation functions can project artifacts onto sensor
-positions realistically via dipole forward modelling.
-
-.. GENERATED FROM PYTHON SOURCE LINES 32-91
+.. GENERATED FROM PYTHON SOURCE LINES 19-71
 
 .. code-block:: Python
 
@@ -59,7 +46,8 @@ positions realistically via dipole forward modelling.
     import mne
     from scipy.signal import welch, butter, sosfiltfilt
 
-    from ant.tools import AdaptiveLMSFilter, ASRDenoiser, GEDAIDenoiser
+    from ant.tools import AdaptiveLMSFilter, ASRDenoiser, GEDAIDenoiser, ORICA
+    from ant.tools import RiemannianPotatoDetector
 
     rng = np.random.default_rng(42)
     mne.set_log_level("WARNING")
@@ -69,7 +57,7 @@ positions realistically via dipole forward modelling.
     DURATION = 30.0
     N_TIMES = int(SFREQ * DURATION)
     t = np.arange(N_TIMES) / SFREQ
-    N_CAL = int(5.0 * SFREQ)   # first 5 s kept clean for ASR / GEDAI calibration
+    N_CAL = int(5.0 * SFREQ)   # first 5 s kept clean for ASR/GEDAI calibration
 
     EEG_NAMES = [
         "Fp1", "Fp2", "F7",  "F3",  "Fz",  "F4",  "F8",
@@ -84,7 +72,6 @@ positions realistically via dipole forward modelling.
 
 
     def _pink_noise(n_ch, n_times, rng_, amplitude=5e-6):
-        """1/f-shaped noise via spectral shaping of white noise."""
         freqs = np.fft.rfftfreq(n_times)
         freqs[0] = 1.0
         wn = rng_.standard_normal((n_ch, n_times))
@@ -95,88 +82,377 @@ positions realistically via dipole forward modelling.
 
 
     data_clean = _pink_noise(N_EEG, N_TIMES, rng, amplitude=5e-6)
-    # 10 Hz alpha on posterior channels
-    posterior = [EEG_NAMES.index(c) for c in ["O1", "Oz", "O2", "P3", "Pz", "P4"]
-                 if c in EEG_NAMES]
+    posterior = [EEG_NAMES.index(c) for c in ["O1", "Oz", "O2", "P3", "Pz", "P4"]]
     data_clean[posterior] += 3e-6 * np.sin(2 * np.pi * 10.0 * t)
 
-    # Create MNE RawArray with standard 10-20 montage
-    info = mne.create_info(ch_names=EEG_NAMES, sfreq=SFREQ, ch_types="eeg",
-                           verbose=False)
+    info = mne.create_info(ch_names=EEG_NAMES, sfreq=SFREQ, ch_types="eeg", verbose=False)
     raw_clean = mne.io.RawArray(data_clean, info, verbose=False)
     raw_clean.set_montage(
         mne.channels.make_standard_montage("standard_1020"),
         match_case=False, on_missing="ignore", verbose=False,
     )
 
-    print(f"Signal: {N_EEG} EEG  |  {DURATION:.0f} s  |  {SFREQ:.0f} Hz")
-    print(f"EEG RMS : {data_clean.std(axis=1).mean()*1e6:.2f} µV")
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
+.. raw:: html
 
- .. code-block:: none
+    <div class="output_subarea output_html rendered_html output_result">
+    <script type="text/javascript">
+        // must be `var` (not `const`) because this can get embedded multiple times on a page
+    var toggleVisibility = (className) => {
 
-    Signal: 32 EEG  |  30 s  |  256 Hz
-    EEG RMS : 5.07 µV
+        const elements = document.querySelectorAll(`.${className}`);
+
+        elements.forEach(element => {
+            if (element.classList.contains("mne-repr-section-header")) {
+                return  // Don't collapse the section header row
+            }
+            element.classList.toggle("mne-repr-collapsed");
+        });
+
+        // trigger caret to rotate
+        var sel = `.mne-repr-section-header.${className} > th.mne-repr-section-toggle > button`;
+        const button = document.querySelector(sel);
+        button.classList.toggle("collapsed");
+
+        // adjust tooltip
+        sel = `tr.mne-repr-section-header.${className}`;
+        const secHeadRow = document.querySelector(sel);
+        secHeadRow.classList.toggle("collapsed");
+        secHeadRow.title = secHeadRow.title === "Hide section" ? "Show section" : "Hide section";
+    }
+    </script>
+
+    <style type="text/css">
+        /*
+    Styles in this section apply both to the sphinx-built website docs and to notebooks
+    rendered in an IDE or in Jupyter. In our web docs, styles here are complemented by
+    doc/_static/styles.css and other CSS files (e.g. from the sphinx theme, sphinx-gallery,
+    or bootstrap). In IDEs/Jupyter, those style files are unavailable, so only the rules in
+    this file apply (plus whatever default styling the IDE applies).
+    */
+    .mne-repr-table {
+        display: inline;  /* prevent using full container width */
+    }
+    .mne-repr-table tr.mne-repr-section-header > th {
+        padding-top: 1rem;
+        text-align: left;
+        vertical-align: middle;
+    }
+    .mne-repr-section-toggle > button {
+        all: unset;
+        display: block;
+        height: 1rem;
+        width: 1rem;
+    }
+    .mne-repr-section-toggle > button > svg {
+        height: 60%;
+    }
+
+    /* transition (rotation) effects on the collapser button */
+    .mne-repr-section-toggle > button.collapsed > svg {
+        transition: 0.1s ease-out;
+        transform: rotate(-90deg);
+    }
+    .mne-repr-section-toggle > button:not(.collapsed) > svg {
+        transition: 0.1s ease-out;
+        transform: rotate(0deg);
+    }
+
+    /* hide collapsed table rows */
+    .mne-repr-collapsed {
+        display: none;
+    }
+
+
+    @layer {
+        /*
+        Selectors in a `@layer` will always be lower-precedence than selectors outside the
+        layer. So even though e.g. `div.output_html` is present in the sphinx-rendered
+        website docs, the styles here won't take effect there as long as some other rule
+        somewhere in the page's CSS targets the same element.
+
+        In IDEs or Jupyter notebooks, though, the CSS files from the sphinx theme,
+        sphinx-gallery, and bootstrap are unavailable, so these styles will apply.
+
+        Notes:
+
+        - the selector `.accordion-body` is for MNE Reports
+        - the selector `.output_html` is for VSCode's notebook interface
+        - the selector `.jp-RenderedHTML` is for Jupyter notebook
+        - variables starting with `--theme-` are VSCode-specific.
+        - variables starting with `--jp-` are Jupyter styles, *some of which* are also
+          available in VSCode. Here we try the `--theme-` variable first, then fall back to
+          the `--jp-` ones.
+        */
+        .mne-repr-table {
+            --mne-toggle-color: var(--theme-foreground, var(--jp-ui-font-color1));
+            --mne-button-bg-color: var(--theme-button-background, var(--jp-info-color0, var(--jp-content-link-color)));
+            --mne-button-fg-color: var(--theme-button-foreground, var(--jp-ui-inverse-font-color0, var(--jp-editor-background)));
+            --mne-button-hover-bg-color: var(--theme-button-hover-background, var(--jp-info-color1));
+            --mne-button-radius: var(--jp-border-radius, 0.25rem);
+        }
+        /* chevron position/alignment; in VSCode it looks ok without adjusting */
+        .accordion-body .mne-repr-section-toggle > button,
+        .jp-RenderedHTML .mne-repr-section-toggle > button {
+            padding: 0 0 45% 25% !important;
+        }
+        /* chevron color; MNE Report doesn't have light/dark mode */
+        div.output_html .mne-repr-section-toggle > button > svg > path,
+        .jp-RenderedHTML .mne-repr-section-toggle > button > svg > path {
+            fill: var(--mne-toggle-color);
+        }
+        .accordion-body .mne-ch-names-btn,
+        div.output_html .mne-ch-names-btn,
+        .jp-RenderedHTML .mne-ch-names-btn {
+            -webkit-border-radius: var(--mne-button-radius);
+            -moz-border-radius: var(--mne-button-radius);
+            border-radius: var(--mne-button-radius);
+            border: none;
+            background-image: none;
+            background-color: var(--mne-button-bg-color);
+            color: var(--mne-button-fg-color);
+            font-size: inherit;
+            min-width: 1.5rem;
+            padding: 0.25rem;
+            text-align: center;
+            text-decoration: none;
+        }
+        .accordion-body .mne-ch-names-btn:hover,
+        div.output_html .mne.ch-names-btn:hover,
+        .jp-RenderedHTML .mne-ch-names-btn:hover {
+            background-color: var(--mne-button-hover-bg-color);
+            text-decoration: underline;
+        }
+        .accordion-body .mne-ch-names-btn:focus-visible,
+        div.output_html .mne-ch-names-btn:focus-visible,
+        .jp-RenderedHTML .mne-ch-names-btn:focus-visible {
+            outline: 0.1875rem solid var(--mne-button-bg-color) !important;
+            outline-offset: 0.1875rem !important;
+        }
+    }
+    </style>
+
+
+
+    <table class="table mne-repr-table">
+    
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-102
 
-Artifact injection using MNE simulation + manual ECG / muscle
---------------------------------------------------------------
-:func:`mne.simulation.add_eog` projects a realistic blink dipole
-(placed behind the eyes) onto all scalp channels using the 10-20 montage.
-Cardiac and muscle artifacts are added manually — ``add_ecg`` requires MEG
-channels, so we inject a synthetic QRS waveform with a realistic scalp
-distribution instead.
 
-The first 5 s are restored to clean after artifact simulation so that ASR
-and GEDAI have an artifact-free calibration baseline.
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-167
+    <tr class="mne-repr-section-header general-e673b20c-b3a4-4b8b-b653-1d9c2ac16e76"
+         title="Hide section" 
+        onclick="toggleVisibility('general-e673b20c-b3a4-4b8b-b653-1d9c2ac16e76')">
+        <th class="mne-repr-section-toggle">
+            <button >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
+            </button>
+        </th>
+        <th colspan="2">
+            <strong>General</strong>
+        </th>
+    </tr>
+
+
+    <tr class="repr-element general-e673b20c-b3a4-4b8b-b653-1d9c2ac16e76 ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>MNE object type</td>
+        <td>RawArray</td>
+    </tr>
+    <tr class="repr-element general-e673b20c-b3a4-4b8b-b653-1d9c2ac16e76 ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Measurement date</td>
+    
+        <td>Unknown</td>
+    
+    </tr>
+    <tr class="repr-element general-e673b20c-b3a4-4b8b-b653-1d9c2ac16e76 ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Participant</td>
+    
+        <td>Unknown</td>
+    
+    </tr>
+    <tr class="repr-element general-e673b20c-b3a4-4b8b-b653-1d9c2ac16e76 ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Experimenter</td>
+    
+        <td>Unknown</td>
+    
+    </tr>
+    
+
+
+
+
+
+
+
+    <tr class="mne-repr-section-header acquisition-0703bad6-a1f5-43a3-b49a-ca7fe7859a5e"
+         title="Hide section" 
+        onclick="toggleVisibility('acquisition-0703bad6-a1f5-43a3-b49a-ca7fe7859a5e')">
+        <th class="mne-repr-section-toggle">
+            <button >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
+            </button>
+        </th>
+        <th colspan="2">
+            <strong>Acquisition</strong>
+        </th>
+    </tr>
+
+
+    <tr class="repr-element acquisition-0703bad6-a1f5-43a3-b49a-ca7fe7859a5e ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Duration</td>
+        <td>00:00:30 (HH:MM:SS)</td>
+    </tr>
+
+
+
+
+
+
+
+
+    <tr class="repr-element acquisition-0703bad6-a1f5-43a3-b49a-ca7fe7859a5e ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Sampling frequency</td>
+        <td>256.00 Hz</td>
+    </tr>
+
+
+    <tr class="repr-element acquisition-0703bad6-a1f5-43a3-b49a-ca7fe7859a5e ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Time points</td>
+        <td>7,680</td>
+    </tr>
+
+
+    
+
+
+
+
+
+
+
+    <tr class="mne-repr-section-header channels-047549e8-cc91-49c1-b262-fe619822ad8c"
+         title="Hide section" 
+        onclick="toggleVisibility('channels-047549e8-cc91-49c1-b262-fe619822ad8c')">
+        <th class="mne-repr-section-toggle">
+            <button >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
+            </button>
+        </th>
+        <th colspan="2">
+            <strong>Channels</strong>
+        </th>
+    </tr>
+
+
+    
+    <tr class="repr-element channels-047549e8-cc91-49c1-b262-fe619822ad8c ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>EEG</td>
+        <td>
+            <button class="mne-ch-names-btn sd-sphinx-override sd-btn sd-btn-info sd-text-wrap sd-shadow-sm" onclick="alert('Good EEG:\n\nFp1, Fp2, F7, F3, Fz, F4, F8, T7, C3, Cz, C4, T8, P7, P3, Pz, P4, P8, O1, Oz, O2, AF3, AF4, FC5, FC1, FC2, FC6, CP5, CP1, CP2, CP6, TP9, TP10')" title="(Click to open in popup)&#13;&#13;Fp1, Fp2, F7, F3, Fz, F4, F8, T7, C3, Cz, C4, T8, P7, P3, Pz, P4, P8, O1, Oz, O2, AF3, AF4, FC5, FC1, FC2, FC6, CP5, CP1, CP2, CP6, TP9, TP10">
+                32
+            </button>
+
+        
+        </td>
+    </tr>
+
+
+    <tr class="repr-element channels-047549e8-cc91-49c1-b262-fe619822ad8c ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Head & sensor digitization</td>
+    
+        <td>35 points</td>
+    
+    </tr>
+    
+
+
+
+
+
+
+
+    <tr class="mne-repr-section-header filters-b4a5dd1e-c0de-4588-9359-37d07aff6988"
+         title="Hide section" 
+        onclick="toggleVisibility('filters-b4a5dd1e-c0de-4588-9359-37d07aff6988')">
+        <th class="mne-repr-section-toggle">
+            <button >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
+            </button>
+        </th>
+        <th colspan="2">
+            <strong>Filters</strong>
+        </th>
+    </tr>
+
+
+    <tr class="repr-element filters-b4a5dd1e-c0de-4588-9359-37d07aff6988 ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Highpass</td>
+        <td>0.00 Hz</td>
+    </tr>
+
+
+    <tr class="repr-element filters-b4a5dd1e-c0de-4588-9359-37d07aff6988 ">
+        <td class="mne-repr-section-toggle"></td>
+        <td>Lowpass</td>
+        <td>128.00 Hz</td>
+    </tr>
+
+
+    </table>
+    </div>
+    <br />
+    <br />
+
+.. GENERATED FROM PYTHON SOURCE LINES 72-74
+
+Artifact injection
+------------------
+
+.. GENERATED FROM PYTHON SOURCE LINES 74-124
 
 .. code-block:: Python
 
 
     raw_noisy = raw_clean.copy()
-
-    # Physically realistic blink artifacts via MNE dipole forward model
     mne.simulation.add_eog(raw_noisy, random_state=42, verbose=False)
-
-    # Restore clean baseline (t < 5 s) required for ASR / GEDAI calibration
     raw_noisy._data[:, :N_CAL] = data_clean[:, :N_CAL]
+    data_noisy_eeg = raw_noisy.get_data()
 
-    data_noisy_eeg = raw_noisy.get_data()   # (32, N_TIMES)
-
-    # Cardiac (QRS) artifacts — periodic at ~70 BPM, strongest on temporal channels
-    heart_rate = 70.0 / 60.0  # Hz
+    heart_rate = 70.0 / 60.0
     beat_times = np.arange(5.0, DURATION, 1.0 / heart_rate)
 
 
     def _qrs(t_rel):
-        """Simple QRS + P + T waveform (amplitude ≈ 1)."""
-        p = 0.15 * np.exp(-((t_rel + 0.15) / 0.025) ** 2)
-        q = -0.10 * np.exp(-((t_rel - 0.005) / 0.008) ** 2)
-        r = 1.00 * np.exp(-((t_rel) / 0.012) ** 2)
-        s = -0.20 * np.exp(-((t_rel + 0.020) / 0.012) ** 2)
-        tw = 0.25 * np.exp(-((t_rel - 0.22) / 0.06) ** 2)
+        p  = 0.15 * np.exp(-((t_rel + 0.15) / 0.025) ** 2)
+        q  = -0.10 * np.exp(-((t_rel - 0.005) / 0.008) ** 2)
+        r  = 1.00  * np.exp(-((t_rel) / 0.012) ** 2)
+        s  = -0.20 * np.exp(-((t_rel + 0.020) / 0.012) ** 2)
+        tw = 0.25  * np.exp(-((t_rel - 0.22) / 0.06) ** 2)
         return p + q + r + s + tw
 
 
-    # Spatial pattern: cardiac field strongest on temporal / parietal channels
     ecg_pattern = np.zeros(N_EEG)
     for ch in ["T7", "T8", "TP9", "TP10", "P7", "P8", "CP5", "CP6"]:
-        if ch in EEG_NAMES:
-            ecg_pattern[EEG_NAMES.index(ch)] = 1.0
+        ecg_pattern[EEG_NAMES.index(ch)] = 1.0
     for ch in ["C3", "Cz", "C4", "P3", "Pz", "P4"]:
-        if ch in EEG_NAMES:
-            ecg_pattern[EEG_NAMES.index(ch)] = 0.5
+        ecg_pattern[EEG_NAMES.index(ch)] = 0.5
     ecg_pattern /= ecg_pattern.max()
 
     for tb in beat_times:
@@ -186,7 +462,6 @@ and GEDAI have an artifact-free calibration baseline.
         qrs_wave[beat_mask] = _qrs(t_rel[beat_mask])
         data_noisy_eeg += np.outer(ecg_pattern * 2e-6, qrs_wave)
 
-    # Muscle bursts on temporal channels (bandpass-filtered noise)
     sos_emg = butter(4, [40.0, 120.0], btype="bandpass", fs=SFREQ, output="sos")
     for t0 in [8.0, 18.0]:
         i0, i1 = int(t0 * SFREQ), int((t0 + 1.0) * SFREQ)
@@ -195,18 +470,14 @@ and GEDAI have an artifact-free calibration baseline.
             burst = sosfiltfilt(sos_emg, rng.standard_normal(i1 - i0) * 30e-6)
             data_noisy_eeg[ci, i0:i1] += burst
 
-    # Construct EOG reference for LMS: blink component extracted from Fp1 + Fp2
-    # (frontal channels closest to the eyes have the strongest blink artifact)
     fp1_idx = EEG_NAMES.index("Fp1")
     fp2_idx = EEG_NAMES.index("Fp2")
     eog_ref = 0.5 * (data_noisy_eeg[fp1_idx] + data_noisy_eeg[fp2_idx])
-    eog_ref += rng.standard_normal(N_TIMES) * 0.05e-6  # small sensor noise
+    eog_ref += rng.standard_normal(N_TIMES) * 0.05e-6
+    data_noisy = np.vstack([data_noisy_eeg, eog_ref[np.newaxis]])  # (33, N_TIMES)
 
-    # Full data array: 32 EEG + 1 EOG reference (index 32)
-    data_noisy = np.vstack([data_noisy_eeg, eog_ref[np.newaxis]])   # (33, N_TIMES)
-
-    print(f"Frontal ch RMS  clean={data_clean[:7].std()*1e6:.1f} µV  "
-          f"noisy={data_noisy[:7].std()*1e6:.1f} µV")
+    print(f"Clean EEG RMS : {data_clean.std(axis=1).mean()*1e6:.2f} µV")
+    print(f"Noisy EEG RMS : {data_noisy[:N_EEG].std(axis=1).mean()*1e6:.2f} µV")
 
 
 
@@ -216,20 +487,18 @@ and GEDAI have an artifact-free calibration baseline.
 
  .. code-block:: none
 
-    Frontal ch RMS  clean=5.0 µV  noisy=6.7 µV
+    Clean EEG RMS : 5.07 µV
+    Noisy EEG RMS : 6.05 µV
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-173
+.. GENERATED FROM PYTHON SOURCE LINES 125-127
 
-LMS filter (Adaptive Least Mean Squares)
------------------------------------------
-The LMS filter uses the frontal EOG reference (channel 32, constructed as
-the average of Fp1 and Fp2) to adaptively cancel eye-blink artifacts.
-It adapts online from the first sample — no baseline needed.
+LMS adaptive filter
+--------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-183
+.. GENERATED FROM PYTHON SOURCE LINES 127-136
 
 .. code-block:: Python
 
@@ -240,7 +509,6 @@ It adapts online from the first sample — no baseline needed.
     for k in range(N_TIMES // chunk_size):
         sl = slice(k * chunk_size, (k + 1) * chunk_size)
         data_lms[:, sl] = lms.transform(data_noisy[:, sl])
-
     print(f"LMS  frontal RMS = {data_lms[:7].std()*1e6:.1f} µV")
 
 
@@ -256,24 +524,20 @@ It adapts online from the first sample — no baseline needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 184-188
+.. GENERATED FROM PYTHON SOURCE LINES 137-139
 
 ASR (Artifact Subspace Reconstruction)
 ----------------------------------------
-ASR learns clean signal statistics from the first 5 seconds and suppresses
-windows whose amplitude deviates beyond ``cutoff`` standard deviations.
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-197
+.. GENERATED FROM PYTHON SOURCE LINES 139-146
 
 .. code-block:: Python
 
 
     asr = ASRDenoiser(cutoff=5.0)
     asr.fit(data_noisy[:N_EEG, :N_CAL], sfreq=SFREQ, window_len=1.0)
-
     data_asr = data_noisy.copy()
     data_asr[:N_EEG, N_CAL:] = asr.transform(data_noisy[:N_EEG, N_CAL:])
-
     print(f"ASR  frontal RMS = {data_asr[:7].std()*1e6:.1f} µV")
 
 
@@ -289,29 +553,22 @@ windows whose amplitude deviates beyond ``cutoff`` standard deviations.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-204
+.. GENERATED FROM PYTHON SOURCE LINES 147-149
 
-GEDAI (Generalised Eigendecomposition Artifact Identification)
----------------------------------------------------------------
-GEDAI fits a generalised eigenvalue problem on the brain-signal band
-(8–30 Hz) vs broadband.  Components with the **smallest** eigenvalues
-(least band-specific, i.e. most artifact-like) are identified by
-:meth:`~ant.tools.GEDAIDenoiser.find_noise_components` and zeroed out.
+GEDAI
+------
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-217
+.. GENERATED FROM PYTHON SOURCE LINES 149-159
 
 .. code-block:: Python
 
 
     gedai = GEDAIDenoiser(n_channels=N_EEG)
     gedai.fit_from_raw(data_noisy[:N_EEG, :N_CAL], sfreq=SFREQ, band=(8.0, 30.0))
-
-    n_noise = max(2, int(0.20 * N_EEG))   # bottom 20 % of 32 = 6 components
+    n_noise = max(2, int(0.20 * N_EEG))
     artifact_idx = gedai.find_noise_components(n_noise=n_noise)
-
     data_gedai = data_noisy.copy()
     data_gedai[:N_EEG] = gedai.denoise(data_noisy[:N_EEG], artifact_idx)
-
     print(f"GEDAI frontal RMS = {data_gedai[:7].std()*1e6:.1f} µV  "
           f"(removed {len(artifact_idx)} components)")
 
@@ -328,32 +585,128 @@ GEDAI fits a generalised eigenvalue problem on the brain-signal band
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-226
+.. GENERATED FROM PYTHON SOURCE LINES 160-167
+
+ORICA — Online ICA
+-------------------
+:class:`~ant.tools.ORICA` updates its ICA unmixing matrix online each chunk.
+After processing the full recording we identify artifact components by their
+Pearson correlation with the frontal EOG reference, then use
+:meth:`~ant.tools.ORICA.denoise` to back-project with those components
+zeroed out.
+
+.. GENERATED FROM PYTHON SOURCE LINES 167-192
+
+.. code-block:: Python
+
+
+    orica = ORICA(n_channels=N_EEG, learning_rate=0.005, block_size=chunk_size)
+    orica_sources_list = []
+
+    for k in range(N_TIMES // chunk_size):
+        sl = slice(k * chunk_size, (k + 1) * chunk_size)
+        src = orica.transform(data_noisy[:N_EEG, sl])
+        orica_sources_list.append(src)
+
+    # Full source matrix: (n_components, n_times)
+    sources_full = np.concatenate(orica_sources_list, axis=1)
+
+    # Identify artifact components by correlation with EOG reference
+    corr_eog = np.array([
+        np.corrcoef(sources_full[i], eog_ref)[0, 1]
+        for i in range(N_EEG)
+    ])
+    n_art = max(1, int(0.10 * N_EEG))  # remove top 10 % most EOG-correlated
+    art_comps = list(np.argsort(np.abs(corr_eog))[::-1][:n_art])
+
+    # Back-project via built-in denoise (zeros artifact ICs, reconstructs sensor data)
+    data_orica = orica.denoise(data_noisy[:N_EEG], art_comps)
+    print(f"ORICA frontal RMS = {data_orica[:7].std()*1e6:.1f} µV  "
+          f"(zeroed {n_art} component(s), max |r_eog|={np.abs(corr_eog).max():.3f})")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    ORICA frontal RMS = 5.8 µV  (zeroed 3 component(s), max |r_eog|=0.630)
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 193-199
+
+Riemannian Potato — artifact detection
+----------------------------------------
+The :class:`~ant.tools.RiemannianPotatoDetector` flags windows whose
+covariance matrix is too far from the clean calibration set in the
+Riemannian metric.  It does **not** reconstruct the signal; instead
+it marks windows as clean or artifactual so the NF engine can skip them.
+
+.. GENERATED FROM PYTHON SOURCE LINES 199-223
+
+.. code-block:: Python
+
+
+    potato = RiemannianPotatoDetector(threshold=3.0)
+    # Calibrate on the first 5 s (N_CAL samples) split into 1-s windows
+    cal_windows = np.array([
+        data_noisy[:N_EEG, k * chunk_size:(k + 1) * chunk_size]
+        for k in range(N_CAL // chunk_size)
+    ])
+    potato.fit(cal_windows)
+
+    potato_clean = []   # True = clean window
+    potato_z     = []   # z-score per window
+    for k in range(N_TIMES // chunk_size):
+        sl = slice(k * chunk_size, (k + 1) * chunk_size)
+        is_clean, z = potato.detect(data_noisy[:N_EEG, sl])
+        potato_clean.append(is_clean)
+        potato_z.append(z)
+
+    potato_clean = np.array(potato_clean)
+    potato_z     = np.array(potato_z)
+    n_rejected   = int((~potato_clean).sum())
+    pct_rejected = 100.0 * n_rejected / len(potato_clean)
+    print(f"Riemannian Potato: {n_rejected}/{len(potato_clean)} windows flagged "
+          f"({pct_rejected:.0f} %)")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Riemannian Potato: 0/30 windows flagged (0 %)
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 224-226
 
 Evaluation metrics
-------------------
-Both metrics are computed over the post-baseline window (t > 5 s) on the
-32 EEG channels:
+-------------------
 
-* **Pearson r** — mean cross-channel correlation with the clean signal.
-* **SNR gain (dB)** — ``10 · log₁₀(pre-correction noise / post-correction
-  noise)``.  Positive = noise reduced; negative = noise increased.
-
-.. GENERATED FROM PYTHON SOURCE LINES 226-259
+.. GENERATED FROM PYTHON SOURCE LINES 226-260
 
 .. code-block:: Python
 
 
     eval_sl = slice(N_CAL, None)
-    clean_ref  = data_clean[:, eval_sl]
-    noisy_ref  = data_noisy[:N_EEG, eval_sl]
+    clean_ref = data_clean[:, eval_sl]
+    noisy_ref = data_noisy[:N_EEG, eval_sl]
 
 
     def _pearson_mean(a, b):
         az = a - a.mean(axis=1, keepdims=True)
         bz = b - b.mean(axis=1, keepdims=True)
         num = (az * bz).sum(axis=1)
-        den = np.sqrt((az**2).sum(axis=1) * (bz**2).sum(axis=1)) + 1e-30
+        den = np.sqrt((az ** 2).sum(axis=1) * (bz ** 2).sum(axis=1)) + 1e-30
         return float((num / den).mean())
 
 
@@ -367,6 +720,7 @@ Both metrics are computed over the post-baseline window (t > 5 s) on the
         "LMS"  : data_lms[:N_EEG, eval_sl],
         "ASR"  : data_asr[:N_EEG, eval_sl],
         "GEDAI": data_gedai[:N_EEG, eval_sl],
+        "ORICA": data_orica[:, eval_sl],
     }
 
     metrics = {}
@@ -387,69 +741,77 @@ Both metrics are computed over the post-baseline window (t > 5 s) on the
     LMS    Pearson r = 0.8601  |  SNR gain = +0.00 dB
     ASR    Pearson r = 0.8601  |  SNR gain = +0.00 dB
     GEDAI  Pearson r = 0.7303  |  SNR gain = -1.07 dB
+    ORICA  Pearson r = 0.8239  |  SNR gain = +0.42 dB
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-266
+.. GENERATED FROM PYTHON SOURCE LINES 261-263
 
 Figure 1 — Time-series comparison
------------------------------------
-Three channel rows compare the clean reference, the noisy signal, and all
-three corrected signals over the first 20 s.  Eye blinks (generated by
-:func:`mne.simulation.add_eog`) are clearly visible in the frontal channel;
-muscle bursts appear at 8 s and 18 s in the temporal channel.
+------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-316
+.. GENERATED FROM PYTHON SOURCE LINES 263-324
 
 .. code-block:: Python
 
 
     COLORS = {
         "Clean": "#555555", "Noisy": "#D32F2F",
-        "LMS": "#1565C0",   "ASR": "#2E7D32",  "GEDAI": "#E65100",
+        "LMS": "#1565C0", "ASR": "#2E7D32",
+        "GEDAI": "#E65100", "ORICA": "#6A1B9A",
     }
 
     t20 = t[t <= 20.0]
     s20 = slice(0, len(t20))
 
     fig1, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True,
-                               gridspec_kw={"hspace": 0.15})
+                               gridspec_kw={"hspace": 0.18})
     fig1.suptitle(
         "Real-time Artifact Correction — Time-series (0–20 s)\n"
-        "Artifacts: eye blinks (MNE dipole forward model), cardiac QRS (synthetic), muscle bursts",
+        "LMS · ASR · GEDAI · ORICA  vs. clean reference",
         fontsize=13, fontweight="bold", y=0.99,
     )
 
     ch_rows = [
         (EEG_NAMES.index("Fp1"), "Frontal — Fp1 (blink + cardiac)"),
-        (EEG_NAMES.index("T7"),  "Temporal — T7 (muscle burst region)"),
+        (EEG_NAMES.index("T7"),  "Temporal — T7 (muscle burst at 8 s and 18 s)"),
     ]
 
     for ax, (ch, title) in zip(axes[:2], ch_rows):
         ax.plot(t20, data_clean[ch, s20] * 1e6,
-                color=COLORS["Clean"], lw=1.8, label="Clean", zorder=5)
+                color=COLORS["Clean"], lw=2.0, label="Clean", zorder=5)
         ax.plot(t20, data_noisy[ch, s20] * 1e6,
-                color=COLORS["Noisy"], lw=0.9, alpha=0.55, label="Noisy", zorder=2)
-        for mname, mdata in [("LMS", data_lms), ("ASR", data_asr), ("GEDAI", data_gedai)]:
+                color=COLORS["Noisy"], lw=0.8, alpha=0.50, label="Noisy", zorder=2)
+        for mname, mdata in [("LMS", data_lms), ("ASR", data_asr),
+                             ("GEDAI", data_gedai), ("ORICA", data_orica)]:
             ax.plot(t20, mdata[ch, s20] * 1e6, color=COLORS[mname],
-                    lw=1.3, alpha=0.92, label=mname, zorder=4)
+                    lw=1.2, alpha=0.9, label=mname, zorder=4)
         ax.set_ylabel("µV", fontsize=10)
         ax.set_title(title, fontsize=10, loc="left", pad=3)
-        ax.legend(fontsize=9, frameon=False, loc="upper right", ncol=5)
+        ax.legend(fontsize=9, frameon=False, loc="upper right", ncol=6)
         ax.spines[["top", "right"]].set_visible(False)
 
-    # EOG reference row
+    # Riemannian Potato rejection mask
     ax3 = axes[2]
-    ax3.plot(t20, data_clean[fp1_idx, s20] * 1e6,
-             color=COLORS["Clean"], lw=1.8, label="Clean Fp1")
-    ax3.plot(t20, eog_ref[s20] * 1e6,
-             color=COLORS["Noisy"], lw=0.9, alpha=0.7, label="EOG reference (avg Fp1/Fp2)")
-    ax3.set_ylabel("µV", fontsize=10)
+    window_centers = (np.arange(len(potato_clean)) + 0.5) * (chunk_size / SFREQ)
+    window_centers_20 = window_centers[window_centers <= 20.0]
+    is_art = ~potato_clean[:len(window_centers_20)]
+
+    for i, (wc, art) in enumerate(zip(window_centers_20, is_art)):
+        color = "#D32F2F" if art else "#2E7D32"
+        ax3.axvspan(wc - 0.5, wc + 0.5, alpha=0.35, color=color, linewidth=0)
+
+    ax3.plot(window_centers_20, potato_z[:len(window_centers_20)],
+             color="#6A1B9A", lw=1.5, zorder=3, label="Riemannian z-score")
+    ax3.axhline(3.0, color="#D32F2F", lw=1.2, ls="--", label="threshold = 3.0")
+    ax3.set_ylabel("z-score", fontsize=10)
     ax3.set_xlabel("Time (s)", fontsize=10)
-    ax3.set_title("EOG reference channel — used by LMS adaptive filter", fontsize=10,
-                  loc="left", pad=3)
-    ax3.legend(fontsize=9, frameon=False, loc="upper right")
+    ax3.set_title(
+        "Riemannian Potato detection — green = clean window · red = artifact window",
+        fontsize=10, loc="left", pad=3,
+    )
+    ax3.legend(fontsize=9, frameon=False)
     ax3.spines[["top", "right"]].set_visible(False)
 
     fig1.tight_layout()
@@ -458,7 +820,7 @@ muscle bursts appear at 8 s and 18 s in the temporal channel.
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_plot_artifact_comparison_001.png
-   :alt: Real-time Artifact Correction — Time-series (0–20 s) Artifacts: eye blinks (MNE dipole forward model), cardiac QRS (synthetic), muscle bursts, Frontal — Fp1 (blink + cardiac), Temporal — T7 (muscle burst region), EOG reference channel — used by LMS adaptive filter
+   :alt: Real-time Artifact Correction — Time-series (0–20 s) LMS · ASR · GEDAI · ORICA  vs. clean reference, Frontal — Fp1 (blink + cardiac), Temporal — T7 (muscle burst at 8 s and 18 s), Riemannian Potato detection — green = clean window · red = artifact window
    :srcset: /auto_examples/images/sphx_glr_plot_artifact_comparison_001.png
    :class: sphx-glr-single-img
 
@@ -467,31 +829,27 @@ muscle bursts appear at 8 s and 18 s in the temporal channel.
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/examples/plot_artifact_comparison.py:314: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+    /Users/payamsadeghishabestari/ANT/examples/plot_artifact_comparison.py:322: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
       fig1.tight_layout()
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 317-323
+.. GENERATED FROM PYTHON SOURCE LINES 325-327
 
-Figure 2 — Power spectral density and quantitative metrics
------------------------------------------------------------
-The PSD panel shows the spectral impact of each corrector.  Note that LMS
-primarily suppresses low-frequency blink energy (<5 Hz), while ASR and
-GEDAI attenuate broadband and high-frequency components respectively.
-The bar chart summarises Pearson correlation and SNR gain per method.
+Figure 2 — PSD and quantitative metrics
+------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 323-384
+.. GENERATED FROM PYTHON SOURCE LINES 327-385
 
 .. code-block:: Python
 
 
-    fig2, (ax_psd, ax_bar) = plt.subplots(1, 2, figsize=(14, 7),
+    fig2, (ax_psd, ax_bar) = plt.subplots(1, 2, figsize=(15, 7),
                                            gridspec_kw={"wspace": 0.32})
     fig2.suptitle(
-        "Artifact Correction — Spectral Analysis and Quantitative Metrics\n"
-        "Each method targets different artifact types; ASR is the best all-rounder",
+        "Artifact Correction — PSD and Quantitative Metrics\n"
+        "LMS · ASR · GEDAI · ORICA  |  Pearson r with clean signal · SNR gain",
         fontsize=12, fontweight="bold",
     )
 
@@ -499,17 +857,17 @@ The bar chart summarises Pearson correlation and SNR gain per method.
     psd_sets = [
         ("Clean",  data_clean,          COLORS["Clean"],  dict(lw=2.4, ls="-")),
         ("Noisy",  data_noisy[:N_EEG],  COLORS["Noisy"],  dict(lw=1.2, ls="-", alpha=0.6)),
-        ("LMS",    data_lms[:N_EEG],    COLORS["LMS"],    dict(lw=1.6, ls="--")),
-        ("ASR",    data_asr[:N_EEG],    COLORS["ASR"],    dict(lw=1.6, ls="-.")),
-        ("GEDAI",  data_gedai[:N_EEG],  COLORS["GEDAI"],  dict(lw=1.6, ls=":")),
+        ("LMS",    data_lms[:N_EEG],    COLORS["LMS"],    dict(lw=1.5, ls="--")),
+        ("ASR",    data_asr[:N_EEG],    COLORS["ASR"],    dict(lw=1.5, ls="-.")),
+        ("GEDAI",  data_gedai[:N_EEG],  COLORS["GEDAI"],  dict(lw=1.5, ls=":")),
+        ("ORICA",  data_orica,          COLORS["ORICA"],  dict(lw=1.5, ls=(0, (3, 1, 1, 1)))),
     ]
 
     for label, dat, col, kw in psd_sets:
         psds = [welch(dat[i], **psd_kw)[1] for i in range(dat.shape[0])]
         f_arr = welch(dat[0], **psd_kw)[0]
-        mean_psd = np.mean(psds, axis=0)
         mask = (f_arr >= 1.0) & (f_arr <= 120.0)
-        ax_psd.semilogy(f_arr[mask], mean_psd[mask], color=col, label=label, **kw)
+        ax_psd.semilogy(f_arr[mask], np.mean(psds, axis=0)[mask], color=col, label=label, **kw)
 
     ax_psd.set_xlabel("Frequency (Hz)", fontsize=11)
     ax_psd.set_ylabel("PSD  (V²/Hz)", fontsize=11)
@@ -527,22 +885,19 @@ The bar chart summarises Pearson correlation and SNR gain per method.
     b1 = ax_bar.bar(x - w / 2, r_vals,   w, color=bar_cols, alpha=0.85, label="Pearson r")
     b2 = ax_bar.bar(x + w / 2, snr_vals, w, color=bar_cols, alpha=0.40,
                     edgecolor=bar_cols, linewidth=1.8, label="SNR gain (dB)")
-
     for bar, val in zip(b1, r_vals):
-        ax_bar.text(bar.get_x() + bar.get_width() / 2,
-                    bar.get_height() + 0.006, f"{val:.3f}",
-                    ha="center", va="bottom", fontsize=9)
+        ax_bar.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.006,
+                    f"{val:.3f}", ha="center", va="bottom", fontsize=9)
     for bar, val in zip(b2, snr_vals):
         offset = 0.12 if val >= 0 else -0.7
-        ax_bar.text(bar.get_x() + bar.get_width() / 2,
-                    bar.get_height() + offset, f"{val:+.1f}",
-                    ha="center", va="bottom", fontsize=9)
+        ax_bar.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + offset,
+                    f"{val:+.1f}", ha="center", va="bottom", fontsize=9)
 
     ax_bar.axhline(0, color="black", lw=0.8, ls="--", alpha=0.5)
     ax_bar.set_xticks(x)
     ax_bar.set_xticklabels(names, fontsize=12)
     ax_bar.set_ylabel("Metric value", fontsize=11)
-    ax_bar.set_title("Pearson r with clean  |  SNR gain (dB)", fontsize=11)
+    ax_bar.set_title("Pearson r with clean signal  |  SNR gain (dB)", fontsize=11)
     ax_bar.legend(fontsize=10, frameon=False)
     ax_bar.spines[["top", "right"]].set_visible(False)
 
@@ -551,7 +906,7 @@ The bar chart summarises Pearson correlation and SNR gain per method.
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_plot_artifact_comparison_002.png
-   :alt: Artifact Correction — Spectral Analysis and Quantitative Metrics Each method targets different artifact types; ASR is the best all-rounder, Power spectral density (avg, EEG channels), Pearson r with clean  |  SNR gain (dB)
+   :alt: Artifact Correction — PSD and Quantitative Metrics LMS · ASR · GEDAI · ORICA  |  Pearson r with clean signal · SNR gain, Power spectral density (avg, EEG channels), Pearson r with clean signal  |  SNR gain (dB)
    :srcset: /auto_examples/images/sphx_glr_plot_artifact_comparison_002.png
    :class: sphx-glr-single-img
 
@@ -560,7 +915,7 @@ The bar chart summarises Pearson correlation and SNR gain per method.
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/examples/plot_artifact_comparison.py:383: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+    /Users/payamsadeghishabestari/ANT/examples/plot_artifact_comparison.py:384: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
       fig2.tight_layout()
 
 
@@ -569,7 +924,7 @@ The bar chart summarises Pearson correlation and SNR gain per method.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.541 seconds)
+   **Total running time of the script:** (0 minutes 0.767 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_artifact_comparison.py:

@@ -15,7 +15,7 @@ Examples using ``ant.GEDAIDenoiser.fit_from_raw``
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="EEG recordings are routinely contaminated by ocular, muscular, and electrode artifacts.  ANT provides three complementary real-time artifact correction methods:">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example builds a 32-channel EEG recording, injects realistic artifacts, and compares five artifact handling approaches side-by-side:">
 
 .. only:: html
 

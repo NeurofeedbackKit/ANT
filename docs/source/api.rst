@@ -47,6 +47,7 @@ Quality control
    :nosignatures:
 
    ant.tools.BadChannelDetector
+   ant.tools.RiemannianPotatoDetector
 
 NF Protocols
 ------------
