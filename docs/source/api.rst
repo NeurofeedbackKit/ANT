@@ -52,6 +52,8 @@ Quality control
 NF Protocols
 ------------
 
+See :doc:`protocols` for the full protocol guide with formulas and examples.
+
 .. autosummary::
    :toctree: generated/
    :nosignatures:
@@ -60,6 +62,9 @@ NF Protocols
    ant.protocols.ZScoreProtocol
    ant.protocols.PercentileProtocol
    ant.protocols.LinearTrendProtocol
+   ant.protocols.ShamProtocol
+   ant.protocols.UpDownStaircaseProtocol
+   ant.protocols.MultiBandProtocol
 
 Feedback output
 ---------------
@@ -79,6 +84,17 @@ Tools & utilities
    :nosignatures:
 
    ant.tools.simulate_raw
+   ant.tools.simulate_nf_session
+   ant.tools.compute_instantaneous_phase
+
+BIDS I/O
+--------
+
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+
+   ant.tools.save_as_bids
 
 Logging
 -------

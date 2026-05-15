@@ -3,7 +3,7 @@
 NF Modalities
 =============
 
-ANT implements 17 neurofeedback (NF) modalities spanning sensor-space and
+ANT implements 18 neurofeedback (NF) modalities spanning sensor-space and
 source-space features, from simple band-power estimates to graph-theoretic
 functional connectivity measures.
 Each modality is selected via the ``--modality`` flag of :doc:`cli` and is
@@ -147,6 +147,44 @@ and :math:`\operatorname{Im}(\cdot)` extracts the imaginary part.
 By weighting phase interactions by the magnitude of the imaginary component,
 wPLI down-weights small, noise-driven phase lags and is robust to common
 reference artefacts.
+
+----
+
+.. _modality-instantaneous_phase:
+
+Instantaneous Phase
+~~~~~~~~~~~~~~~~~~~
+
+**Config key:** ``instantaneous_phase``
+
+The instantaneous phase and amplitude of the analytic signal in a target
+frequency band, estimated via the Hilbert transform
+:footcite:p:`shabestari2025advances`.
+
+The channel time series :math:`x(t)` is first zero-phase bandpass-filtered
+(4th-order Butterworth, via ``sosfiltfilt``) to isolate the target band
+:math:`[f_1, f_2]`, then extended to the analytic signal
+:math:`z(t) = x(t) + i\,\hat{x}(t)`, where :math:`\hat{x}(t)` is the
+Hilbert transform of the filtered signal:
+
+.. math::
+
+   \phi(t) = \angle\, z(t), \qquad A(t) = |z(t)|
+
+The NF value is the instantaneous phase :math:`\phi \in (-\pi, \pi]`
+at the *last sample* of the current analysis window, averaged across the
+selected channels.  The amplitude envelope :math:`A` is returned as a
+secondary output and can be used as a gating signal (e.g. stimulate only
+when amplitude is high).
+
+Instantaneous phase is particularly useful for:
+
+* **Phase-triggered stimulation** — close the feedback loop at a target
+  phase angle (e.g., trough of the alpha cycle)
+* **Cross-frequency coupling analysis** — use as the phase-providing
+  input to the CFC modality
+* **Phase synchrony neurofeedback** — reward convergence of phase
+  between two electrode pairs
 
 ----
 

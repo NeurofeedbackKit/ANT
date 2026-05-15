@@ -19,21 +19,22 @@ Key capabilities
 ----------------
 
 .. list-table::
-   :widths: 5 45
+   :widths: 1 45
    :header-rows: 0
 
-   * - 🧠
-     - **17 real-time NF modalities** — sensor power, ERD/ERS, Hjorth parameters,
+   * - ✔
+     - **18 real-time NF modalities** — sensor power, ERD/ERS, Hjorth parameters,
        spectral centroid and peak, band ratio, cross-frequency coupling (CFC),
-       weighted Phase Lag Index (wPLI), graph-theory metrics, and more.
+       weighted Phase Lag Index (wPLI), instantaneous phase (Hilbert analytic
+       signal), graph-theory metrics, and more.
        See :doc:`modalities` for the full list.
 
-   * - 📡
+   * - ✔
      - **Sensor-space and source-space** processing using
        `MNE <https://mne.tools>`_ inverse operators (eLORETA, MNE, dSPM).
        Compute and stream cortical-source activity with a single parameter.
 
-   * - 🔧
+   * - ✔
      - **Live artifact correction** —
        :class:`~ant.tools.ORICA` (online ICA),
        :class:`~ant.tools.AdaptiveLMS` (adaptive least-mean-squares),
@@ -42,33 +43,43 @@ Key capabilities
        :class:`~ant.tools.RTMaxwellFilter` (real-time Maxwell/SSS filtering for MEG).
        See :doc:`denoising` for algorithm details and benchmarks.
 
-   * - 🔍
+   * - ✔
      - **Real-time quality control** — :class:`~ant.tools.BadChannelDetector`
-       flags flat, noisy, or de-correlated channels on every incoming window
-       using a robust rolling-vote mechanism — no baseline recording required.
+       flags flat, noisy, or de-correlated channels every window using a
+       robust rolling-vote mechanism.  :class:`~ant.tools.RiemannianPotatoDetector`
+       detects artifactual epochs by measuring Riemannian distance from a
+       clean-data geometric mean on the SPD manifold — no reference channel needed.
 
-   * - 🎯
+   * - ✔
      - **Adaptive NF protocols** — :class:`~ant.protocols.ThresholdProtocol`,
        :class:`~ant.protocols.ZScoreProtocol`,
-       :class:`~ant.protocols.PercentileProtocol`, and
+       :class:`~ant.protocols.PercentileProtocol`,
        :class:`~ant.protocols.LinearTrendProtocol`
+       (OLS-based trend reward — encourages sustained directional change rather
+       than single-window threshold crossings),
+       :class:`~ant.protocols.ShamProtocol`
+       (double-blind sham wrapper for within-session RCTs),
+       :class:`~ant.protocols.UpDownStaircaseProtocol`
+       (adaptive psychophysics staircase converging to a target success rate), and
+       :class:`~ant.protocols.MultiBandProtocol`
+       (simultaneous two-band reward — e.g., alpha↑ + theta↓)
        give fine-grained control over when to issue a reward.
 
-   * - 🖥️
+   * - ✔
      - **Three parallel visualisation windows** — a scrolling
        :class:`~ant.viz.NFSignalPlot`, a live
        `MNE-style <https://mne.tools/stable/visualization.html>`_ topographic map,
        and an interactive :class:`~ant.viz.BrainPlot` (3-D cortical surface with
        colour-mapped activity, hemisphere toggles, and surface switching).
 
-   * - 📤
+   * - ✔
      - **Dual feedback output** — broadcast values via OSC (Max/MSP,
        SuperCollider, TouchDesigner) with :class:`~ant.osc.OSCSender`, or over
        `LSL <https://labstreaminglayer.org>`_ with :class:`~ant.lsl_output.LSLSender`
        for low-latency same-machine integration with PsychoPy, OpenViBE, BCI2000,
        and other LSL-aware apps.
 
-   * - ⌨️
+   * - ✔
      - **CLI** — launch full NF sessions with a single ``ANT run`` command,
        driven by a YAML config file. See :doc:`cli`.
 
@@ -122,6 +133,7 @@ Key capabilities
    cli
    denoising
    modalities
+   protocols
 
 .. toctree::
    :hidden:
@@ -193,21 +205,61 @@ Quick start
 Pipeline overview
 -----------------
 
-.. code-block:: none
+.. raw:: html
 
-    Amplifier / mock LSL stream
-          ↓  (mne-lsl StreamInlet)
-    BadChannelDetector       ← flags flat / noisy channels every window
-          ↓
-    Artifact correction      ← ORICA / LMS / GEDAI / ASR / RT-SSS
-          ↓
-    Feature extraction       ← 17 NF modalities  (sensor or source space)
-          ↓
-    NF protocol              ← Threshold / Z-score / Percentile / LinearTrend
-          ↓  ↘
-    NFSignalPlot    BrainPlot        ← live visualisation
-          ↓
-    OSCSender / LSLSender    ← feedback to stimulus software
+   <div style="overflow-x:auto; margin:16px 0;">
+   <table style="border-collapse:separate; border-spacing:0; width:100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:13px;">
+   <thead>
+     <tr>
+       <th style="background:#1e40af;color:white;padding:8px 14px;border-radius:8px 0 0 0;white-space:nowrap;">Stage</th>
+       <th style="background:#1e40af;color:white;padding:8px 14px;">Class / Function</th>
+       <th style="background:#1e40af;color:white;padding:8px 14px;border-radius:0 8px 0 0;">Notes</th>
+     </tr>
+   </thead>
+   <tbody>
+     <tr style="background:#eff6ff;">
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;font-weight:600;white-space:nowrap;">① Acquisition</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;"><code>NFRealtime.connect_to_lsl()</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Hardware amplifier or mock replay via mne-lsl <code>StreamInlet</code></td>
+     </tr>
+     <tr style="background:#f0fdf4;">
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;font-weight:600;white-space:nowrap;">② Baseline</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;"><code>NFRealtime.record_baseline()</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;">Bad-channel detection · ICA · noise covariance · inverse operator</td>
+     </tr>
+     <tr style="background:#eff6ff;">
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;font-weight:600;white-space:nowrap;">③ Quality control</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;"><code>BadChannelDetector</code> · <code>RiemannianPotatoDetector</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Flags flat / noisy channels and artifactual covariance windows every epoch</td>
+     </tr>
+     <tr style="background:#fffbeb;">
+       <td style="padding:7px 14px;border-bottom:1px solid #fef3c7;font-weight:600;white-space:nowrap;">④ Artifact correction</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #fef3c7;"><code>ORICA</code> · <code>AdaptiveLMS</code> · <code>GEDAIDenoiser</code> · <code>ASRDenoiser</code> · <code>RTMaxwellFilter</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #fef3c7;">One or more methods selected per session; all operate sample-by-sample</td>
+     </tr>
+     <tr style="background:#f5f3ff;">
+       <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;font-weight:600;white-space:nowrap;">⑤ Feature extraction</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;"><code>record_main(modality=[…])</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;">18 NF modalities in sensor or source space; parallel thread-pool per window</td>
+     </tr>
+     <tr style="background:#ecfdf5;">
+       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;font-weight:600;white-space:nowrap;">⑥ NF protocol</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;"><code>ThresholdProtocol</code> · <code>ZScoreProtocol</code> · <code>PercentileProtocol</code> · <code>LinearTrendProtocol</code> · <code>ShamProtocol</code> · <code>UpDownStaircaseProtocol</code> · <code>MultiBandProtocol</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;">Maps raw feature value → reward signal; all are stateful and adaptive</td>
+     </tr>
+     <tr style="background:#eff6ff;">
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;font-weight:600;white-space:nowrap;">⑦ Visualisation</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;"><code>NFSignalPlot</code> · <code>TopoPlot</code> · <code>BrainPlot</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Scrolling signal · per-band scalp topo · 3-D cortical surface with Qt controls</td>
+     </tr>
+     <tr style="background:#f0fdf4;">
+       <td style="padding:7px 14px;font-weight:600;white-space:nowrap;">⑧ Feedback output</td>
+       <td style="padding:7px 14px;"><code>OSCSender</code> · <code>LSLSender</code></td>
+       <td style="padding:7px 14px;">UDP/OSC to Max·MSP, SuperCollider, PD · LSL for PsychoPy, OpenViBE, BCI2000</td>
+     </tr>
+   </tbody>
+   </table>
+   </div>
 
 Cite
 ----
