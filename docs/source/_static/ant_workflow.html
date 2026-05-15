@@ -30,7 +30,7 @@
 </head>
 <body>
 <div class="wrap">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 730">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 820">
 <defs>
 
   <!-- ── Arrow markers ── -->
@@ -86,7 +86,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      BACKGROUND CARD
 ══════════════════════════════════════════════════════════════ -->
-<rect width="1400" height="730" rx="14" fill="white"/>
+<rect width="1400" height="820" rx="14" fill="white"/>
 
 <!-- ═══════════════════════════════════════════════════════════
      TITLE AREA
@@ -109,7 +109,7 @@
      x=20  w=182  right=202
 ══════════════════════════════════════════════════════════════ -->
 <!-- outer body -->
-<rect x="20" y="72" width="182" height="618" rx="10"
+<rect x="20" y="72" width="182" height="708" rx="10"
   fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5" filter="url(#cs)"/>
 <!-- header fill -->
 <rect x="20" y="72" width="182" height="33" rx="10" fill="url(#g-blue)" clip-path="url(#clip-c1)"/>
@@ -177,7 +177,7 @@
      COLUMN 2 — SETUP & BASELINE
      x=244  w=178  right=422
 ══════════════════════════════════════════════════════════════ -->
-<rect x="244" y="72" width="178" height="618" rx="10"
+<rect x="244" y="72" width="178" height="708" rx="10"
   fill="#ECFEFF" stroke="#A5F3FC" stroke-width="1.5" filter="url(#cs)"/>
 <rect x="244" y="72" width="178" height="33" rx="10" fill="url(#g-teal)" clip-path="url(#clip-c2)"/>
 <rect x="244" y="90" width="178" height="15" fill="#0E7490"/>
@@ -255,7 +255,7 @@
      x=462  w=598  right=1060
 ══════════════════════════════════════════════════════════════ -->
 <!-- Outer dashed loop box -->
-<rect x="462" y="72" width="598" height="618" rx="12"
+<rect x="462" y="72" width="598" height="708" rx="12"
   fill="#F8FAFC" stroke="#94A3B8" stroke-width="2" stroke-dasharray="8 4"/>
 <!-- Loop label top -->
 <text x="761" y="84" text-anchor="middle" font-size="10.5" fill="#64748B" font-weight="600"
@@ -263,7 +263,7 @@
   ↻  REAL-TIME NEUROFEEDBACK LOOP
 </text>
 <!-- Loop label bottom (timing hint) -->
-<text x="761" y="700" text-anchor="middle" font-size="9.5" fill="#94A3B8" font-style="italic"
+<text x="761" y="790" text-anchor="middle" font-size="9.5" fill="#94A3B8" font-style="italic"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
   repeats every window (winsize = 0.5 – 2 s)  ·  parallel acquisition thread + Qt timer pump
 </text>
@@ -273,7 +273,7 @@
      COLUMN 3a — ARTIFACT CORRECTION
      x=476  w=248  right=724
 ──────────────────────────────────────────────────────────── -->
-<rect x="476" y="88" width="248" height="590" rx="9"
+<rect x="476" y="88" width="248" height="680" rx="9"
   fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.5" filter="url(#cs)"/>
 <rect x="476" y="88" width="248" height="30" rx="9" fill="url(#g-amber)" clip-path="url(#clip-c3a)"/>
 <rect x="476" y="106" width="248" height="12" fill="#B45309"/>
@@ -330,10 +330,34 @@
 <text x="600" y="444" text-anchor="middle" font-size="8.5" fill="#94A3B8"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">pyunlocbox solver</text>
 
+<!-- ASR card -->
+<rect x="490" y="452" width="220" height="96" rx="7" fill="white" stroke="#FCD34D" stroke-width="1.5" filter="url(#cs)"/>
+<rect x="490" y="452" width="220" height="4" rx="3" fill="#F59E0B"/>
+<text x="600" y="473" text-anchor="middle" font-size="11" font-weight="700" fill="#78350F"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">ASR</text>
+<line x1="498" y1="480" x2="702" y2="480" stroke="#FEF3C7" stroke-width="1"/>
+<text x="600" y="496" text-anchor="middle" font-size="9" fill="#92400E"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">Artifact Subspace Reconstruction</text>
+<text x="600" y="511" text-anchor="middle" font-size="8.5" fill="#B45309"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">high-amplitude transient artefacts</text>
+<text x="600" y="526" text-anchor="middle" font-size="8.5" fill="#94A3B8"
+  font-family="'Courier New',Courier,monospace">ASRDenoiser · baseline calibration</text>
+<text x="600" y="541" text-anchor="middle" font-size="8.5" fill="#94A3B8"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">PCA-based sliding-window rejection</text>
+
+<!-- Riemannian Potato badge -->
+<rect x="490" y="560" width="220" height="60" rx="7" fill="white" stroke="#FCD34D" stroke-width="1.5" stroke-dasharray="5 3" filter="url(#cs)"/>
+<text x="600" y="579" text-anchor="middle" font-size="10" font-weight="700" fill="#78350F"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">Riemannian Potato</text>
+<text x="600" y="595" text-anchor="middle" font-size="8.5" fill="#94A3B8" font-style="italic"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">covariance-based QC · pyriemann</text>
+<text x="600" y="610" text-anchor="middle" font-size="8.5" fill="#94A3B8" font-style="italic"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">RiemannianPotatoDetector</text>
+
 <!-- "choose" note -->
-<text x="600" y="472" text-anchor="middle" font-size="9" fill="#B45309" font-style="italic"
+<text x="600" y="640" text-anchor="middle" font-size="9" fill="#B45309" font-style="italic"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">select one or more methods</text>
-<text x="600" y="487" text-anchor="middle" font-size="9" fill="#B45309" font-style="italic"
+<text x="600" y="655" text-anchor="middle" font-size="9" fill="#B45309" font-style="italic"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">or disable artifact correction</text>
 
 
@@ -345,7 +369,7 @@
      COLUMN 3b — NEURAL FEATURE EXTRACTION
      x=756  w=288  right=1044
 ──────────────────────────────────────────────────────────── -->
-<rect x="756" y="88" width="288" height="590" rx="9"
+<rect x="756" y="88" width="288" height="680" rx="9"
   fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.5" filter="url(#cs)"/>
 <rect x="756" y="88" width="288" height="30" rx="9" fill="url(#g-violet)" clip-path="url(#clip-c3b)"/>
 <rect x="756" y="106" width="288" height="12" fill="#5B21B6"/>
@@ -444,22 +468,22 @@
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">inflated / pial / white / sphere</text>
 
 <!-- modality call hint -->
-<rect x="770" y="590" width="260" height="36" rx="7" fill="#5B21B6" opacity="0.9"/>
-<text x="900" y="604" text-anchor="middle" font-size="8.5" fill="white" font-weight="600"
+<rect x="770" y="680" width="260" height="36" rx="7" fill="#5B21B6" opacity="0.9"/>
+<text x="900" y="694" text-anchor="middle" font-size="8.5" fill="white" font-weight="600"
   font-family="'Courier New',Courier,monospace">record_main(</text>
-<text x="900" y="618" text-anchor="middle" font-size="8.5" fill="#DDD6FE"
+<text x="900" y="708" text-anchor="middle" font-size="8.5" fill="#DDD6FE"
   font-family="'Courier New',Courier,monospace">  modality=[…], winsize=1.0)</text>
 
 
 <!-- ── ARROW 3: RT Loop → C4 ── -->
-<line x1="1062" y1="382" x2="1090" y2="382" stroke="#64748B" stroke-width="2.2" marker-end="url(#arr)"/>
+<line x1="1062" y1="400" x2="1090" y2="400" stroke="#64748B" stroke-width="2.2" marker-end="url(#arr)"/>
 
 
 <!-- ═══════════════════════════════════════════════════════════
      COLUMN 4 — OUTPUT
      x=1096  w=284  right=1380
 ══════════════════════════════════════════════════════════════ -->
-<rect x="1096" y="72" width="284" height="618" rx="10"
+<rect x="1096" y="72" width="284" height="708" rx="10"
   fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.5" filter="url(#cs)"/>
 <rect x="1096" y="72" width="284" height="33" rx="10" fill="url(#g-green)" clip-path="url(#clip-c4)"/>
 <rect x="1096" y="90" width="284" height="15" fill="#047857"/>
@@ -495,7 +519,7 @@
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">full-channel EEG viewer</text>
 
 <!-- Protocols card -->
-<rect x="1110" y="306" width="256" height="100" rx="7" fill="white" stroke="#6EE7B7" stroke-width="1.5" filter="url(#cs)"/>
+<rect x="1110" y="306" width="256" height="140" rx="7" fill="white" stroke="#6EE7B7" stroke-width="1.5" filter="url(#cs)"/>
 <rect x="1110" y="306" width="256" height="4" rx="3" fill="#059669"/>
 <text x="1238" y="324" text-anchor="middle" font-size="11" font-weight="700" fill="#064E3B"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">NF Protocols</text>
@@ -506,48 +530,56 @@
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">binary reward · adaptive threshold</text>
 <text x="1120" y="378" font-size="9.5" fill="#065F46"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">▸ ZScoreProtocol</text>
-<text x="1120" y="394" font-size="9.5" fill="#065F46"
+<text x="1135" y="392" font-size="8.5" fill="#94A3B8"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">Welford rolling normalisation</text>
+<text x="1120" y="408" font-size="9.5" fill="#065F46"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">▸ PercentileProtocol</text>
+<text x="1135" y="422" font-size="8.5" fill="#94A3B8"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">rolling Nth-percentile threshold</text>
+<text x="1120" y="438" font-size="9.5" fill="#065F46"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">▸ LinearTrendProtocol</text>
+<text x="1135" y="452" font-size="8.5" fill="#94A3B8"
+  font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">OLS slope reward · sustained change</text>
 
 <!-- OSC card -->
-<rect x="1110" y="420" width="256" height="96" rx="7" fill="white" stroke="#6EE7B7" stroke-width="1.5" filter="url(#cs)"/>
-<rect x="1110" y="420" width="256" height="4" rx="3" fill="#059669"/>
-<text x="1238" y="438" text-anchor="middle" font-size="11" font-weight="700" fill="#064E3B"
+<rect x="1110" y="460" width="256" height="96" rx="7" fill="white" stroke="#6EE7B7" stroke-width="1.5" filter="url(#cs)"/>
+<rect x="1110" y="460" width="256" height="4" rx="3" fill="#059669"/>
+<text x="1238" y="478" text-anchor="middle" font-size="11" font-weight="700" fill="#064E3B"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">OSC Protocol Output</text>
-<line x1="1118" y1="445" x2="1358" y2="445" stroke="#D1FAE5" stroke-width="1"/>
-<text x="1120" y="462" font-size="9.5" fill="#065F46"
+<line x1="1118" y1="485" x2="1358" y2="485" stroke="#D1FAE5" stroke-width="1"/>
+<text x="1120" y="502" font-size="9.5" fill="#065F46"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">▸ Max / MSP · SuperCollider · PD</text>
-<text x="1238" y="486" text-anchor="middle" font-size="8.5" fill="#059669"
+<text x="1238" y="526" text-anchor="middle" font-size="8.5" fill="#059669"
   font-family="'Courier New',Courier,monospace">pip install "ANT[osc]"</text>
-<text x="1238" y="501" text-anchor="middle" font-size="8" fill="#94A3B8"
+<text x="1238" y="541" text-anchor="middle" font-size="8" fill="#94A3B8"
   font-family="'Courier New',Courier,monospace">python-osc · UDP socket</text>
 
 <!-- Logging card -->
-<rect x="1110" y="530" width="256" height="80" rx="7" fill="white" stroke="#6EE7B7" stroke-width="1.5" filter="url(#cs)"/>
-<rect x="1110" y="530" width="256" height="4" rx="3" fill="#059669"/>
-<text x="1238" y="548" text-anchor="middle" font-size="11" font-weight="700" fill="#064E3B"
+<rect x="1110" y="570" width="256" height="80" rx="7" fill="white" stroke="#6EE7B7" stroke-width="1.5" filter="url(#cs)"/>
+<rect x="1110" y="570" width="256" height="4" rx="3" fill="#059669"/>
+<text x="1238" y="588" text-anchor="middle" font-size="11" font-weight="700" fill="#064E3B"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">Session Logging</text>
-<line x1="1118" y1="555" x2="1358" y2="555" stroke="#D1FAE5" stroke-width="1"/>
-<text x="1120" y="572" font-size="9.5" fill="#065F46"
+<line x1="1118" y1="595" x2="1358" y2="595" stroke="#D1FAE5" stroke-width="1"/>
+<text x="1120" y="612" font-size="9.5" fill="#065F46"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">▸ nf_data → JSON · HTML report</text>
-<text x="1120" y="588" font-size="9.5" fill="#065F46"
+<text x="1120" y="628" font-size="9.5" fill="#065F46"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">▸ raw EEG .fif recording</text>
 
 <!-- Participant feedback -->
-<rect x="1110" y="624" width="256" height="52" rx="7" fill="#059669" opacity="0.9"/>
-<text x="1238" y="645" text-anchor="middle" font-size="11" font-weight="700" fill="white"
+<rect x="1110" y="664" width="256" height="52" rx="7" fill="#059669" opacity="0.9"/>
+<text x="1238" y="685" text-anchor="middle" font-size="11" font-weight="700" fill="white"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">↑ Real-time Feedback</text>
-<text x="1238" y="661" text-anchor="middle" font-size="9" fill="#D1FAE5"
+<text x="1238" y="701" text-anchor="middle" font-size="9" fill="#D1FAE5"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">visual · auditory · tactile</text>
 
 
 <!-- ═══════════════════════════════════════════════════════════
      FOOTER
 ══════════════════════════════════════════════════════════════ -->
-<line x1="20" y1="714" x2="1380" y2="714" stroke="#E2E8F0" stroke-width="1"/>
-<text x="700" y="726" text-anchor="middle" font-size="9.5" fill="#94A3B8"
+<line x1="20" y1="804" x2="1380" y2="804" stroke="#E2E8F0" stroke-width="1"/>
+<text x="700" y="816" text-anchor="middle" font-size="9.5" fill="#94A3B8"
   font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
-  github.com/payamsash/ANT  ·  MIT License  ·  Python ≥ 3.11  ·  mne · mne-lsl · PyQt6 · pyvista · mne-connectivity · mne-features · pactools · pyunlocbox
+  github.com/payamsash/ANT  ·  MIT License  ·  Python ≥ 3.11  ·  mne · mne-lsl · PyQt6 · pyvista · mne-connectivity · mne-features · pactools · pyunlocbox · pyriemann
 </text>
 
 </svg>
