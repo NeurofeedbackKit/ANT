@@ -11,12 +11,6 @@ adaptive psychophysics staircases and double-blind sham control.
 
 All protocols share the same two-value contract:
 
-.. code-block:: python
-
-    crossed, magnitude = protocol.evaluate(value)
-    # crossed   : bool  — was the criterion met this window?
-    # magnitude : float — reward strength (0.0 if not rewarded)
-
 .. contents::
    :local:
    :depth: 1
@@ -164,8 +158,8 @@ sessions.
    <pre style="background:#1e293b; color:#e2e8f0; padding:12px 16px; border-radius:8px; font-size:12px; line-height:1.6; overflow-x:auto;">
    window:  1  2  3  4  5 … 20 | 21  22  23  24  25
    value:   1  2  1  3  2 … 2  |  3   1   5   2   4
-   z-score: —  —  —  —  — … — |0.2 -0.8  2.1 0.0  1.3
-   reward:  ·  ·  ·  ·  · … · |  ·    ·   ✓   ·   ✓     (z_thr = 0.5)
+   z-score: —  —  —  —  — … —  |0.2  -0.8 2.1 0.0 1.3
+   reward:  ·  ·  ·  ·  · … ·  |  ·   ·   ✓   ·   ✓     (z_thr = 0.5)
    warmup phase ───────────────┘ live phase ──────────
    </pre>
 
@@ -235,7 +229,7 @@ goodness-of-fit:
 
 .. math::
 
-   [a,\, b] &= \operatorname{OLS}\!\bigl(\{1, \ldots, W\},\, \{x_{t-W+1}, \ldots, x_t\}\bigr) \\
+   [a,\, b] &= \operatorname{OLS} \!\bigl(\{1, \ldots, W\},\, \{x_{t-W+1}, \ldots, x_t\}\bigr) \\
    \text{crossed} &= a > a_\text{thr} \;\land\; R^2 \geq R^2_\text{min}
 
 This avoids rewarding transient spikes and instead encourages *sustained
@@ -249,10 +243,10 @@ directional change* — a more meaningful signal for genuine learning.
    values over 5-window regression:
 
    spike (not rewarded)     sustained rise (rewarded)
-   ▲  ·                     ▲          ·
-   │ ╭╮                     │        ╭─╯
-   │╭╯╰╮╮                   │      ╭─╯
-   │╯    ╰──                 │    ╭─╯
+   ▲  ·                      ▲          ·
+   │ ╭╮                      │        ╭─╯
+   │╭╯╰╮                     │      ╭─╯
+   │╯  ╰──                   │    ╭─╯
    └──────────               └──────────
    slope ≈ 0, R² low         slope > 0, R² high
    </pre>
@@ -380,9 +374,9 @@ participant's current threshold.
    threshold
    0.70  ·         ·─·
    0.65  ·─·     ·─╯ ╰─·
-   0.60    ╰─·─·─╯       ╰─·
-   0.55                     ╰─·─·
-   0.50  initial                ╰──  (converging)
+   0.60    ╰─·─·─╯     ╰─·
+   0.55                  ╰─·─·
+   0.50  initial             ╰──    (converging)
          1  2  3  4  5  6  7  8  9  window
          S  S  F  F  S  S  F  S  F   (S=success, F=fail, 1-up/2-down)
    reversal points ↑ stored in reversal_thresholds
@@ -481,19 +475,7 @@ References: :footcite:t:`Sterman2006`
 
 ----
 
-API Reference
+References
 -------------
-
-.. autosummary::
-   :toctree: generated/
-   :nosignatures:
-
-   ant.protocols.ThresholdProtocol
-   ant.protocols.ZScoreProtocol
-   ant.protocols.PercentileProtocol
-   ant.protocols.LinearTrendProtocol
-   ant.protocols.ShamProtocol
-   ant.protocols.UpDownStaircaseProtocol
-   ant.protocols.MultiBandProtocol
 
 .. footbibliography::
