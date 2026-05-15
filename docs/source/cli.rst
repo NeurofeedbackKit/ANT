@@ -14,6 +14,19 @@ ANT provides an ``ANT`` shell command with four sub-commands.
     ANT baseline --subject ID --subjects-dir DIR [options]
     ANT run     --subject ID --subjects-dir DIR --duration N [options]
 
+Global options:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 15 50
+
+   * - Flag
+     - Default
+     - Description
+   * - ``--verbose``, ``-v``
+     - WARNING
+     - Logging verbosity level: ``DEBUG``, ``INFO``, ``WARNING``, or ``ERROR``
+
 ``ANT info``
 ------------
 
@@ -249,10 +262,10 @@ Available NF modalities
      - Power at the individualised spectral peak
    * - ``cfc_sensor``
      - Cross-frequency coupling (sensor space)
-   * - ``wpli_sensor``
-     - Weighted phase-lag index connectivity (sensor space)
+   * - ``instantaneous_phase``
+     - Instantaneous phase and amplitude envelope via Hilbert analytic signal
    * - ``sensor_connectivity``
-     - Functional connectivity (PLI, correlation)
+     - Functional connectivity (coh, plv, pli, wpli, corr, …); method set in config
    * - ``sensor_graph``
      - Graph-Laplacian learning from sensor connectivity
    * - ``source_power``
