@@ -7,7 +7,7 @@
 **Advanced Neurofeedback Toolbox (ANT)** is an open-source Python library for
 **real-time M/EEG neurofeedback**, built on `MNE-Python <https://mne.tools>`_
 and the `Lab Streaming Layer <https://labstreaminglayer.org>`_ (LSL).
-It covers the full closed-loop pipeline — from amplifier to 3-D brain display —
+It covers the full closed-loop pipeline, from amplifier to 3-D brain display,
 in a single, researcher-friendly API designed for both clinical and basic-science
 applications.
 
@@ -23,21 +23,21 @@ Key capabilities
    :header-rows: 0
 
    * - ✔
-     - **18 real-time NF modalities** — sensor power, ERD/ERS, Hjorth parameters,
+     - **Multiple real-time NF modalities** — sensor power, ERD/ERS, Hjorth parameters,
        spectral centroid and peak, band ratio, cross-frequency coupling (CFC),
-       weighted Phase Lag Index (wPLI), instantaneous phase (Hilbert analytic
+       connectivity, instantaneous phase (Hilbert analytic
        signal), graph-theory metrics, and more.
        See :doc:`modalities` for the full list.
 
    * - ✔
-     - **Sensor-space and source-space** processing using
+     - **Sensor and source-space** processing using
        `MNE <https://mne.tools>`_ inverse operators (eLORETA, MNE, dSPM).
-       Compute and stream cortical-source activity with a single parameter.
+       Compute and stream cortical-source activity.
 
    * - ✔
      - **Live artifact correction** —
        :class:`~ant.tools.ORICA` (online ICA),
-       :class:`~ant.tools.AdaptiveLMS` (adaptive least-mean-squares),
+       :class:`~ant.tools.AdaptiveLMSFilter` (adaptive least-mean-squares),
        :class:`~ant.tools.GEDAIDenoiser` (generalised eigendecomposition),
        :class:`~ant.tools.ASRDenoiser` (artifact subspace reconstruction), and
        :class:`~ant.tools.RTMaxwellFilter` (real-time Maxwell/SSS filtering for MEG).
@@ -48,7 +48,7 @@ Key capabilities
        flags flat, noisy, or de-correlated channels every window using a
        robust rolling-vote mechanism.  :class:`~ant.tools.RiemannianPotatoDetector`
        detects artifactual epochs by measuring Riemannian distance from a
-       clean-data geometric mean on the SPD manifold — no reference channel needed.
+       clean-data geometric mean on the SPD manifold.
 
    * - ✔
      - **Adaptive NF protocols** — :class:`~ant.protocols.ThresholdProtocol`,
@@ -64,11 +64,12 @@ Key capabilities
        :class:`~ant.protocols.MultiBandProtocol`
        (simultaneous two-band reward — e.g., alpha↑ + theta↓)
        give fine-grained control over when to issue a reward.
+       See :doc:`protocols` for formulas, selection guide, and examples.
 
    * - ✔
      - **Three parallel visualisation windows** — a scrolling
        :class:`~ant.viz.NFSignalPlot`, a live
-       `MNE-style <https://mne.tools/stable/visualization.html>`_ topographic map,
+       `MNE <https://mne.tools/stable/visualization.html>`_-style :class:`~ant.viz.TopoPlot`,
        and an interactive :class:`~ant.viz.BrainPlot` (3-D cortical surface with
        colour-mapped activity, hemisphere toggles, and surface switching).
 
