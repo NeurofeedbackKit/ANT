@@ -22,12 +22,12 @@ def test_info_subcommand(parser):
 def test_demo_defaults(parser):
     args = parser.parse_args(["demo"])
     assert args.command == "demo"
-    assert args.duration == 60.0
-    assert args.modality == ["sensor_power"]
+    assert args.duration == 120.0
+    assert "sensor_power" in args.modality
     assert args.winsize == 1.0
     assert args.no_signal is False
     assert args.no_raw is False
-    assert args.brain is False
+    assert args.no_brain is False
 
 
 def test_demo_custom(parser):
