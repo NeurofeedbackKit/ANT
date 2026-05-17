@@ -1,115 +1,261 @@
-# Default parameters for neurofeedback
+# ══════════════════════════════════════════════════════════════════════════════
+# ANT — Advanced Neurofeedback Toolbox
+# Default parameters for NF modalities and reward protocols
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Usage:
+#   nf = NFRealtime(..., config_file="config_methods.yml")
+#   nf.record_main(modality=["sensor_power"], protocol="ZScoreProtocol")
+#
+# Common frequency bands (Hz):
+#   delta : 1 – 4     theta : 4 – 8     alpha  : 8 – 13
+#   beta  : 13 – 30   gamma : 30 – 80   SMR    : 12 – 15
+#
+# All frange values are [low_hz, high_hz].
+# ══════════════════════════════════════════════════════════════════════════════
 
+# ─────────────────────────────────────────────────────────────────────────────
+# NF_modality
+#   Parameters used by record_main(modality=[...])
+#   Sensor-space modalities require no FreeSurfer; source-space require MRI.
+# ─────────────────────────────────────────────────────────────────────────────
 NF_modality:
-  sensor_power: 
-  # Track the spectral power at the desired frequency over the selected electrodes.
-    frange: [8, 13]
-    method: "welch" # other options are fft and multitaper
-    relative: False
 
-  band_ratio: 
-  # Track the power ratio between two frequency ranges over selected electrodes.
-    frange_1: [8, 13] # First frequecy range
-    frange_2: [4, 8] # Second frequecy range
-    method: "welch" # other options are fft and multitaper
+  # ── Sensor-space power ─────────────────────────────────────────────────────
 
-  source_power:
-  # Track the activation in a desired brain label.
-    frange: [8, 13]
-    brain_label: "pericalcarine-lh"
-    atlas: "aparc" # The parcellation to use, e.g., 'aparc' or 'aparc.a2009s'.
-    method: "dSPM"
+  sensor_power:
+    # Spectral power of selected electrodes within frange.
+    frange: [8, 13]          # [low, high] Hz — frequency band
+    method: "welch"          # "welch" | "fft" | "multitaper"
+    relative: false          # true → power / total_power (0–1 scale)
 
-  sensor_connectivity:
-  # Track the connection strength between multiple channels in sensor space.
-    frange: [8, 13]
-    channels: [["C3", "C4"], ["F3", "F4"]] # desired channel names, should be a list of two lists.
-    method: "coh" # Connectivity measure(s) to compute. These can be ['corr', 'coh', 'mic', 'mim', 'plv', 'ciplv', 'pli', 'wpli', 'gc', 'gc_tr']. 
-    mode: "cwt_morlet" # Time-frequency decomposition method. Can be either: ‘multitaper’, or ‘cwt_morlet’. 
-  
-  source_connectivity:
-  # Track the connection strength between two brain labels in source space.
-    frange: [8, 13]
-    brain_label_1: "transversetemporal-lh" # First brain label.
-    brain_label_2: "transversetemporal-rh" # Second brain label.
-    atlas: "aparc" # The parcellation to use, e.g., 'aparc' or 'aparc.a2009s'.
-    method: "coh" # Connectivity measure(s) to compute. These can be ['corr', 'coh', 'mic', 'mim', 'plv', 'ciplv', 'pli', 'wpli', 'gc', 'gc_tr']. 
-    mode: "cwt_morlet" # Time-frequency decomposition method. Can be either: ‘multitaper’, or ‘cwt_morlet’. 
-
-  sensor_graph:
-  # Track the connection strength between two channels using graph method.
-    frange: [8, 13]
-    channels: [["C3", "C4"], ["F3", "F4"]] # desired channel names, should be a list of two lists.
-    dist_type: "sqeuclidean" # Type of pairwise distance between variables. See scipy.spatial.distance.pdist for the possible options.
-    alpha: 1 # Regularization parameter acting on the log barrier
-    beta: 1 # Regularization parameter controlling the density of the graph
-
-  source_graph:
-  # Track the connection strength between two brain labels using graph method.
-    frange: [8, 13]
-    brain_label_1: "transversetemporal-lh" # First brain label.
-    brain_label_2: "transversetemporal-rh" # Second brain label.
-    atlas: "aparc" # The parcellation to use, e.g., 'aparc' or 'aparc.a2009s'.
-    dist_type: "sqeuclidean" # Type of pairwise distance between variables. See scipy.spatial.distance.pdist for the possible options.
-    alpha: 1 # Regularization parameter acting on the log barrier
-    beta: 1 # Regularization parameter controlling the density of the graph
-
-  entropy:
-  # Track the entropy
-    frange: [8, 13]
-    method: "Spectral" # The method to compute tthe entropy -> {"AppEn", "SampEn", "Spectral", "SVD"} 
-    psd_method: "welch" # Method used for the estimation of the Power Spectral Density (PSD). Valid methods are: 'welch', 'multitaper' or 'fft'.
-
-  argmax_freq:
-  # Track the frequency at which the maximum activation occurs.
-    frange: [8, 13]
-    method: "welch" # Spectral estimation method "welch" or "multitaper"
-
-  individual_peak_power:
-  # Track the power around the frequency with maximum activation.
-    frange: [8, 13]  
-    method: "welch"
-
-  cfc_sensor:
-    method: "tort"
-    frange_1: [8, 13]
-    frange_2: [30, 45]
+  band_ratio:
+    # Power ratio between two frequency bands: P(frange_1) / P(frange_2).
+    # Classic example: alpha/theta for mental workload.
+    frange_1: [8, 13]        # Hz — numerator band
+    frange_2: [4, 8]         # Hz — denominator band
+    method: "welch"          # "welch" | "fft" | "multitaper"
 
   erd_ers:
-  # ERD/ERS = (P_current - P_baseline) / P_baseline * 100.
-  # Requires a completed baseline session.
-  # Positive values = synchronisation (ERS); negative = desynchronisation (ERD).
-    frange: [8, 13]
-    method: "welch" # other options are fft and multitaper
+    # Event-Related De/Synchronisation (%) relative to a recorded baseline.
+    # ERD < 0 (power decrease); ERS > 0 (power increase).
+    # Requires record_baseline() to have been called.
+    frange: [8, 13]          # Hz
+    method: "welch"          # "welch" | "fft" | "multitaper"
 
   laterality:
-  # Inter-hemispheric power asymmetry: log(P_right) - log(P_left).
-  # Positive = right dominance, negative = left dominance.
-  # Left/right channels are auto-detected from 10-20 naming conventions.
-    frange: [8, 13]
-    method: "welch" # other options are fft and multitaper
-
-  hjorth:
-  # Mean of Hjorth mobility and complexity (pure time-domain, no FFT).
-  # Mobility ~ dominant frequency proxy; complexity ~ signal irregularity.
-    frange: [8, 13]
-
-  spectral_centroid:
-  # Frequency-weighted centre-of-mass of the PSD within a band (Hz).
-  # Tracks alpha-peak drift, SMR centre-frequency shifts, etc.
-    frange: [8, 13]
-
-  laterality_erd_ers:
-  # Baseline-normalised inter-hemispheric ERD/ERS asymmetry (%).
-  # feature = ERD_ERS_right - ERD_ERS_left.
-  # Positive = right more activated; negative = left more activated.
-  # Requires a completed baseline session.
-    frange: [8, 13]
+    # Inter-hemispheric power asymmetry: log(P_right) − log(P_left).
+    # Positive = right dominance; negative = left dominance.
+    # Left/right channels are auto-detected from 10-20 labels (C3/C4, etc.).
+    frange: [8, 13]          # Hz
     method: "welch"
 
-  wpli_sensor:
-  # Weighted Phase Lag Index between sensor pairs (artifact-robust connectivity).
-  # wPLI in [0, 1]; higher = more consistent phase lag between channels.
-  # More robust to volume conduction than PLV or PLI.
-    frange: [8, 13]
-    channels: [["C3", "F3"], ["C4", "F4"]]
+  laterality_erd_ers:
+    # Baseline-normalised hemispheric ERD/ERS asymmetry (%).
+    # feature = ERD_ERS_right − ERD_ERS_left.
+    # Requires record_baseline().
+    frange: [8, 13]          # Hz
+    method: "welch"
+
+  hjorth:
+    # Hjorth mobility and complexity (time-domain, no FFT).
+    # Mobility ≈ dominant-frequency proxy; complexity ≈ signal irregularity.
+    frange: [8, 13]          # Hz — bandpass applied before computation
+
+  spectral_centroid:
+    # Frequency-weighted centre-of-mass of the PSD (Hz).
+    # Tracks alpha-peak drift, SMR centre-frequency shifts, etc.
+    frange: [8, 13]          # Hz — search window
+
+  argmax_freq:
+    # Frequency at which PSD power is maximum within frange (Hz).
+    frange: [8, 13]          # Hz — search window
+    method: "welch"          # "welch" | "multitaper"
+
+  individual_peak_power:
+    # Power around the individual alpha / target frequency.
+    # Useful when IAF varies across participants.
+    frange: [8, 13]          # Hz — search window for IAF
+    method: "welch"
+
+  peak_alpha_freq:
+    # Real-time peak alpha frequency (PAF) tracker.
+    # Finds the dominant spectral peak within frange per window and
+    # smooths it with an exponential moving average.
+    # Returns: the EMA-smoothed PAF in Hz.
+    frange: [7, 13]         # Hz — search window for alpha peak
+    method: "welch"         # "welch" | "fft"
+    smoothing: 0.85         # EMA coefficient: 0=instantaneous, 0.99=very slow
+
+  scp:
+    # Slow cortical potential (DC-coupled amplitude shift).
+    # Low-pass filtered mean amplitude; tracks sustained negativity/positivity.
+    # Positive SCP = cortical deactivation; negative SCP = activation.
+    highpass: 0.0           # Hz — 0.0 means no high-pass (DC-coupled)
+    lowpass: 1.0            # Hz — upper cutoff for SCP extraction
+    reference: "mean"       # "mean" | "median" channel reference
+
+  entropy:
+    # Signal entropy within frange. Higher = more irregular / less synchronised.
+    frange: [8, 13]          # Hz — bandpass applied before entropy computation
+    method: "Spectral"       # "AppEn" | "SampEn" | "Spectral" | "SVD"
+    psd_method: "welch"      # PSD method when method="Spectral"
+
+  instantaneous_phase:
+    # Instantaneous phase of the analytic signal in the target band (radians, −π to π).
+    # Useful for phase-triggered stimulation and cross-frequency coupling analysis.
+    frange: [8, 13]          # Hz — bandpass before Hilbert transform
+    channel_indices: null    # null = average all channels; or list of ints
+
+  # ── Sensor-space connectivity ──────────────────────────────────────────────
+
+  sensor_connectivity:
+    # Functional connectivity between sensor pairs within frange.
+    frange: [8, 13]          # Hz
+    channels:                # list of [ch_A, ch_B] pairs
+      - ["C3", "C4"]
+      - ["F3", "F4"]
+    method: "coh"            # "corr" | "coh" | "imcoh" | "mic" | "mim" | "plv"
+                             # "ciplv" | "pli" | "wpli" | "gc" | "gc_tr"
+                             # "imcoh" = imaginary part of coherence (robust to
+                             #           zero-lag volume conduction artefacts)
+    mode: "cwt_morlet"       # "multitaper" | "cwt_morlet"
+
+  connectivity_ratio:
+    # Ratio of functional connectivity between two channel pairs.
+    # Useful for laterality of connectivity, e.g. C3/C4 vs F3/F4.
+    # Returns: conn(channels_num) / conn(channels_den)
+    frange: [8, 13]         # Hz
+    channels_num: ["C3", "C4"]   # numerator pair [ch_A, ch_B]
+    channels_den: ["F3", "F4"]   # denominator pair [ch_A, ch_B]
+    method: "coh"           # see sensor_connectivity for options
+    mode: "cwt_morlet"      # "multitaper" | "cwt_morlet"
+
+  cfc_sensor:
+    # Cross-Frequency Coupling: phase of frange_1 × amplitude of frange_2.
+    # Typical use: alpha phase (8-13) modulating gamma amplitude (30-45).
+    frange_1: [8, 13]        # Hz — phase-providing (slower) band
+    frange_2: [30, 45]       # Hz — amplitude-providing (faster) band
+    method: "tort"           # modulation index method
+
+  # ── Sensor-space graph ─────────────────────────────────────────────────────
+
+  sensor_graph:
+    # Graph-theoretic connectivity: learns a smooth graph from sensor signals.
+    # Returns a summary scalar (e.g., mean edge weight or graph energy).
+    frange: [8, 13]          # Hz
+    channels:                # list of [ch_A, ch_B] pairs
+      - ["C3", "C4"]
+      - ["F3", "F4"]
+    dist_type: "sqeuclidean" # pairwise distance type (scipy.spatial.distance)
+    alpha: 1                 # smoothness regularisation (log-degree barrier)
+    beta: 1                  # degree-density regularisation
+
+  # ── Source-space power ─────────────────────────────────────────────────────
+  # All source-space modalities require:
+  #   • A FreeSurfer reconstruction (subjects_dir)
+  #   • A completed record_baseline() (noise covariance + inverse operator)
+
+  source_power:
+    # Spectral power within a cortical parcel (FreeSurfer atlas label).
+    frange: [8, 13]          # Hz
+    brain_label: "pericalcarine-lh"  # FreeSurfer label name
+    atlas: "aparc"           # "aparc" | "aparc.a2009s" | "HCPMMP1"
+    method: "dSPM"           # inverse method: "dSPM" | "MNE" | "eLORETA"
+
+  # ── Source-space connectivity ──────────────────────────────────────────────
+
+  source_connectivity:
+    # Functional connectivity between two cortical parcels.
+    frange: [8, 13]          # Hz
+    brain_label_1: "transversetemporal-lh"
+    brain_label_2: "transversetemporal-rh"
+    atlas: "aparc"
+    method: "coh"            # see sensor_connectivity.method for all options
+    mode: "cwt_morlet"       # "multitaper" | "cwt_morlet"
+
+  # ── Source-space graph ─────────────────────────────────────────────────────
+
+  source_graph:
+    # Graph-theoretic connectivity between two cortical parcels.
+    frange: [8, 13]          # Hz
+    brain_label_1: "transversetemporal-lh"
+    brain_label_2: "transversetemporal-rh"
+    atlas: "aparc"
+    dist_type: "sqeuclidean"
+    alpha: 1
+    beta: 1
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NF_protocol
+#   Parameters for the reward / threshold logic applied to each NF value.
+#   Select a protocol in record_main() with protocol="ZScoreProtocol" etc.
+# ─────────────────────────────────────────────────────────────────────────────
+NF_protocol:
+
+  ThresholdProtocol:
+    # Issues a binary reward when the NF value crosses a fixed threshold.
+    # Simple, interpretable, widely used in clinical NF.
+    direction: "up"          # "up"   → reward when value > threshold
+                             # "down" → reward when value < threshold
+    initial_threshold: 0.5   # starting threshold (NF-signal units)
+    adapt_rate: 0.0          # threshold drift per reward cycle (0 = fixed)
+    smoothing: 0.0           # EMA input smoothing coefficient [0, 1)
+
+  ZScoreProtocol:
+    # Rewards when the running z-score exceeds zscore_threshold.
+    # Automatically adapts to the participant's baseline distribution.
+    direction: "up"          # "up" | "down"
+    zscore_threshold: 0.5    # |z| required for reward  (typical: 0.5 – 2.0)
+    warmup_windows: 20       # windows used to seed baseline stats (no reward)
+    smoothing: 0.0           # EMA coefficient [0, 1)
+    min_std: 1.0e-6          # std floor — prevents divide-by-zero blowup
+
+  PercentileProtocol:
+    # Rewards when value exceeds the Nth rolling percentile of recent history.
+    # Dynamic difficulty: threshold tracks the participant's own distribution.
+    percentile: 75.0         # target percentile (typical: 60–80)
+    direction: "up"          # "up" | "down"
+    history_len: 100         # rolling buffer size (number of windows)
+    smoothing: 0.0           # EMA coefficient [0, 1)
+
+  LinearTrendProtocol:
+    # Rewards when OLS slope over the last `window` values exceeds slope_threshold
+    # and goodness-of-fit R² ≥ min_r2.  Encourages sustained directional change
+    # rather than instantaneous threshold crossings — useful for gradual learning.
+    direction: "up"          # "up" (positive slope) | "down" (negative slope)
+    window: 20               # OLS regression window (number of recent values; ≥ 3)
+    slope_threshold: 0.0     # minimum |slope| to reward  (0 = any trend)
+    min_r2: 0.0              # minimum R² (0 = disabled; 0.3–0.6 = moderate gate)
+    warmup_windows: 20       # evaluations before rewards can be issued
+    smoothing: 0.0           # EMA coefficient [0, 1)
+
+  ShamProtocol:
+    # Wraps any inner protocol with double-blind sham feedback.
+    # On sham_rate fraction of windows, a shuffled historical reward value
+    # is returned instead of the real one. Enables within-session RCTs.
+    sham_rate: 0.5           # fraction of sham windows  (0 = never, 1 = always)
+    buffer_len: 60           # size of historical reward pool for sham sampling
+    rng_seed: null           # null = non-reproducible; set int for exact replay
+
+  UpDownStaircaseProtocol:
+    # Adaptive staircase: increases difficulty after n_up successes, decreases
+    # after n_down failures. (1-up, 2-down) → ~70.7% convergence.
+    initial_threshold: 0.5   # starting threshold
+    direction: "up"
+    n_up: 1                  # consecutive successes to increase difficulty
+    n_down: 2                # consecutive failures to decrease difficulty
+    step_size: 0.05          # threshold step per reversal
+    step_factor: 0.5         # step_size *= step_factor after n_reversals_before_halving
+    n_reversals_before_halving: 4
+    min_step: 1.0e-4
+    smoothing: 0.0
+
+  MultiBandProtocol:
+    # Rewards simultaneous up-regulation of one band and down-regulation of another.
+    # Pass TWO values to evaluate(up_value, down_value).
+    # Inner protocols (one per band) must be configured separately.
+    require_both: true       # true = AND logic; false = OR logic
+    up_label: "alpha"        # label for up-regulation band (for logging)
+    down_label: "theta"      # label for down-regulation band (for logging)
