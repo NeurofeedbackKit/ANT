@@ -34,6 +34,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Topic :: Scientific/Engineering :: Human Machine Interfaces",
@@ -41,21 +43,21 @@ classifiers = [
 
 # Core runtime dependencies (always required)
 dependencies = [
-    "mne>=1.7",
+    "mne>=1.8",
     "mne-lsl>=1.7",
-    "mne-connectivity>=0.6",
+    "mne-connectivity>=0.7",
     "mne-features>=0.3",
-    "mne-icalabel>=0.4",
-    "numpy>=1.26,<3",
-    "scipy>=1.11",
-    "matplotlib>=3.8",
+    "mne-icalabel>=0.5",
+    "numpy>=2.0,<3",
+    "scipy>=1.13",
+    "matplotlib>=3.9",
     "nibabel>=5.0",
-    "PyQt6>=6.6",
+    "PyQt6>=6.7",
     "pyqtgraph>=0.13",
     "qtpy>=2.4",
     "pyserial>=3.0",       # required by mne-lsl / liblsl
     "fooof>=1.0",          # spectral parameterisation (specparam when stable)
-    "pyunlocbox>=0.5.2,<0.6",
+    "pyunlocbox>=0.5.2",
     "pactools>=0.3",
     "pyyaml>=6.0",
     "python-osc>=1.8",
@@ -73,6 +75,16 @@ viz = [
     "pyvista>=0.44",
     "pyvistaqt>=0.11.1",
     "vtk>=9.3",
+]
+
+# Riemannian geometry artifact detection (RiemannianPotatoDetector)
+riemann = [
+    "pyriemann>=0.7",
+]
+
+# BIDS-format data export (save_as_bids)
+bids = [
+    "mne-bids>=0.14",
 ]
 
 # Testing only (fast install)
@@ -106,6 +118,10 @@ full = [
     "pyvista>=0.44",
     "pyvistaqt>=0.11.1",
     "vtk>=9.3",
+    # riemann
+    "pyriemann>=0.7",
+    # bids
+    "mne-bids>=0.14",
     # dev
     "pytest",
     "pytest-cov",
