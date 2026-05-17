@@ -231,10 +231,6 @@ def _add_run_parser(sub):
         help="Brain surface geometry (default: inflated).",
     )
     p.add_argument(
-        "--ring-buffer", action="store_true",
-        help="Use sliding ring-buffer acquisition (50%% overlap).",
-    )
-    p.add_argument(
         "--osc-host", metavar="HOST", default=None,
         help="Enable OSC output and send to this host (e.g. 127.0.0.1).",
     )
@@ -263,14 +259,14 @@ def _add_run_parser(sub):
 
 
 def _add_common_session_args(p: argparse.ArgumentParser) -> None:
-    """Add subject/visit/session args shared by baseline and run sub-commands."""
+    """Add subject/session args shared by baseline and run sub-commands."""
     p.add_argument(
         "--subject", required=True, metavar="ID",
-        help="Subject identifier string.",
+        help="Subject identifier (BIDS subject label, e.g. 'sub01').",
     )
     p.add_argument(
-        "--visit", type=int, default=1, metavar="N",
-        help="Visit number (default: 1).",
+        "--session", default="01", metavar="LABEL",
+        help="BIDS session label (e.g. '01', 'pre', 'week1'; default: '01').",
     )
     p.add_argument(
         "--subjects-dir", required=True, metavar="DIR",
@@ -369,8 +365,7 @@ def _cmd_demo(args) -> None:
 
     nf = NFRealtime(
         subject_id="demo",
-        visit=1,
-        session="main",
+        session="01",
         subjects_dir=subjects_dir,
         montage="biosemi64",
         data_type="eeg",
@@ -414,8 +409,7 @@ def _cmd_baseline(args) -> None:
 
     nf = NFRealtime(
         subject_id=args.subject,
-        visit=args.visit,
-        session="baseline",
+        session=args.session,
         subjects_dir=args.subjects_dir,
         montage=args.montage,
         data_type=args.data_type,
@@ -440,8 +434,7 @@ def _cmd_run(args) -> None:
 
     nf = NFRealtime(
         subject_id=args.subject,
-        visit=args.visit,
-        session="main",
+        session=args.session,
         subjects_dir=args.subjects_dir,
         montage=args.montage,
         data_type=args.data_type,
@@ -492,7 +485,6 @@ def _cmd_run(args) -> None:
             show_raw_signal=not args.no_raw,
             show_topo=args.topo,
             show_brain_activation=args.brain,
-            use_ring_buffer=args.ring_buffer,
             osc_sender=osc_sender,
             lsl_sender=lsl_sender,
             verbose=args.verbose,
