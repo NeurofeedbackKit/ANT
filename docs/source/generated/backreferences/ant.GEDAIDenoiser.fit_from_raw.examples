@@ -15,14 +15,14 @@ Examples using ``ant.GEDAIDenoiser.fit_from_raw``
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example builds a 32-channel EEG recording, injects realistic artifacts, and compares five artifact handling approaches side-by-side:">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example generates a realistic EEG recording with simulate_nf_session, injects it into a local LSL stream with PlayerLSL, and compares four artifact handling approaches applied in real time as data arrives window-by-window:">
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_artifact_comparison_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_ex_artifact_comparison_thumb.png
     :alt:
 
-  :doc:`/auto_examples/plot_artifact_comparison`
+  :doc:`/auto_examples/ex_artifact_comparison`
 
 .. raw:: html
 
@@ -32,7 +32,7 @@ Examples using ``ant.GEDAIDenoiser.fit_from_raw``
 
 .. only:: not html
 
- * :doc:`/auto_examples/plot_artifact_comparison`
+ * :doc:`/auto_examples/ex_artifact_comparison`
 
 .. thumbnail-parent-div-close
 

@@ -60,9 +60,15 @@ Key capabilities
        :class:`~ant.protocols.ShamProtocol`
        (double-blind sham wrapper for within-session RCTs),
        :class:`~ant.protocols.UpDownStaircaseProtocol`
-       (adaptive psychophysics staircase converging to a target success rate), and
+       (adaptive psychophysics staircase converging to a target success rate),
        :class:`~ant.protocols.MultiBandProtocol`
-       (simultaneous two-band reward — e.g., alpha↑ + theta↓)
+       (simultaneous two-band reward — e.g., alpha↑ + theta↓),
+       :class:`~ant.protocols.RLProtocol`
+       (ε-greedy reinforcement-learning threshold search — fully self-calibrating),
+       :class:`~ant.protocols.OperantProtocol`
+       (partial reinforcement schedules: FR, VR, FI, VI — wraps any inner protocol), and
+       :class:`~ant.protocols.TransferProtocol`
+       (cross-session z-score seeded from a prior session file — zero warmup)
        give fine-grained control over when to issue a reward.
        See :doc:`protocols` for formulas, selection guide, and examples.
 
@@ -125,6 +131,7 @@ Key capabilities
    :caption: Getting started
 
    install
+   tutorial
 
 .. toctree::
    :hidden:
@@ -191,8 +198,7 @@ Quick start
 
     nf = NFRealtime(
         "sub01",
-        visit=1,
-        session="main",
+        session="01",
         subjects_dir="/data/subjects",
         montage="easycap-M1",
     )
@@ -241,11 +247,11 @@ Pipeline overview
      <tr style="background:#f5f3ff;">
        <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;font-weight:600;white-space:nowrap;">⑤ Feature extraction</td>
        <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;"><code>record_main(modality=[…])</code></td>
-       <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;">18 NF modalities in sensor or source space; parallel thread-pool per window</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;">20 NF modalities in sensor or source space; parallel thread-pool per window</td>
      </tr>
      <tr style="background:#ecfdf5;">
        <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;font-weight:600;white-space:nowrap;">⑥ NF protocol</td>
-       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;"><code>ThresholdProtocol</code> · <code>ZScoreProtocol</code> · <code>PercentileProtocol</code> · <code>LinearTrendProtocol</code> · <code>ShamProtocol</code> · <code>UpDownStaircaseProtocol</code> · <code>MultiBandProtocol</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;"><code>ThresholdProtocol</code> · <code>ZScoreProtocol</code> · <code>PercentileProtocol</code> · <code>LinearTrendProtocol</code> · <code>ShamProtocol</code> · <code>UpDownStaircaseProtocol</code> · <code>MultiBandProtocol</code> · <code>RLProtocol</code> · <code>OperantProtocol</code> · <code>TransferProtocol</code></td>
        <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;">Maps raw feature value → reward signal; all are stateful and adaptive</td>
      </tr>
      <tr style="background:#eff6ff;">

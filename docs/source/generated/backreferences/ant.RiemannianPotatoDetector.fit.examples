@@ -15,7 +15,7 @@ Examples using ``ant.RiemannianPotatoDetector.fit``
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example builds a 32-channel EEG recording, injects realistic artifacts, and compares five artifact handling approaches side-by-side:">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example generates a realistic EEG recording with simulate_nf_session, injects it into a local LSL stream with PlayerLSL, and compares five artifact handling approaches applied in real time as data arrives window-by-window:">
 
 .. only:: html
 

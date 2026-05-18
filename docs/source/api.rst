@@ -65,6 +65,25 @@ See :doc:`protocols` for the full protocol guide with formulas and examples.
    ant.protocols.ShamProtocol
    ant.protocols.UpDownStaircaseProtocol
    ant.protocols.MultiBandProtocol
+   ant.protocols.RLProtocol
+   ant.protocols.OperantProtocol
+   ant.protocols.TransferProtocol
+
+Feature combiners
+-----------------
+
+Reduce multiple parallel NF feature values to a single mixed feedback score.
+See :class:`~ant.combiners.FeatureCombiner` for the base-class interface.
+
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+
+   ant.combiners.FeatureCombiner
+   ant.combiners.WeightedSumCombiner
+   ant.combiners.GeometricMeanCombiner
+   ant.combiners.ZScoredNormCombiner
+   ant.combiners.LearnedCombiner
 
 Feedback output
 ---------------
@@ -73,8 +92,8 @@ Feedback output
    :toctree: generated/
    :nosignatures:
 
-   ant.osc.OSCSender
-   ant.lsl_output.LSLSender
+   ant.OSCSender
+   ant.LSLSender
 
 Tools & utilities
 -----------------
@@ -85,7 +104,7 @@ Tools & utilities
 
    ant.tools.simulate_raw
    ant.tools.simulate_nf_session
-   ant.tools.compute_instantaneous_phase
+   ant.modalities.ModalityMixin
 
 BIDS I/O
 --------

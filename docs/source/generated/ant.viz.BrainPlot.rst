@@ -4,6 +4,8 @@ ant.viz.BrainPlot
 .. currentmodule:: ant.viz
 
 .. autoclass:: BrainPlot
+   :members:
+   :inherited-members: False
 
 
    .. rubric:: Methods

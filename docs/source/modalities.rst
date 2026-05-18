@@ -3,7 +3,7 @@
 NF Modalities
 =============
 
-ANT implements 17 neurofeedback (NF) modalities spanning sensor-space and
+ANT implements 20 neurofeedback (NF) modalities spanning sensor-space and
 source-space features, from simple band-power estimates to graph-theoretic
 functional connectivity measures.
 Each modality is selected via the ``--modality`` flag of :doc:`cli` and is
@@ -158,6 +158,71 @@ Instantaneous phase is particularly useful for:
   input to the CFC modality
 * **Phase synchrony neurofeedback** — reward convergence of phase
   between two electrode pairs
+
+----
+
+.. _modality-scp:
+
+Slow Cortical Potentials
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Config key:** ``scp``
+
+Slow cortical potentials (SCP) are ultra-low-frequency shifts in cortical
+excitability with time constants of 0.5 – 10 seconds
+:footcite:p:`shabestari2025advances`.  The signal is extracted via low-pass
+filtering and channel averaging:
+
+1. Apply an optional high-pass filter at ``highpass`` Hz (set to 0 for
+   DC-coupled acquisition).
+2. Apply a low-pass filter at ``lowpass`` Hz (typically 1 Hz) using a
+   4th-order Butterworth filter via ``sosfilt``.
+3. Collapse channels using the selected ``reference`` (``"mean"`` or
+   ``"median"``).
+4. Return the mean amplitude of the filtered signal across the window.
+
+.. math::
+
+   \mathrm{SCP} = \operatorname{mean}\!\bigl(\mathrm{LP}_{f_\mathrm{low}}\{x(t)\}\bigr)
+
+Positive SCP values reflect cortical deactivation (slow positive shift);
+negative SCP values reflect activation (slow negative shift).
+
+----
+
+.. _modality-peak_alpha_freq:
+
+Peak Alpha Frequency
+~~~~~~~~~~~~~~~~~~~~
+
+**Config key:** ``peak_alpha_freq``
+
+Real-time tracker of the individual peak alpha frequency (PAF), smoothed
+with an exponential moving average (EMA) across consecutive analysis windows.
+
+For each window, the Welch PSD is computed and the frequency with maximum
+power within the search band :math:`[f_1, f_2]` is identified:
+
+.. math::
+
+   f^*_t = \operatorname*{argmax}_{f \in [f_1, f_2]}\;
+           \frac{1}{N_\mathrm{ch}} \sum_{i=1}^{N_\mathrm{ch}} S_i(f)
+
+The instantaneous estimate is smoothed by an EMA with coefficient
+:math:`\alpha \in [0, 1)`:
+
+.. math::
+
+   \widehat{f}^\mathrm{PAF}_t =
+       \alpha\,\widehat{f}^\mathrm{PAF}_{t-1}
+       + (1 - \alpha)\,f^*_t
+
+At :math:`\alpha = 0` the output is the raw instantaneous peak; at
+:math:`\alpha = 0.99` the estimate changes very slowly, acting as a
+long-term personalised frequency anchor.
+
+The EMA state is carried across windows via a shared mutable reference, so
+the tracker persists correctly over the full session.
 
 ----
 
@@ -370,6 +435,26 @@ ANT directly calls the measures implemented in `MNE-Connectivity <https://mne.to
 See `MNE-Connectivity <https://mne.tools/mne-connectivity/stable/generated/mne_connectivity.spectral_connectivity_time.html#mne_connectivity.spectral_connectivity_time>`_ 
 for the detailed list of supported methods. The NF value is the connectivity between a specified pair of channels
 or the mean connectivity across a set of channel pairs.
+
+----
+
+.. _modality-connectivity_ratio:
+
+Connectivity Ratio
+~~~~~~~~~~~~~~~~~~
+
+**Config key:** ``connectivity_ratio``
+
+Ratio of functional connectivity between two channel pairs:
+
+.. math::
+
+   R = \frac{\mathrm{conn}(A_1, B_1)}{\mathrm{conn}(A_2, B_2)}
+
+where each connectivity value is computed using the same spectral measure
+as :ref:`modality-sensor_connectivity` (e.g. coherence, PLV, imaginary
+coherence).  A common use is laterality of interhemispheric connectivity
+(e.g. :math:`\mathrm{coh}(C3, C4) / \mathrm{coh}(F3, F4)`).
 
 ----
 

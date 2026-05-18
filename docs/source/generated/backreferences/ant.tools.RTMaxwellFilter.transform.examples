@@ -19,10 +19,10 @@ Examples using ``ant.tools.RTMaxwellFilter.transform``
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_maxwell_realtime_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_ex_maxwell_realtime_thumb.png
     :alt:
 
-  :doc:`/auto_examples/plot_maxwell_realtime`
+  :doc:`/auto_examples/ex_maxwell_realtime`
 
 .. raw:: html
 
@@ -32,7 +32,7 @@ Examples using ``ant.tools.RTMaxwellFilter.transform``
 
 .. only:: not html
 
- * :doc:`/auto_examples/plot_maxwell_realtime`
+ * :doc:`/auto_examples/ex_maxwell_realtime`
 
 .. thumbnail-parent-div-close
 

@@ -95,6 +95,11 @@ Options:
    * - ``--surf``
      - inflated
      - Brain surface geometry
+   * - ``--smoothing``
+     - 0.25
+     - EMA smoothing factor applied to each NF value (``1.0`` = no smoothing,
+       ``0.1`` = heavy smoothing). Lower values produce smoother curves at the
+       cost of slower response to real changes in brain activity.
    * - ``--no-save``
      - —
      - Skip saving NF data and session report
@@ -128,9 +133,9 @@ Options:
    * - ``--duration``
      - 120
      - Baseline duration in seconds
-   * - ``--visit``
-     - 1
-     - Visit number (for multi-session studies)
+   * - ``--session``
+     - 01
+     - BIDS session label (e.g. ``01``, ``pre``, ``week1``)
    * - ``--mock``
      - —
      - Use simulated data instead of live LSL
@@ -196,9 +201,6 @@ Options (inherits all ``baseline`` flags above, plus):
    * - ``--artifact-correction``
      - —
      - ``lms``, ``orica``, ``gedai``, ``asr``, or ``maxwell`` (MEG only)
-   * - ``--ring-buffer``
-     - —
-     - Use sliding ring-buffer acquisition (50 % overlap)
    * - ``--no-signal``
      - —
      - Disable NF signal plot
@@ -230,6 +232,10 @@ Options (inherits all ``baseline`` flags above, plus):
    * - ``--lsl-stream-name``
      - ANT_NF
      - LSL stream name (only with ``--lsl-output``)
+   * - ``--smoothing``
+     - 0.25
+     - EMA smoothing factor applied to each NF value (``1.0`` = no smoothing,
+       ``0.1`` = heavy smoothing)
 
 Available NF modalities
 -----------------------
@@ -264,8 +270,14 @@ Available NF modalities
      - Cross-frequency coupling (sensor space)
    * - ``instantaneous_phase``
      - Instantaneous phase and amplitude envelope via Hilbert analytic signal
+   * - ``scp``
+     - Slow cortical potential — low-pass mean amplitude shift (DC-coupled)
+   * - ``peak_alpha_freq``
+     - Real-time peak alpha frequency tracker with EMA smoothing
    * - ``sensor_connectivity``
      - Functional connectivity (coh, plv, pli, wpli, corr, …); method set in config
+   * - ``connectivity_ratio``
+     - Ratio of connectivity between two channel pairs (e.g. C3–C4 / F3–F4)
    * - ``sensor_graph``
      - Graph-Laplacian learning from sensor connectivity
    * - ``source_power``

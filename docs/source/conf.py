@@ -45,6 +45,16 @@ _MOCK_MODULES = [
 for _mod in _MOCK_MODULES:
     sys.modules.setdefault(_mod, MagicMock())
 
+# NFSignalPlot and TopoPlot inherit from QMainWindow.  When QMainWindow is a
+# MagicMock instance, autodoc resolves those classes as "alias of <MagicMock>"
+# and drops the docstring entirely.  Replacing QMainWindow with a real (dummy)
+# Python class lets autodoc see the proper class hierarchy and renders the docs.
+class _MockQMainWindow:
+    """Placeholder used during Sphinx docs build for PyQt6.QtWidgets.QMainWindow."""
+    def __init__(self, *args, **kwargs): pass
+
+sys.modules["PyQt6.QtWidgets"].QMainWindow = _MockQMainWindow
+
 # Also tell autodoc to mock them (belt-and-suspenders)
 autodoc_mock_imports = _MOCK_MODULES
 
@@ -117,10 +127,13 @@ html_theme_options = {
     "navbar_end": ["navbar-icon-links"],
     "secondary_sidebar_items": ["page-toc", "edit-this-page"],
     "show_toc_level": 2,
+    "navigation_depth": 3,
+    "show_nav_level": 1,
 }
 
 html_sidebars = {
     "index": [],
+    "**": ["sidebar-nav-bs"],
 }
 
 # ---------------------------------------------------------------------------
@@ -148,7 +161,7 @@ bibtex_default_style = 'unsrt'
 sphinx_gallery_conf = {
     'examples_dirs':        os.path.join(_here, '..', '..', 'examples'),
     'gallery_dirs':         'auto_examples',
-    'filename_pattern':     r'plot_.*\.py',
+    'filename_pattern':     r'ex_.*\.py',
     'run_stale_examples':   False,   # only re-run when source md5 changes
     'plot_gallery':         True,
     'download_all_examples': False,

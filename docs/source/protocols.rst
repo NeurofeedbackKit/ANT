@@ -5,9 +5,11 @@ NF Protocols
 
 A **neurofeedback protocol** decides *when* and *how much* to reward.
 It sits between the raw NF feature value (e.g. alpha power) and the
-feedback signal delivered to the participant.  ANT ships seven protocols,
+feedback signal delivered to the participant.  ANT ships ten protocols,
 covering the full spectrum from simple fixed-threshold designs to
-adaptive psychophysics staircases and double-blind sham control.
+adaptive psychophysics staircases, reinforcement-learning thresholds,
+operant conditioning schedules, cross-session transfer, and double-blind
+sham control.
 
 All protocols share the same two-value contract:
 
@@ -70,10 +72,28 @@ Choosing a Protocol
        <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;">No</td>
      </tr>
      <tr style="background:#eff6ff;">
-       <td style="padding:7px 14px;font-weight:600;">MultiBandProtocol</td>
-       <td style="padding:7px 14px;">Dual-band NF (alpha↑ + theta↓, SMR↑ + theta↓)</td>
-       <td style="padding:7px 14px;">AND/OR combination of two independent inner protocols</td>
-       <td style="padding:7px 14px;">Depends on inner protocols</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;font-weight:600;">MultiBandProtocol</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Dual-band NF (alpha↑ + theta↓, SMR↑ + theta↓)</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">AND/OR combination of two independent inner protocols</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Depends on inner protocols</td>
+     </tr>
+     <tr style="background:#f0fdf4;">
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;font-weight:600;">RLProtocol</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;">Automated threshold search, fully adaptive training</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;">ε-greedy exploration + hit-rate-driven threshold update</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;">No (warmup windows)</td>
+     </tr>
+     <tr style="background:#eff6ff;">
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;font-weight:600;">OperantProtocol</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Partial reinforcement, ratio/interval schedules</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Wraps any protocol; gates rewards by FR/VR/FI/VI schedule</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Depends on inner</td>
+     </tr>
+     <tr style="background:#f0fdf4;">
+       <td style="padding:7px 14px;font-weight:600;">TransferProtocol</td>
+       <td style="padding:7px 14px;">Cross-session transfer, prior-seeded z-score</td>
+       <td style="padding:7px 14px;">Seeds running statistics from a prior session file — zero warmup</td>
+       <td style="padding:7px 14px;">No (prior file)</td>
      </tr>
    </tbody>
    </table>
@@ -472,6 +492,168 @@ alpha and a :class:`~ant.protocols.ZScoreProtocol` for theta.
         crossed, magnitude = proto.evaluate(alpha_val, theta_val)
 
 References: :footcite:t:`Sterman2006`
+
+----
+
+RL Protocol
+-----------
+
+.. raw:: html
+
+   <div style="background:#fdf4ff; border-left:4px solid #a855f7; padding:10px 16px; margin-bottom:16px; border-radius:0 8px 8px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:13px;">
+   <strong>Reward rule:</strong> &nbsp;
+   threshold adapts via hit-rate error &nbsp;|&nbsp; ε-greedy exploration prevents early convergence
+   </div>
+
+A lightweight reinforcement-learning protocol that finds the right reward
+threshold automatically, without requiring any manual calibration.  During a
+short warmup phase no rewards are issued while the protocol collects
+statistics.  Afterwards, the threshold :math:`\theta` is adjusted after each
+window to keep the rolling hit rate close to the target:
+
+.. math::
+
+   \delta_t &= \hat{h}_t - h^* \qquad
+   (\hat{h}_t = \text{rolling hit rate},\; h^* = \text{target hit rate}) \\[4pt]
+   \theta_{t+1} &= \theta_t + \eta \cdot \delta_t
+   \quad (\text{direction = "up"})
+
+With probability :math:`\varepsilon` the current value is treated as a
+*forced hit* (exploration step), preventing the threshold from drifting so
+high that the participant never succeeds.
+
+**When to use:**  When there is no prior calibration data and you want
+the protocol to self-tune from scratch.  Works particularly well in
+conjunction with :class:`~ant.protocols.ShamProtocol` for within-session
+sham control.
+
+.. code-block:: python
+
+    from ant.protocols import RLProtocol
+
+    proto = RLProtocol(
+        direction="up",
+        target_hit_rate=0.70,
+        lr=0.01,
+        epsilon=0.1,
+        warmup_windows=20,
+        history_len=50,
+    )
+    for value in nf_stream:
+        crossed, mag = proto.evaluate(value)
+
+----
+
+Operant Protocol
+----------------
+
+.. raw:: html
+
+   <div style="background:#fff7ed; border-left:4px solid #f97316; padding:10px 16px; margin-bottom:16px; border-radius:0 8px 8px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:13px;">
+   <strong>Design:</strong> &nbsp; wraps any inner protocol — gates the reward output through a
+   classical operant conditioning schedule (FR / VR / FI / VI).
+   </div>
+
+Partial reinforcement schedules are more resistant to extinction than
+continuous reinforcement :footcite:t:`Ferster1957`.
+:class:`~ant.protocols.OperantProtocol` wraps any existing NF protocol and
+filters its reward output through one of four classical schedules:
+
+.. raw:: html
+
+   <div style="overflow-x:auto; margin:8px 0 16px 0;">
+   <table style="border-collapse:collapse; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:13px;">
+   <thead>
+     <tr>
+       <th style="background:#431407;color:white;padding:6px 14px;">Schedule</th>
+       <th style="background:#431407;color:white;padding:6px 14px;">Abbreviation</th>
+       <th style="background:#431407;color:white;padding:6px 14px;">Rule</th>
+     </tr>
+   </thead>
+   <tbody>
+     <tr style="background:#fff7ed;"><td style="padding:5px 14px;border:1px solid #fed7aa;">Fixed Ratio</td><td style="padding:5px 14px;border:1px solid #fed7aa;">FR</td><td style="padding:5px 14px;border:1px solid #fed7aa;">Reward on every <em>N</em>-th hit</td></tr>
+     <tr style="background:#fffbeb;"><td style="padding:5px 14px;border:1px solid #fed7aa;">Variable Ratio</td><td style="padding:5px 14px;border:1px solid #fed7aa;">VR</td><td style="padding:5px 14px;border:1px solid #fed7aa;">Each hit rewarded with probability 1/<em>N</em></td></tr>
+     <tr style="background:#fff7ed;"><td style="padding:5px 14px;border:1px solid #fed7aa;">Fixed Interval</td><td style="padding:5px 14px;border:1px solid #fed7aa;">FI</td><td style="padding:5px 14px;border:1px solid #fed7aa;">First hit after exactly <em>T</em> seconds is rewarded</td></tr>
+     <tr style="background:#fffbeb;"><td style="padding:5px 14px;border:1px solid #fed7aa;">Variable Interval</td><td style="padding:5px 14px;border:1px solid #fed7aa;">VI</td><td style="padding:5px 14px;border:1px solid #fed7aa;">First hit after a random interval (mean <em>T</em>) is rewarded</td></tr>
+   </tbody>
+   </table>
+   </div>
+
+The inner protocol's state always advances regardless of whether the schedule
+releases a reward — so running statistics (z-score, staircase threshold, etc.)
+continue to update correctly.
+
+**When to use:**  Whenever reduced reward density is experimentally desirable
+(e.g. to study partial reinforcement extinction effects in NF, or to maintain
+engagement over long sessions by preventing saturation).
+
+.. code-block:: python
+
+    from ant.protocols import ZScoreProtocol, OperantProtocol
+
+    inner = ZScoreProtocol(direction="up", warmup_windows=20)
+    proto = OperantProtocol(inner, schedule="VR", ratio=3, rng_seed=42)
+    for value in nf_stream:
+        crossed, mag = proto.evaluate(value)
+
+References: :footcite:t:`Ferster1957`
+
+----
+
+Transfer Protocol
+-----------------
+
+.. raw:: html
+
+   <div style="background:#f0f9ff; border-left:4px solid #0ea5e9; padding:10px 16px; margin-bottom:16px; border-radius:0 8px 8px 0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:13px;">
+   <strong>Design:</strong> &nbsp; seeds running z-score statistics from a prior session file —
+   rewards from the very first window of the new session.
+   </div>
+
+The standard :class:`~ant.protocols.ZScoreProtocol` needs a warmup phase to
+estimate :math:`\hat\mu` and :math:`\hat\sigma` before rewards can be issued.
+:class:`~ant.protocols.TransferProtocol` eliminates warmup by loading the
+population statistics from a previous session's ``beh.json`` file and seeding
+the Welford accumulators directly:
+
+.. math::
+
+   \hat\mu_0 = \bar{x}_\mathrm{prior},
+   \qquad
+   \hat\sigma_0 = \sigma_\mathrm{prior},
+   \qquad
+   n_0 = N_\mathrm{prior}
+
+From the first window onward, each new value is z-scored against this
+informed prior and updates the statistics via Welford's algorithm, gradually
+replacing the prior with session-specific data.
+
+**Session file format** (BIDS-compatible ``beh.json``)::
+
+    {
+      "meta": {"modalities": ["sensor_power"]},
+      "data": {"sensor_power": [0.12, 0.14, 0.11, …]}
+    }
+
+Such files are written automatically by :meth:`~ant.NFRealtime.save`.
+
+**When to use:**  Multi-session training programmes where consistent reward
+rates across sessions improve participant motivation.  Also useful in studies
+where the first session's statistics serve as the participant's personalised
+baseline.
+
+.. code-block:: python
+
+    from ant.protocols import TransferProtocol
+
+    proto = TransferProtocol(
+        fname="sub-01_ses-01_task-nf_beh.json",
+        modality="sensor_power",
+        direction="up",
+        zscore_threshold=0.5,
+    )
+    for value in nf_stream:
+        crossed, mag = proto.evaluate(value)
 
 ----
 

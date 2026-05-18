@@ -19,10 +19,10 @@ Examples using ``ant.BadChannelDetector.update``
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_bad_channel_detection_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_ex_bad_channel_detection_thumb.png
     :alt:
 
-  :doc:`/auto_examples/plot_bad_channel_detection`
+  :doc:`/auto_examples/ex_bad_channel_detection`
 
 .. raw:: html
 
@@ -32,7 +32,7 @@ Examples using ``ant.BadChannelDetector.update``
 
 .. only:: not html
 
- * :doc:`/auto_examples/plot_bad_channel_detection`
+ * :doc:`/auto_examples/ex_bad_channel_detection`
 
 .. thumbnail-parent-div-close
 
