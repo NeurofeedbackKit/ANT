@@ -43,6 +43,13 @@ from ant.tools.bad_channel_detector import BadChannelDetector
 from ant.osc import OSCSender
 from ant.protocols import ThresholdProtocol, ZScoreProtocol, PercentileProtocol, LinearTrendProtocol
 from ant.lsl_output import LSLSender
+from ant.combiners import (  # noqa: F401 — public API
+    FeatureCombiner,
+    WeightedSumCombiner,
+    GeometricMeanCombiner,
+    ZScoredNormCombiner,
+    LearnedCombiner,
+)
 
 __all__ = [
     "NFRealtime",
@@ -61,6 +68,11 @@ __all__ = [
     "BadChannelDetector",
     "OSCSender",
     "LSLSender",
+    "FeatureCombiner",
+    "WeightedSumCombiner",
+    "GeometricMeanCombiner",
+    "ZScoredNormCombiner",
+    "LearnedCombiner",
     "set_log_level",
     "logger",
     "__version__",
