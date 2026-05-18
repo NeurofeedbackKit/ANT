@@ -27,54 +27,14 @@ from ant._logging import logger
 class RTMaxwellFilter:
     """Real-time Maxwell filtering (SSS / tSSS) for streaming MEG data.
 
-    Signal Space Separation :footcite:p:`Taulu2004` decomposes the MEG field
-    into components originating *inside* the sensor array (brain sources) and
-    *outside* (environmental interference), retaining only the internal part.
-    tSSS :footcite:p:`Taulu2006` additionally removes internal components that
-    correlate with external ones over a temporal buffer.
+    Pre-computes the Signal Space Separation (SSS) projection matrix
+    :footcite:p:`Taulu2004` **once** from sensor geometry, then applies it as
+    a single matrix multiply per incoming chunk — zero added latency, numerically
+    equivalent to offline MNE.  Temporal SSS (tSSS) :footcite:p:`Taulu2006` can
+    optionally run on a rolling buffer to remove interference that leaks into
+    the internal subspace.
 
-    Novel two-stage design
-    ~~~~~~~~~~~~~~~~~~~~~~
-
-    **Stage 1 — Spatial SSS** (every chunk, zero added latency)
-        The SSS projection matrix is pre-computed **once** from sensor
-        geometry via MNE's :func:`~mne.preprocessing.compute_maxwell_basis`:
-
-        .. math::
-
-            \\mathbf{P}_{\\mathrm{sss}} =
-            \\mathbf{S}_{\\mathrm{in}}\\,\\mathbf{S}_{\\mathrm{in}}^{\\dagger}
-
-        where :math:`\\mathbf{S}_{\\mathrm{in}} \\in \\mathbb{R}^{p \\times L}`
-        is the internal spherical-harmonic basis (:math:`L` = retained
-        moments after regularisation) and :math:`\\mathbf{S}_{\\mathrm{in}}^{\\dagger}`
-        is its stabilised pseudoinverse (eq. 38, Taulu & Kajola 2005).
-        Real-time application is then :math:`\\hat{x} = \\mathbf{P}_{\\mathrm{sss}} x`
-        — a single matrix multiply, numerically identical to offline MNE
-        (verified max residual < 10⁻¹⁶ T).
-
-        When an empty-room recording is provided the operator is instead
-        recovered via **system identification**: MNE's full
-        :func:`~mne.preprocessing.maxwell_filter` (including noise-informed
-        regularisation from the empty room) is applied to a Gaussian test
-        signal :math:`\\mathbf{X}_{\\mathrm{test}}`, and
-
-        .. math::
-
-            \\mathbf{P}_{\\mathrm{sss}}
-            = \\mathbf{Y}\\,\\mathbf{X}_{\\mathrm{test}}^+
-
-        is solved by least squares.  This propagates fine calibration,
-        cross-talk compensation, and noise-covariance regularisation into
-        the single cached matrix.
-
-    **Stage 2 — Temporal tSSS** (optional, rolling buffer)
-        A buffer of :math:`T_{\\mathrm{st}}` seconds (``st_duration``)
-        accumulates SSS-cleaned data.  Every ``st_update_interval`` chunks
-        MNE's tSSS (``st_only=True``) is applied to the buffer — skipping
-        the spatial step already done in Stage 1 — to project out internal
-        components that correlate with external ones above ``st_correlation``.
-        SSS is used as a clean fallback while the buffer fills.
+    See :ref:`denoising-maxwell` for the full mathematical background.
 
     Parameters
     ----------
@@ -111,17 +71,6 @@ class RTMaxwellFilter:
         Internal-moment Tikhonov regularisation passed to MNE.
     mag_scale : float, default 100.0
         Magnetometer/gradiometer balance factor.
-
-    Attributes
-    ----------
-    sss_projector : ndarray, shape (n_meg_all, n_meg_good)
-        Cached SSS projection matrix.  Available after :meth:`fit`.
-        Maps good-channel input to the full reconstructed output,
-        interpolating bad channels from neighbouring sensors.
-    n_use_in : int
-        Number of internal moments retained after regularisation.
-    mode : {"sss", "tsss"}
-        Operating mode inferred from ``st_duration``.
 
     Raises
     ------
