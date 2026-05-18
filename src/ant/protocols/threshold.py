@@ -25,27 +25,33 @@ class ThresholdProtocol:
 
     Parameters
     ----------
-    threshold : float, default 0.0
-        Initial decision threshold.
-    direction : {"up", "down"}, default "up"
+    threshold : float
+        Initial decision threshold.  Default is 0.0.
+    direction : {"up", "down"}
         "up"  -> reward when value > threshold (e.g., enhance alpha).
         "down" -> reward when value < threshold (e.g., suppress beta).
-    adaptive : bool, default False
+        Default is "up".
+    adaptive : bool
         If True, slowly adjust threshold to keep hit_rate near target_hit_rate.
-        Uses an exponential moving average of recent successes.
-    adapt_rate : float, default 0.05
+        Uses an exponential moving average of recent successes.  Default is
+        False.
+    adapt_rate : float
         Step size for threshold adaptation (in units of the NF signal's
-        running standard deviation). Larger = faster adaptation.
-    target_hit_rate : float, default 0.70
+        running standard deviation). Larger = faster adaptation.  Default is
+        0.05.
+    target_hit_rate : float
         Desired proportion of windows where the threshold is crossed.
-        The adaptive mechanism pushes threshold toward this rate.
-    smoothing : float, default 0.0
+        The adaptive mechanism pushes threshold toward this rate.  Default is
+        0.70.
+    smoothing : float
         EMA smoothing factor for the input value before thresholding.
         0.0 = no smoothing; 0.1 = light smoothing; 0.5 = heavy smoothing.
-        Applied as: smoothed = (1 - smoothing) * new + smoothing * prev
-    history_len : int, default 50
+        Applied as: smoothed = (1 - smoothing) * new + smoothing * prev.
+        Default is 0.0.
+    history_len : int
         Number of recent evaluations used to estimate the running hit rate
-        and running standard deviation (for adaptive scaling).
+        and running standard deviation (for adaptive scaling).  Default is
+        50.
 
     Raises
     ------
@@ -121,17 +127,16 @@ class ThresholdProtocol:
     def evaluate(self, value: float) -> tuple[bool, float]:
         """Evaluate one NF value and return (success, reward_magnitude).
 
-        Steps:
+        Notes
+        -----
+        EMA smoothing (if enabled) is applied first, then the smoothed value
+        is compared against the current threshold.  The hit/miss result is
+        recorded in history, and (if ``adaptive`` is True) the threshold is
+        updated before the return value is assembled.
 
-        1. Apply EMA smoothing if smoothing > 0.
-        2. Compare smoothed value against current threshold.
-        3. Record hit/miss in history.
-        4. If adaptive, update threshold.
-        5. Return (crossed, magnitude).
-
-        magnitude is 0.0 when the threshold was not crossed; a positive float
-        proportional to the distance from the threshold (normalised by the
-        running standard deviation) when crossed.
+        ``magnitude`` is 0.0 when the threshold was not crossed; a positive
+        float proportional to the distance from the threshold (normalised by
+        the running standard deviation) when crossed.
 
         Parameters
         ----------
