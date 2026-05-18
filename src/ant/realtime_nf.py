@@ -548,6 +548,7 @@ class NFRealtime(ModalityMixin):
         protocol: Optional[Any] = None,
         save_raw: bool = False,
         ref_channel: str = "Fp1",
+        signal_smoothing: float = 0.25,
         track_artifact_rate: bool = True,
         artifact_threshold_uv: float = 100.0,
         track_snr: bool = False,
@@ -579,8 +580,9 @@ class NFRealtime(ModalityMixin):
             ``"laterality"``, ``"laterality_erd_ers"``, ``"hjorth"``,
             ``"spectral_centroid"``, ``"argmax_freq"``,
             ``"individual_peak_power"``, ``"entropy"``,
-            ``"instantaneous_phase"``,
+            ``"instantaneous_phase"``, ``"scp"``, ``"peak_alpha_freq"``,
             ``"sensor_connectivity"``, ``"cfc_sensor"``, ``"sensor_graph"``,
+            ``"connectivity_ratio"``,
             ``"source_power"``, ``"source_connectivity"``, ``"source_graph"``.
         picks : str | list of str | None, default None
             Channel selection passed to the LSL stream.  ``None`` uses all
@@ -662,10 +664,36 @@ class NFRealtime(ModalityMixin):
             session to ``raw/<stem>-raw.fif``.  Off by default because FIF
             files can be large; enable when the raw continuous signal is
             needed for offline re-analysis or provenance.
+        signal_smoothing : float, default 0.25
+            Exponential moving average (EMA) factor applied to each NF feature
+            value before it is stored and displayed.  Controls the trade-off
+            between signal smoothness and responsiveness:
+
+            * ``1.0`` — no smoothing; raw per-window estimate passed through.
+            * ``0.5`` — moderate smoothing; each value is 50 % new + 50 % history.
+            * ``0.1`` — heavy smoothing; very slow response to rapid changes.
+
+            The EMA is applied after z-score normalisation (if enabled) and
+            before protocol evaluation, so protocols see the smoothed value.
         ref_channel : str, default "Fp1"
             Reference channel used for LMS artifact correction
             (``artifact_correction="lms"`` only).  Ignored for all other
             correction methods.
+        track_artifact_rate : bool, default True
+            If ``True``, count windows whose peak-to-peak amplitude exceeds
+            ``artifact_threshold_uv`` and store the fraction as
+            :attr:`artifact_rate` at the end of the session.
+        artifact_threshold_uv : float, default 100.0
+            Peak-to-peak amplitude threshold in µV used to classify a window
+            as artifactual when ``track_artifact_rate=True``.
+        track_snr : bool, default False
+            If ``True``, compute a per-window signal-to-noise ratio (band
+            power in ``snr_frange`` divided by broadband noise power, in dB)
+            and store the resulting time-series as :attr:`snr_data`.
+        snr_frange : tuple(float, float) | None, default None
+            Frequency band ``(f_low, f_high)`` in Hz used as the "signal"
+            band when ``track_snr=True``.  ``None`` defaults to the alpha
+            band ``(8.0, 13.0)``.
         verbose : bool | str | None, default None
             Override the instance-level verbosity for this call.
 
@@ -726,6 +754,8 @@ class NFRealtime(ModalityMixin):
             raise ValueError("`zscore_alpha` must be in [0, 1).")
         if zscore_warmup < 2:
             raise ValueError("`zscore_warmup` must be ≥ 2.")
+        if not (0.0 < signal_smoothing <= 1.0):
+            raise ValueError("`signal_smoothing` must be in (0, 1].")
 
         self._session_start_time = datetime.datetime.now(datetime.timezone.utc)
         self._session_stem = f"sub-{self.subject_id}_ses-{self.session}"
@@ -863,6 +893,7 @@ class NFRealtime(ModalityMixin):
         )
         done_event = threading.Event()
         nf_data: dict[str, list] = {m: [] for m in mods}
+        _ema: dict[str, float] = {}  # EMA state, seeded on first window
 
         # Build protocol map: {modality_name: protocol_instance}
         if protocol is None:
@@ -995,11 +1026,14 @@ class NFRealtime(ModalityMixin):
         def _acquire() -> None:
             t_start = local_clock()
             _raw_chunks: list[np.ndarray] = []
+            # 50 % overlap: advance by half a window each step so consecutive
+            # NF estimates share data → smooth, correlated curve updates.
+            _hop = max(1, self.window_size_s // 2)
 
             while local_clock() < t_start + duration:
-                # Block until a full window of new samples has arrived, then
-                # fetch the latest winsize seconds and process it once.
-                while self.stream.n_new_samples < self.window_size_s:
+                # Block until half a window of new samples has arrived, then
+                # fetch the latest winsize seconds (50 % overlap with prev window).
+                while self.stream.n_new_samples < _hop:
                     if local_clock() >= t_start + duration:
                         break
                     time.sleep(0.005)
@@ -1033,6 +1067,12 @@ class NFRealtime(ModalityMixin):
                 for m, fut in zip(mods, futures):
                     nf_val, m_delay = fut.result()
                     nf_val = _apply_zscore(m, float(nf_val))
+                    # EMA smoothing: seed on first window, then blend
+                    if m not in _ema:
+                        _ema[m] = nf_val
+                    else:
+                        nf_val = signal_smoothing * nf_val + (1.0 - signal_smoothing) * _ema[m]
+                        _ema[m] = nf_val
                     nf_data[m].append(nf_val)
                     if m in _proto_map:
                         _crossed, _mag = _proto_map[m].evaluate(nf_val)
@@ -1076,9 +1116,11 @@ class NFRealtime(ModalityMixin):
 
             # Interpolation state: [prev_vals, curr_vals, step_index]
             # Linearly interpolates between consecutive NF estimates so the
-            # display ramps smoothly rather than stepping every winsize seconds.
+            # display ramps smoothly. With 50 % overlap the acquisition produces
+            # values every winsize/2 s, so we ramp over winsize/2 s worth of
+            # 30-fps ticks.
             _interp: list = [[], [], [0]]
-            _n_steps: int = max(1, int(30 * winsize))
+            _n_steps: int = max(1, int(30 * winsize // 2))
 
             def _pump_signal() -> None:
                 """Fast timer (~30 fps) — NF signal plot only.
@@ -2002,6 +2044,7 @@ class NFRealtime(ModalityMixin):
         artifact_delay: bool = True,
         method_delay: bool = True,
         raw_data: bool = False,
+        bids_tsv: bool = False,
         format: str = "json",
         delay_include_trace: bool = False,
     ) -> dict[str, Path]:
@@ -2017,9 +2060,12 @@ class NFRealtime(ModalityMixin):
         nf_data : bool, default True
             Save NF feature time-series as
             ``beh/<stem>_task-neurofeedback_beh.json``.  The JSON contains a
-            ``"meta"`` block (subject, modalities, sfreq, duration,
-            artifact correction, start/end timestamps) and a ``"data"``
-            block with per-modality value lists.
+            ``"meta"`` block (subject, modalities, sfreq, duration, artifact
+            correction, artifact rate, SNR, start/end timestamps) and a
+            ``"data"`` block with per-modality value lists.  When
+            ``track_snr=True`` was passed to :meth:`record_main`, the
+            per-window SNR series is included in ``"data"`` under the key
+            ``"snr_db"``.
         acq_delay : bool, default True
             Include acquisition-loop timing in the delays file (only
             written when ``estimate_delays=True`` was set in
@@ -2031,7 +2077,14 @@ class NFRealtime(ModalityMixin):
             file.
         raw_data : bool, default False
             Save the pre-correction M/EEG acquired during the main
-            session as ``raw/<stem>-raw.fif``.
+            session as ``eeg/<stem>_task-neurofeedback_eeg.fif``.
+        bids_tsv : bool, default False
+            Additionally write a BIDS-compliant tab-separated values file
+            ``beh/<stem>_task-neurofeedback_beh.tsv`` alongside the JSON.
+            Each column is one modality (plus ``snr_db`` when available);
+            each row is one analysis window.  This file passes a BIDS
+            validator and can be loaded directly by EEGLAB, Fieldtrip, or
+            any TSV reader.
         format : str, default "json"
             Serialisation format for NF data and delays.  Currently only
             ``"json"`` is supported.
@@ -2042,9 +2095,9 @@ class NFRealtime(ModalityMixin):
         Returns
         -------
         saved : dict[str, Path]
-            Maps output type (``"nf_data"``, ``"delays"``, ``"raw"``) to
-            the saved file path.  Only keys for files actually written are
-            included.
+            Maps output type (``"nf_data"``, ``"nf_tsv"``, ``"delays"``,
+            ``"raw"``) to the saved file path.  Only keys for files actually
+            written are included.
 
         Notes
         -----
@@ -2111,6 +2164,7 @@ class NFRealtime(ModalityMixin):
                     "duration_s":          float(getattr(self, "duration", 0)),
                     "n_windows":           {m: len(v) for m, v in self.nf_data.items()},
                     "artifact_correction": str(self.artifact_correction),
+                    "artifact_rate":       getattr(self, "artifact_rate", None),
                     "start_time":          start_iso,
                     "end_time":            datetime.datetime.now(
                                                datetime.timezone.utc
@@ -2121,10 +2175,30 @@ class NFRealtime(ModalityMixin):
                     for m, vals in self.nf_data.items()
                 },
             }
+            snr = getattr(self, "snr_data", [])
+            if snr:
+                payload["data"]["snr_db"] = [_ser(v) for v in snr]
             p = self.subject_dir / "beh" / f"{stem}_task-neurofeedback_beh.json"
             with open(p, "w") as fh:
                 json.dump(payload, fh, indent=2)
             saved["nf_data"] = p
+
+            if bids_tsv:
+                cols = list(self.nf_data.keys())
+                if snr:
+                    cols.append("snr_db")
+                n_rows = max(len(self.nf_data[m]) for m in self.nf_data) if self.nf_data else 0
+                tsv_p = self.subject_dir / "beh" / f"{stem}_task-neurofeedback_beh.tsv"
+                with open(tsv_p, "w") as fh:
+                    fh.write("\t".join(cols) + "\n")
+                    for i in range(n_rows):
+                        row = []
+                        for col in cols:
+                            src = self.nf_data if col != "snr_db" else {"snr_db": snr}
+                            vals_col = src.get(col, [])
+                            row.append(str(_ser(vals_col[i])) if i < len(vals_col) else "n/a")
+                        fh.write("\t".join(row) + "\n")
+                saved["nf_tsv"] = tsv_p
 
         # ── Timing / delay statistics ────────────────────────────────────
 
