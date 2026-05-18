@@ -96,7 +96,8 @@ def _add_demo_parser(sub):
         help=(
             "NF modality(ies) to demonstrate.  "
             "Available: sensor_power, band_ratio, entropy, hjorth, "
-            "sensor_connectivity, erd_ers, laterality, spectral_centroid, cfc_sensor.  "
+            "sensor_connectivity, erd_ers, laterality, spectral_centroid, "
+            "cfc_sensor, scp, peak_alpha_freq, connectivity_ratio.  "
             "(default: sensor_power band_ratio entropy hjorth)"
         ),
     )
@@ -132,6 +133,13 @@ def _add_demo_parser(sub):
         choices=["inflated", "pial", "white", "sphere"],
         default="inflated",
         help="Cortical surface geometry for brain display (default: inflated).",
+    )
+    p.add_argument(
+        "--smoothing", type=float, default=0.25, metavar="ALPHA",
+        help=(
+            "EMA smoothing factor for the NF signal (default: 0.25). "
+            "1.0 = no smoothing; 0.1 = heavy smoothing."
+        ),
     )
     p.add_argument(
         "--no-save", action="store_true",
@@ -255,6 +263,13 @@ def _add_run_parser(sub):
         "--lsl-stream-name", metavar="NAME", default="ANT_NF",
         help="LSL outlet stream name (default: ANT_NF).  Only used with --lsl-output.",
     )
+    p.add_argument(
+        "--smoothing", type=float, default=0.25, metavar="ALPHA",
+        help=(
+            "EMA smoothing factor for the NF signal (default: 0.25). "
+            "1.0 = no smoothing; 0.1 = heavy smoothing."
+        ),
+    )
     return p
 
 
@@ -367,7 +382,7 @@ def _cmd_demo(args) -> None:
         subject_id="demo",
         session="01",
         subjects_dir=subjects_dir,
-        montage="biosemi64",
+        montage="easycap-M1",
         data_type="eeg",
         subjects_fs_dir=subjects_fs_dir if show_brain else None,
         verbose=args.verbose,
@@ -382,6 +397,7 @@ def _cmd_demo(args) -> None:
         duration=args.duration,
         modality=args.modality,
         winsize=args.winsize,
+        signal_smoothing=args.smoothing,
         show_nf_signal=not args.no_signal,
         show_raw_signal=not args.no_raw,
         show_topo=show_topo,
@@ -481,6 +497,7 @@ def _cmd_run(args) -> None:
             duration=args.duration,
             modality=args.modality,
             winsize=args.winsize,
+            signal_smoothing=args.smoothing,
             show_nf_signal=not args.no_signal,
             show_raw_signal=not args.no_raw,
             show_topo=args.topo,
