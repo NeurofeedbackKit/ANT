@@ -360,8 +360,7 @@ class BadChannelDetector:
 
         positions = np.array(positions)
         # Check for channels with no valid position
-        valid = ~np.any(np.isnan(positions) | (positions == 0).all(axis=1),
-                        axis=1)
+        valid = ~np.any(np.isnan(positions), axis=1) & ~(positions == 0).all(axis=1)
 
         if valid.sum() < 2:
             warnings.warn(
