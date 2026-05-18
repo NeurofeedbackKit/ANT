@@ -11,13 +11,15 @@ from scipy import sparse
 from scipy.integrate import simpson
 from scipy.signal import butter, welch, periodogram, get_window
 from scipy.spatial.distance import pdist, squareform
-from fooof import FOOOF
+try:
+    from specparam import SpectralModel as FOOOF
+except ImportError:
+    from fooof import FOOOF  # legacy name
 try:
     from pyunlocbox import functions, solvers as _pux_solvers
     _pyunlocbox_available = True
 except Exception:
     _pyunlocbox_available = False
-from padasip.filters import FilterLMS
 try:
     import pyvista as pv
     _pyvista_available = True
@@ -238,6 +240,63 @@ def compute_bandpower(
 
         return bp
 
+def compute_instantaneous_phase(data, sfreq, frange, channel_indices=None):
+        """Estimate instantaneous phase via the analytic signal (Hilbert transform).
+
+        Bandpass-filters the data in ``frange``, then computes the analytic signal
+        using :func:`scipy.signal.hilbert`.  Returns the instantaneous phase (rad)
+        at the *last sample* of the window, which is the current-time phase
+        estimate.  Using ``sosfiltfilt`` (zero-phase filtering) removes edge
+        distortion at the cost of requiring the full window to be available.
+
+        Parameters
+        ----------
+        data : ndarray, shape (n_channels, n_samples)
+                Input time series.
+        sfreq : float
+                Sampling frequency in Hz.
+        frange : tuple of float
+                (low, high) frequency band in Hz for the bandpass filter.
+        channel_indices : array_like of int | None, default None
+                Channels to average before phase estimation. ``None`` → all channels.
+
+        Returns
+        -------
+        phase : float
+                Instantaneous phase in radians at the last sample (in ``[-π, π]``).
+        amplitude : float
+                Instantaneous amplitude (envelope) at the last sample.
+
+        Notes
+        -----
+        For NF protocols, use the returned ``phase`` to trigger phase-specific
+        stimulation or to reward phase alignment across channels.  The ``amplitude``
+        can serve as a gating signal (only respond to phase when amplitude is high).
+
+        References
+        ----------
+        Pikovsky, A., Rosenblum, M., & Kurths, J. (2001). Synchronization: a
+        universal concept in nonlinear sciences. Cambridge University Press.
+
+        Canolty, R. T., & Knight, R. T. (2010). The functional role of
+        cross-frequency coupling. Trends in Cognitive Sciences, 14(11), 506–515.
+        """
+        from scipy.signal import butter, sosfiltfilt, hilbert
+
+        lo, hi = frange
+        sos = butter(4, [lo / (sfreq / 2), hi / (sfreq / 2)], btype='bandpass', output='sos')
+
+        if channel_indices is not None:
+                x = data[np.array(channel_indices)].mean(axis=0)
+        else:
+                x = data.mean(axis=0)
+
+        filtered = sosfiltfilt(sos, x)
+        analytic = hilbert(filtered)
+        phase = float(np.angle(analytic[-1]))
+        amplitude = float(np.abs(analytic[-1]))
+        return phase, amplitude
+
 def compute_fft(sfreq, winsize, freq_range, freq_res=1):
         """Compute FFT-related quantities for spectral analysis.
 
@@ -345,7 +404,7 @@ def _compute_inv_operator(
     data_type="eeg",
     loose=0.2,
     depth=0.8,
-    noise_cov_method="empirical",
+    noise_cov_method="ad_hoc",
     reg=0.1,
 ):
         """
@@ -431,8 +490,11 @@ def _compute_inv_operator(
                                 meg=(data_type == "meg"),
                                 eeg=(data_type == "eeg"),
                                 )
-        noise_cov = compute_raw_covariance(raw_fwd, method=noise_cov_method)
-        if reg > 0.0:
+        if noise_cov_method == "ad_hoc":
+            noise_cov = mne.make_ad_hoc_cov(raw_fwd.info)
+        else:
+            noise_cov = compute_raw_covariance(raw_fwd, method=noise_cov_method)
+        if reg > 0.0 and noise_cov_method != "ad_hoc":
             noise_cov = mne.cov.regularize(
                 noise_cov, raw_fwd.info,
                 eeg=reg, mag=reg, grad=reg, verbose=False,
@@ -663,65 +725,45 @@ def plot_glass_brain(bl1, bl2=None):
 
 
 def remove_blinks_lms(data, ref_ch_idx=0, n_taps=5, mu=0.01):
-        """
-        Remove blink artifacts from EEG using adaptive regression (LMS).
-        
-        Parameters
-        ----------
-        data : np.ndarray
-                Shape (n_channels, n_times), EEG data.
-        ref_ch : int
-                Index of reference channel (Fp1/Fp2/EOG).
-        n_taps : int
-                Number of filter taps (adaptive filter length).
-        mu : float
-                Learning rate (adaptation speed).
-        
-        Returns
-        -------
-        cleaned : np.ndarray
-                Shape (n_channels, n_times), cleaned EEG.
-        """
-        n_channels, n_times = data.shape
-        cleaned = data.copy()
-        ref = data[ref_ch_idx, :]
-        X = _make_tapped_delay(ref, n_taps=n_taps)
-        
-        # LMS adaptive filter per channel
-        filters = [FilterLMS(n=n_taps, mu=mu) for _ in range(n_channels)]
+    """Remove blink artifacts from EEG/MEG using an adaptive LMS filter.
 
-        for ch in range(n_channels):
-                if ch == ref_ch_idx:
-                        continue
-                
-                target = data[ch, :]
-                y, e, w = filters[ch].run(target, X)
-                cleaned[ch, :] = e  # target - estimated blink contribution
-        
-        return cleaned
+    Parameters
+    ----------
+    data : ndarray, shape (n_channels, n_times)
+        Input M/EEG data.
+    ref_ch_idx : int, default 0
+        Index of the reference (artifact) channel (e.g. Fp1, EOG).
+    n_taps : int, default 5
+        Number of tapped-delay filter coefficients.
+    mu : float, default 0.01
+        LMS step size (learning rate).
 
-def _make_tapped_delay(ref, n_taps):
-        """Build a tapped-delay matrix from a reference signal.
+    Returns
+    -------
+    cleaned : ndarray, shape (n_channels, n_times)
+        Artifact-attenuated data.
+    """
+    n_channels, n_times = data.shape
+    ref = data[ref_ch_idx]
 
-        Parameters
-        ----------
-        ref : ndarray, shape (n_times,)
-                The reference signal.
-        n_taps : int
-                Number of delay taps to include.
+    # Build tapped-delay matrix: column k = ref shifted k samples
+    X = np.zeros((n_times, n_taps))
+    for k in range(n_taps):
+        X[k:, k] = ref[:n_times - k]
 
-        Returns
-        -------
-        X : ndarray, shape (n_times, n_taps)
-                The tapped-delay matrix where each column contains the reference
-                signal delayed by a given number of samples.
-        """
-        n_times = len(ref)
-        X = np.zeros((n_times, n_taps))
-        for k in range(n_taps):
-                X[k:, k] = ref[:n_times-k]
-        
-        return X
+    cleaned = data.copy()
+    W = np.zeros((n_channels, n_taps))
+
+    for t in range(n_times):
+        x = X[t]                           # (n_taps,)
+        y = W @ x                          # (n_ch,) estimated artifact
+        e = data[:, t] - y                 # (n_ch,) residual
+        cleaned[:, t] = e
+        W += mu * np.outer(e, x)           # batch weight update for all channels
+
+    # Reference channel is not filtered
+    cleaned[ref_ch_idx] = data[ref_ch_idx]
+    return cleaned
 
 def create_blink_template(
     raw,
@@ -797,15 +839,21 @@ def create_blink_template(
 
     return template_blink_comp
 
-def setup_surface(subjects_dir, hemi_distance=100.0, surf="inflated"):
-        """Fetch fsaverage5 surfaces and prepare a PyVista mesh for both hemispheres.
+def setup_surface(subjects_dir=None, hemi_distance=20.0, surf="inflated"):
+        """Prepare a PyVista mesh of the fsaverage brain for both hemispheres.
+
+        Uses the MNE-bundled ``fsaverage`` subject (auto-downloaded on first
+        call via :func:`mne.datasets.fetch_fsaverage`).  The ``subjects_dir``
+        parameter is accepted for API compatibility but is no longer required.
 
         Parameters
         ----------
-        subjects_dir : str | Path
-                FreeSurfer subjects directory containing the ``fsaverage5`` folder.
+        subjects_dir : str | Path | None
+                Ignored — kept for backwards compatibility.
         hemi_distance : float, default 100.0
-                Lateral separation in mm applied to the right-hemisphere vertices.
+                Gap in mm between the medial walls of the two hemispheres.
+                Each hemisphere is centred so that its medial face sits at
+                ±hemi_distance/2, giving a consistent gap across all surfaces.
         surf : str, default "inflated"
                 Surface geometry to load.  One of ``"inflated"``, ``"pial"``,
                 ``"white"``, ``"sphere"``.
@@ -820,18 +868,22 @@ def setup_surface(subjects_dir, hemi_distance=100.0, surf="inflated"):
                 Combined bilateral mesh with ``"base"`` (sulcal depth) and
                 ``"activity"`` scalar arrays.
         verts_stc : dict
-                Mapping ``{"lh": ndarray, "rh": ndarray}`` of source vertex indices.
+                Mapping ``{"lh": ndarray, "rh": ndarray}`` of ico-5 source
+                vertex indices (0..10241 for each hemisphere).
+        nn_map : dict
+                Mapping ``{"lh": ndarray, "rh": ndarray}``.  For each full-
+                surface vertex, the index of the nearest ico-5 source vertex.
+                Used to spread source-space values to the full mesh so that
+                the activity overlay looks smooth rather than point-like.
         """
         if not _pyvista_available:
             raise ImportError(
                 "pyvista is required for brain surface visualisation. "
                 "Install it with:  pip install 'ANT[viz]'"
             )
-        fs_dir = Path(subjects_dir) / "fsaverage5"
-        verts_all = []
-        faces_all = []
-        offset = 0
-        hemi_offsets = {}
+        from scipy.spatial import cKDTree
+
+        fs_dir = Path(fetch_fsaverage(verbose=False))
         set_3d_backend("pyvistaqt")
 
         # Load sulcal depth
@@ -839,14 +891,29 @@ def setup_surface(subjects_dir, hemi_distance=100.0, surf="inflated"):
         rh_sulc = read_morph_data(fs_dir / 'surf' / 'rh.sulc')
         sulc_all = np.hstack([lh_sulc, rh_sulc])
 
-        # Load surfaces and separate hemispheres along x-axis
+        n_src_verts = 10242  # ico-5 source space vertices per hemisphere
+        verts_all = []
+        faces_all = []
+        offset = 0
+        hemi_offsets = {}
+        nn_map = {}
+
+        # Load surfaces, build nn_map, then centre each hemisphere symmetrically
         for hemi in ["lh", "rh"]:
                 surf_path = fs_dir / "surf" / f"{hemi}.{surf}"
                 verts_surf, faces_surf = read_surface(surf_path)
 
-                # Apply translation: shift right hemisphere
-                if hemi == "rh":
-                        verts_surf[:, 0] += hemi_distance
+                # Nearest-neighbour map: index of closest source vertex for every
+                # full-surface vertex (computed before translation, same coord frame)
+                _, nn = cKDTree(verts_surf[:n_src_verts]).query(verts_surf)
+                nn_map[hemi] = nn  # shape (n_hemi_verts,), values in [0, n_src_verts)
+
+                # Centre each hemisphere so medial wall sits at ±hemi_distance/2.
+                # This keeps the gap consistent across surfaces (inflated/pial/white).
+                if hemi == "lh":
+                        verts_surf[:, 0] -= verts_surf[:, 0].max() + hemi_distance / 2
+                else:
+                        verts_surf[:, 0] -= verts_surf[:, 0].min() - hemi_distance / 2
 
                 hemi_offsets[hemi] = offset
                 verts_all.append(verts_surf)
@@ -868,18 +935,14 @@ def setup_surface(subjects_dir, hemi_distance=100.0, surf="inflated"):
         mesh = pv.PolyData(verts_all, faces_all)
         mesh["base"] = sulc_all
 
-        # Initialize activity scalars
-        n_vertices = 10242
-        verts_stc = {}
-        verts_stc["lh"] = np.arange(n_vertices)
-        verts_stc["rh"] = np.arange(n_vertices)
+        verts_stc = {
+            "lh": np.arange(n_src_verts),
+            "rh": np.arange(n_src_verts),
+        }
         scalars_full = np.zeros(mesh.n_points)
-        for hemi in ["lh", "rh"]:
-                verts = verts_stc["lh"] + verts_stc["rh"]
-                scalars_full[verts] = np.zeros(shape=(n_vertices,))
         mesh["activity"] = scalars_full
 
-        return hemi_offsets, scalars_full, mesh, verts_stc
+        return hemi_offsets, scalars_full, mesh, verts_stc, nn_map
 
 def setup_plotter(mesh, clim=[0, 0.6], camera_position="yz", azimuth=45):
         """Initialize PyVista plotter, add mesh, and set camera."""
