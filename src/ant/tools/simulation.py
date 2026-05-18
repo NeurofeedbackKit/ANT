@@ -1,13 +1,19 @@
 """Simulated M/EEG data generation for offline testing and demos.
 
-This module provides :func:`simulate_raw` for generating realistic EEG or MEG
-recordings using the MNE-Python simulation pipeline (fsaverage source space,
-dipole activation, noise model).
+This module provides two simulation functions:
+
+* :func:`simulate_raw` — physics-based EEG/MEG via the MNE fsaverage source
+  space and forward model (slow; requires the MNE sample dataset).
+* :func:`simulate_nf_session` — fast parametric EEG with realistic 1/f
+  background, alpha oscillations, eye blinks, muscle bursts, and slow drift
+  (no MRI data required; useful for unit tests and NF algorithm development).
 
 Functions
 ---------
 simulate_raw
     Generate a synthetic EEG or MEG Raw object with a dipolar source.
+simulate_nf_session
+    Generate a realistic multi-artifact EEG simulation for NF testing.
 """
 from __future__ import annotations
 
@@ -227,47 +233,228 @@ def simulate_raw(
     return raw
 
 
-# ---------------------------------------------------------------------------
-# Backwards-compatibility alias
-# ---------------------------------------------------------------------------
 
-def simulate_eeg_raw(
-    brain_label: str,
-    frequency: float,
-    amplitude: float,
-    duration: float,
-    gap_duration: float,
-    n_repetition: int,
-    start: float,
-    iir_filter: list = [0.2, -0.2, 0.04],
-    fname_save=None,
-    verbose=None,
-) -> mne.io.RawArray:
-    """Backwards-compatible wrapper — use :func:`simulate_raw` instead.
+def simulate_nf_session(
+    duration: float = 120.0,
+    sfreq: float = 256.0,
+    n_channels: int = 64,
+    alpha_frange: tuple = (8.0, 13.0),
+    alpha_amplitude: float = 15e-6,
+    background_amplitude: float = 5e-6,
+    n_blinks: int = 15,
+    blink_amplitude: float = 150e-6,
+    muscle_rate: float = 0.05,
+    muscle_amplitude: float = 30e-6,
+    drift_amplitude: float = 20e-6,
+    alpha_reactivity: bool = True,
+    nf_epoch_fraction: float = 0.5,
+    rng_seed: Optional[Union[int, None]] = None,
+    verbose: Union[bool, str, None] = None,
+) -> tuple:
+    """Generate a realistic multi-artifact EEG simulation for NF testing.
+
+    Produces synthetic EEG with:
+
+    * **1/f background noise** (pink noise) on all channels
+    * **Alpha-band oscillations** with realistic spatial topography
+      (occipital channels have strongest alpha)
+    * **Alpha reactivity**: alpha power is reduced during simulated NF
+      "active" epochs (mimics ERD during cognitive effort)
+    * **Eye-blink artefacts** at realistic rate (≈15/min) with frontal
+      topography
+    * **Muscle noise bursts** as short high-frequency transients
+    * **Slow electrode drift** (low-frequency random walk)
 
     Parameters
     ----------
-    brain_label, frequency, amplitude, duration, gap_duration, n_repetition,
-    start, iir_filter, fname_save, verbose
-        See :func:`simulate_raw`.
+    duration : float, default 120.0
+        Total recording duration in seconds.
+    sfreq : float, default 256.0
+        Sampling rate in Hz.
+    n_channels : int, default 64
+        Number of EEG channels (must be 32, 64, 128, or 256 for standard
+        biosemi/easycap montages).
+    alpha_frange : tuple, default (8.0, 13.0)
+        Alpha-band frequency range (Hz).
+    alpha_amplitude : float, default 15e-6
+        Peak alpha oscillation amplitude at occipital electrodes (V).
+    background_amplitude : float, default 5e-6
+        Broadband 1/f noise amplitude (V).
+    n_blinks : int, default 15
+        Number of blink artefacts to inject.
+    blink_amplitude : float, default 150e-6
+        Peak blink amplitude (V) at Fp1/Fp2.
+    muscle_rate : float, default 0.05
+        Fraction of windows contaminated with muscle bursts (0–1).
+    muscle_amplitude : float, default 30e-6
+        Peak muscle burst amplitude (V).
+    drift_amplitude : float, default 20e-6
+        Peak slow-drift amplitude (V).
+    alpha_reactivity : bool, default True
+        If True, alpha power is reduced by ~50% during NF epochs.
+    nf_epoch_fraction : float, default 0.5
+        Fraction of total duration where NF-state (reduced alpha) applies.
+    rng_seed : int | None, default None
+        Random seed for reproducibility.
+    verbose : bool | str | None, default None
+        MNE verbosity.
 
     Returns
     -------
-    raw : mne.io.Raw
+    raw : mne.io.RawArray
+        Simulated raw EEG.
+    nf_state : ndarray, shape (n_samples,)
+        Boolean mask: True where simulated NF-state (reduced alpha) is active.
+
+    Notes
+    -----
+    The function uses a standard biosemi64 montage channel layout. Channels
+    are sorted into occipital (O1, Oz, O2, POz, PO3, PO4, PO7, PO8),
+    frontal (Fp1, Fp2, AF7, AF8), and remaining groups to assign
+    spatially realistic source weights.
+
+    References
+    ----------
+    Niedermeyer, E., & da Silva, F. L. (2005). Electroencephalography:
+    Basic Principles, Clinical Applications, and Related Fields. LWW.
+
+    Pfurtscheller, G., & Aranibar, A. (1977). Event-related cortical
+    desynchronisation detected by power measurements of scalp EEG.
+    Electroencephalography and clinical Neurophysiology, 42(6), 817–826.
     """
-    return simulate_raw(
-        brain_label=brain_label,
-        frequency=frequency,
-        amplitude=amplitude,
-        duration=duration,
-        gap_duration=gap_duration,
-        n_repetition=n_repetition,
-        start=start,
-        data_type="eeg",
-        iir_filter=iir_filter,
-        fname_save=fname_save,
-        verbose=verbose,
+    from scipy.signal import butter, sosfiltfilt
+
+    mne.set_log_level(verbose=verbose)
+    rng = np.random.default_rng(rng_seed)
+
+    n_samples = int(duration * sfreq)
+    info = _make_sensor_info("eeg", sfreq, n_channels)
+    ch_names = info["ch_names"]
+
+    # ── Spatial weight vectors ─────────────────────────────────────────────
+    occipital_names = {"O1", "Oz", "O2", "POz", "PO3", "PO4", "PO7", "PO8"}
+    frontal_names = {"Fp1", "Fp2", "AF7", "AF8"}
+
+    alpha_weights = np.zeros(n_channels)
+    blink_weights = np.zeros(n_channels)
+    for i, ch in enumerate(ch_names):
+        if ch in occipital_names:
+            alpha_weights[i] = 1.0
+        elif ch in frontal_names:
+            alpha_weights[i] = 0.1
+            blink_weights[i] = 1.0
+        else:
+            alpha_weights[i] = 0.3
+            blink_weights[i] = 0.05
+
+    # Normalise weights so they sum to 1 (max-normalise for spatial realism)
+    if alpha_weights.max() > 0:
+        alpha_weights /= alpha_weights.max()
+    if blink_weights.max() > 0:
+        blink_weights /= blink_weights.max()
+
+    # ── NF state mask (consecutive block in the middle of the recording) ──
+    nf_state = np.zeros(n_samples, dtype=bool)
+    nf_n = int(nf_epoch_fraction * n_samples)
+    nf_start = (n_samples - nf_n) // 2
+    nf_state[nf_start: nf_start + nf_n] = True
+
+    # ── 1. Pink noise (all channels) ──────────────────────────────────────
+    def _pink_noise(n: int) -> np.ndarray:
+        white = rng.standard_normal(n)
+        fft_vals = np.fft.rfft(white)
+        freqs = np.fft.rfftfreq(n)
+        # Avoid division by zero at DC; set DC to 0.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            scale = np.where(freqs == 0, 0.0, 1.0 / np.sqrt(freqs))
+        fft_vals *= scale
+        pink = np.fft.irfft(fft_vals, n=n)
+        # Normalise to unit RMS
+        rms = np.sqrt(np.mean(pink ** 2))
+        return pink / (rms + 1e-30)
+
+    data = np.zeros((n_channels, n_samples))
+    for c in range(n_channels):
+        data[c] = _pink_noise(n_samples) * background_amplitude
+
+    # ── 2. Alpha oscillations ──────────────────────────────────────────────
+    iaf = (alpha_frange[0] + alpha_frange[1]) / 2.0  # individual alpha frequency
+    t = np.arange(n_samples) / sfreq
+    # Random phase offset per channel to avoid perfectly synchronous oscillations
+    phase_offsets = rng.uniform(0, 2 * np.pi, n_channels)
+
+    for c in range(n_channels):
+        alpha_signal = np.sin(2.0 * np.pi * iaf * t + phase_offsets[c])
+        if alpha_reactivity:
+            # Reduce alpha amplitude by 50% during NF state
+            amplitude_mod = np.where(nf_state, 0.5, 1.0)
+            alpha_signal = alpha_signal * amplitude_mod
+        data[c] += alpha_weights[c] * alpha_amplitude * alpha_signal
+
+    # ── 3. Eye blink artefacts ────────────────────────────────────────────
+    if n_blinks > 0:
+        blink_duration_s = 0.2  # 200 ms Gaussian envelope
+        blink_sigma_samples = int(blink_duration_s / 2 * sfreq)
+        blink_half_width = 3 * blink_sigma_samples
+        blink_t = np.arange(-blink_half_width, blink_half_width + 1)
+        blink_template = np.exp(-(blink_t ** 2) / (2 * blink_sigma_samples ** 2))
+
+        blink_times = rng.integers(
+            blink_half_width, n_samples - blink_half_width, size=n_blinks
+        )
+        for bt in blink_times:
+            start = bt - blink_half_width
+            end = bt + blink_half_width + 1
+            actual_len = min(end, n_samples) - max(start, 0)
+            tmpl_start = max(0, -start)
+            tmpl_end = tmpl_start + actual_len
+            data_start = max(0, start)
+            for c in range(n_channels):
+                data[c, data_start: data_start + actual_len] += (
+                    blink_weights[c] * blink_amplitude * blink_template[tmpl_start:tmpl_end]
+                )
+
+    # ── 4. Muscle bursts ──────────────────────────────────────────────────
+    window_size = int(sfreq)  # 1-second windows
+    n_windows = n_samples // window_size
+    n_muscle_windows = int(muscle_rate * n_windows)
+    muscle_window_indices = rng.choice(n_windows, size=n_muscle_windows, replace=False)
+
+    for wi in muscle_window_indices:
+        ws = wi * window_size
+        we = ws + window_size
+        # Band-limited high-frequency noise (30–150 Hz)
+        burst = rng.standard_normal((n_channels, window_size))
+        sos = butter(
+            4,
+            [30.0 / (sfreq / 2), min(150.0, sfreq / 2 - 1) / (sfreq / 2)],
+            btype="bandpass",
+            output="sos",
+        )
+        for c in range(n_channels):
+            burst[c] = sosfiltfilt(sos, burst[c])
+        # Normalise burst to unit RMS then scale
+        rms_burst = np.sqrt(np.mean(burst ** 2, axis=1, keepdims=True))
+        burst /= (rms_burst + 1e-30)
+        data[:, ws:we] += muscle_amplitude * burst
+
+    # ── 5. Slow electrode drift ───────────────────────────────────────────
+    drift_raw = rng.standard_normal((n_channels, n_samples))
+    sos_drift = butter(
+        2,
+        0.5 / (sfreq / 2),
+        btype="low",
+        output="sos",
     )
+    for c in range(n_channels):
+        drift_filtered = sosfiltfilt(sos_drift, drift_raw[c])
+        max_drift = np.abs(drift_filtered).max()
+        if max_drift > 0:
+            drift_filtered /= max_drift
+        data[c] += drift_amplitude * drift_filtered
+
+    raw = mne.io.RawArray(data, info, verbose=verbose)
+    return raw, nf_state
 
 
 # ---------------------------------------------------------------------------
