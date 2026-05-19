@@ -8,34 +8,70 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/ANT/"><img alt="PyPI" src="https://img.shields.io/pypi/v/ANT?color=blue&logo=pypi&logoColor=white"></a>
-  <a href="https://pypi.org/project/ANT/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/ANT?logo=python&logoColor=white"></a>
+  <a href="https://pypi.org/project/ant-nf/"><img alt="PyPI" src="https://img.shields.io/pypi/v/ant-nf?color=blue&logo=pypi&logoColor=white"></a>
+  <a href="https://pypi.org/project/ant-nf/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/ant-nf?logo=python&logoColor=white"></a>
   <a href="https://github.com/payamsash/ANT/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/payamsash/ANT?color=green"></a>
   <a href="https://payamsash.github.io/ANT/"><img alt="Docs" src="https://img.shields.io/badge/docs-online-brightgreen?logo=readthedocs&logoColor=white"></a>
 </p>
 
 ---
 
-**ANT** is an open-source Python package for **real-time closed-loop M/EEG neurofeedback**.
-Built on [MNE-Python](https://mne.tools) and the [Lab Streaming Layer (LSL)](https://labstreaminglayer.org), it covers the full pipeline — from amplifier to 3D brain display — in a single, researcher-friendly API.
+**ANT** is an open-source Python package for **real-time closed-loop M/EEG neurofeedback**. Built on [MNE-Python](https://mne.tools) and the [Lab Streaming Layer (LSL)](https://labstreaminglayer.org), it covers the full pipeline — from amplifier to 3D brain display — in a single, researcher-friendly API.
 
 ## Highlights
 
-| Feature | Details |
-|---------|---------|
-| **14+ NF modalities** | Alpha power, ERD/ERS, laterality, Hjorth, spectral centroid, CFC, graph metrics, source power … |
-| **Sensor & source space** | Full MNE inverse-operator pipeline for source-level NF |
-| **Real-time artifact correction** | ORICA (online ICA), adaptive LMS, GEDAI (GED-based spatial filters) |
-| **Three parallel windows** | Raw stream viewer · NF signal monitor · 3D brain activation |
-| **OSC output** | Send feedback values to Max/MSP, SuperCollider, Pure Data |
-| **CLI** | `ANT demo`, `ANT baseline`, `ANT run` — no Python required |
-| **Mock mode** | Works without hardware using bundled sample EEG data |
+<table>
+  <thead>
+    <tr>
+      <th width="30%">Feature</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>20+ NF modalities</strong></td>
+      <td>Band power, ERD/ERS, laterality, Hjorth parameters, spectral centroid, slow cortical potentials, CFC, functional connectivity, graph Laplacian — in sensor and source space</td>
+    </tr>
+    <tr bgcolor="#f6f8fa">
+      <td><strong>Adaptive protocols</strong></td>
+      <td>Z-score, threshold, percentile, staircase, operant, reinforcement learning, sham, and transfer — all evaluated <em>inside</em> the acquisition loop on every analysis window</td>
+    </tr>
+    <tr>
+      <td><strong>Real-time artifact correction</strong></td>
+      <td>ASR, adaptive LMS, GEDAI (GED-based spatial filters), ORICA (online ICA), Riemannian covariance detection</td>
+    </tr>
+    <tr bgcolor="#f6f8fa">
+      <td><strong>Real-time Maxwell filtering</strong></td>
+      <td>Pre-computed SSS/tSSS projector for zero-latency MEG denoising; numerically equivalent to offline MNE</td>
+    </tr>
+    <tr>
+      <td><strong>Three live displays</strong></td>
+      <td>Raw stream viewer · NF signal monitor · 3D cortical activation map — all updating at ~30 fps via a shared Qt event loop</td>
+    </tr>
+    <tr bgcolor="#f6f8fa">
+      <td><strong>External output</strong></td>
+      <td>OSC (Max/MSP, SuperCollider, Pure Data) and LSL outlet (PsychoPy, OpenViBE, Psychtoolbox) for reward delivery to any application</td>
+    </tr>
+    <tr>
+      <td><strong>BIDS-compatible saving</strong></td>
+      <td>Session data saved as JSON + optional TSV with full metadata, artifact rate, and SNR</td>
+    </tr>
+    <tr bgcolor="#f6f8fa">
+      <td><strong>CLI</strong></td>
+      <td><code>ANT info</code> · <code>ANT demo</code> · <code>ANT baseline</code> · <code>ANT run</code> — no Python required</td>
+    </tr>
+    <tr>
+      <td><strong>Mock mode</strong></td>
+      <td>Full pipeline without hardware via built-in LSL replay from any MNE-readable file</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Installation
 
 ```bash
-pip install ANT                 # core package (OSC output included)
-pip install "ANT[full]"         # all extras (viz, dev, docs)
+pip install ant-nf                 # core package
+pip install "ant-nf[full]"         # all extras: viz, dev, docs
 ```
 
 <details>
@@ -43,7 +79,7 @@ pip install "ANT[full]"         # all extras (viz, dev, docs)
 
 **uv (fast Rust-based installer):**
 ```bash
-uv pip install ANT
+uv pip install ant-nf
 ```
 
 **conda / mamba:**
@@ -63,7 +99,7 @@ pip install -e ".[dev]"
 
 Verify the installation:
 ```bash
-ANT info     # print versions of ANT and all key dependencies
+ANT info     # print ANT version and all key dependency versions
 ANT demo     # run a 60-second mock neurofeedback session
 ```
 
@@ -71,89 +107,69 @@ ANT demo     # run a 60-second mock neurofeedback session
 
 ```python
 from ant import NFRealtime
+from ant.protocols import ZScoreProtocol
 
 # 1 — Create a session object
 nf = NFRealtime(
     subject_id="sub01",
-    visit=1,
-    session="main",
+    session="01",
     subjects_dir="/data/subjects",
     montage="easycap-M1",
 )
 
-# 2 — Connect to a live LSL stream (or a mock replay)
+# 2 — Connect to a live LSL stream (or replay a file without hardware)
 nf.connect_to_lsl(mock_lsl=True)
 
-# 3 — Record a resting-state baseline (computes inverse operator)
+# 3 — Record a resting-state baseline
 nf.record_baseline(baseline_duration=120)
 
-# 4 — Run the closed-loop NF session
+# 4 — Run a closed-loop NF session with an adaptive reward protocol
 nf.record_main(
     duration=300,
     modality=["sensor_power", "erd_ers", "laterality"],
+    protocol=ZScoreProtocol(direction="up", zscore_threshold=0.5),
     show_nf_signal=True,
-    show_brain_activation=True,
+    show_topo=True,
 )
+
+# 5 — Save results (JSON + companion TSV)
+nf.save(bids_tsv=True)
 ```
-
-## Architecture
-
-<p align="center">
-  <a href="https://payamsash.github.io/ANT/_static/ant_workflow.html">
-    <img src="docs/source/_static/ant_workflow.svg"
-         alt="ANT Processing Pipeline"
-         width="100%"
-         style="border-radius:10px; border:1px solid rgba(200,200,200,0.15);
-                box-shadow:0 6px 18px rgba(0,0,0,0.35);">
-  </a>
-</p>
-<p align="center"><sub>Click to open the interactive diagram</sub></p>
-
-The acquisition loop runs in a **background daemon thread**; all three visualisation windows share a **Qt event loop** on the main thread, updated at ~30 fps via a pump timer.
-
-## Available NF modalities
-
-| Key | Description |
-|-----|-------------|
-| `sensor_power` | Mean band power across channels |
-| `band_ratio` | Power ratio between two bands (e.g. θ/β) |
-| `erd_ers` | Event-related de/synchronisation (baseline-normalised) |
-| `laterality` | Log power asymmetry right vs. left hemisphere |
-| `hjorth` | Hjorth activity, mobility, complexity |
-| `spectral_centroid` | Frequency-weighted spectral centroid |
-| `entropy` | Spectral / approximate / sample entropy |
-| `argmax_freq` | Dominant frequency peak |
-| `individual_peak_power` | Power at the individual spectral peak |
-| `cfc_sensor` | Cross-frequency coupling (sensor space) |
-| `sensor_connectivity` | Functional connectivity (PLI, correlation) |
-| `sensor_graph` | Graph Laplacian from sensor connectivity |
-| `source_power` | Source-space band power |
-| `source_connectivity` | Source-space functional connectivity |
-| `source_graph` | Graph Laplacian from source connectivity |
 
 ## CLI
 
 ```bash
-# Quick demo — no amplifier needed
-ANT demo --duration 60 --modality sensor_power band_ratio
+# Print ANT version and all dependency versions
+ANT info
 
-# Record a resting-state baseline
-ANT baseline --subject sub01 --subjects-dir /data --duration 120 --mock
+# Quick demo — no amplifier or files needed (default: 120 s)
+ANT demo --duration 60 --modality sensor_power erd_ers laterality
 
-# Run a full NF session with OSC output
+# Record a resting-state baseline from a live LSL stream
+ANT baseline --subject sub01 --subjects-dir /data --session 01 --duration 120
+
+# Record a baseline from a file (mock mode)
+ANT baseline --subject sub01 --subjects-dir /data --mock --fname recording.fif
+
+# Run a full session with real-time artifact correction and displays
 ANT run --subject sub01 --subjects-dir /data --duration 600 \
-        --modality sensor_power erd_ers \
+        --modality sensor_power erd_ers laterality \
+        --artifact-correction asr \
+        --topo --brain
+
+# Stream reward values to Max/MSP or SuperCollider via OSC
+ANT run --subject sub01 --subjects-dir /data --duration 600 \
+        --modality sensor_power laterality \
         --osc-host 127.0.0.1 --osc-port 9000
+
+# Broadcast NF values as an LSL outlet (PsychoPy, OpenViBE, Psychtoolbox …)
+ANT run --subject sub01 --subjects-dir /data --duration 600 \
+        --modality sensor_power --lsl-output
 ```
-
-## Documentation
-
-Full documentation, API reference, and gallery examples:  
-**[payamsash.github.io/ANT](https://payamsash.github.io/ANT/)**
 
 ## Cite
 
-If you use ANT, please cite:
+If you use ANT in your research, please cite:
 
 ```bibtex
 @inproceedings{shabestari2025advances,
@@ -173,7 +189,7 @@ If you use ANT, please cite:
 ## Acknowledgements
 
 Development was supported by the [Swiss National Science Foundation](https://www.snf.ch/en)
-(grant number - 208164 — *Advancing Neurofeedback in Tinnitus*).
+(grant number 208164 — *Advancing Neurofeedback in Tinnitus*).
 
 ## License
 
