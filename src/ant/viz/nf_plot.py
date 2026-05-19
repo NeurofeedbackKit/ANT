@@ -198,6 +198,7 @@ class NFSignalPlot(QMainWindow):
         scales_dict: dict[str, float],
         sfreq: float,
         time_window: float = 10.0,
+        display_smoothing: float = 0.3,
         verbose=None,
     ) -> None:
         from ant._logging import set_log_level
@@ -210,6 +211,8 @@ class NFSignalPlot(QMainWindow):
         self._n = len(modalities)
         self._channel_scales = [1.0] * self._n
         self._paused = False
+        self._display_alpha = float(np.clip(display_smoothing, 0.0, 1.0))
+        self._ema = np.zeros(self._n)
 
         # Data buffers — 30 fps × time_window gives real-time resolution
         n_pts = max(int(sfreq * time_window), 30)
@@ -512,6 +515,10 @@ class NFSignalPlot(QMainWindow):
             (arr[i] / (self._scales[self._mods[i]] + 1e-300)) * self._channel_scales[i]
             for i in range(self._n)
         ])
+
+        if self._display_alpha < 1.0:
+            self._ema = self._display_alpha * norm + (1.0 - self._display_alpha) * self._ema
+            norm = self._ema
 
         self._buf = np.roll(self._buf, -1, axis=1)
         self._buf[:, -1] = norm
