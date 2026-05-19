@@ -27,7 +27,7 @@ For each channel :math:`i`, the one-sided power spectral density
 :math:`S_i(f)` is estimated via Welch's method.
 The per-channel band power is averaged over the target band
 :math:`[f_1, f_2]` and then averaged across all :math:`N_\mathrm{ch}` channels
-in the electrode set :footcite:p:`Ros2020`:
+in the electrode set :footcite:p:`pfurtscheller1999event`:
 
 .. math::
 
@@ -68,7 +68,7 @@ ERD / ERS
 
 Event-related desynchronisation (ERD) and event-related synchronisation (ERS)
 quantify power changes relative to a resting-state baseline
-:footcite:p:`Ros2020`.
+:footcite:p:`pfurtscheller1999event`.
 Let :math:`B` be the mean band power computed from the baseline recording and
 :math:`P` the mean band power in the current analysis window:
 
@@ -132,7 +132,7 @@ Instantaneous Phase
 
 The instantaneous phase and amplitude of the analytic signal in a target
 frequency band, estimated via the Hilbert transform
-:footcite:p:`shabestari2025advances`.
+:footcite:p:`le2001comparison`.
 
 The channel time series :math:`x(t)` is first zero-phase bandpass-filtered
 (4th-order Butterworth, via ``sosfiltfilt``) to isolate the target band
@@ -170,7 +170,7 @@ Slow Cortical Potentials
 
 Slow cortical potentials (SCP) are ultra-low-frequency shifts in cortical
 excitability with time constants of 0.5 – 10 seconds
-:footcite:p:`shabestari2025advances`.  The signal is extracted via low-pass
+:footcite:p:`birbaumer1990slow`.  The signal is extracted via low-pass
 filtering and channel averaging:
 
 1. Apply an optional high-pass filter at ``highpass`` Hz (set to 0 for
@@ -234,7 +234,8 @@ Hjorth Parameters
 **Config key:** ``hjorth``
 
 Hjorth parameters are pure time-domain descriptors computed from the variance
-of a signal :math:`x(t)` and its successive derivatives.
+of a signal :math:`x(t)` and its successive derivatives
+:footcite:p:`hjorth1970eeg`.
 
 Let :math:`x_i` denote channel :math:`i` after bandpass filtering.
 Define sample variances:
@@ -317,7 +318,7 @@ complexity.
 where :math:`\tilde{S}(f) = S(f) / \sum_{f'} S(f')` is the normalised PSD
 (treated as a probability distribution over frequencies).
 
-**Approximate entropy** (ApEn) — regularity statistic for a time series of
+**Approximate entropy** (ApEn) :footcite:p:`pincus1991approximate` — regularity statistic for a time series of
 length :math:`N` with embedding dimension :math:`m` and tolerance :math:`r`:
 
 .. math::
@@ -329,7 +330,7 @@ where :math:`\phi^{(m)}(r) = \frac{1}{N - m + 1} \sum_{i} \log C_i^{(m)}(r)`
 and :math:`C_i^{(m)}(r)` is the fraction of :math:`m`-length template vectors
 within Chebyshev distance :math:`r` of the :math:`i`-th template.
 
-**Sample entropy** (SampEn) — a bias-corrected alternative that excludes
+**Sample entropy** (SampEn) :footcite:p:`richman2000physiological` — a bias-corrected alternative that excludes
 self-matches:
 
 .. math::
@@ -371,7 +372,7 @@ Individual Peak Power
 **Config key:** ``individual_peak_power``
 
 Power at the subject's individual spectral peak, estimated using the
-FOOOF / specparam parametric spectral model :footcite:p:`shabestari2025advances`.
+`FOOOF / specparam <https://fooof-tools.github.io/fooof/>`_ parametric spectral model :footcite:p:`shabestari2025advances`.
 The model decomposes the PSD into an aperiodic (1/f) component and a
 superimposed set of Gaussian peaks:
 
@@ -403,7 +404,7 @@ slow oscillation and the amplitude of a faster oscillation.
 ANT uses Phase-Amplitude Coupling (PAC) via the **Modulation Index** (MI),
 which measures the Kullback–Leibler divergence between the observed amplitude
 distribution :math:`p(\theta)` (mean amplitude as a function of phase bin
-:math:`\theta`) and a uniform distribution :footcite:p:`shabestari2025advances`:
+:math:`\theta`) and a uniform distribution :footcite:p:`tort2010measuring`:
 
 .. math::
 
@@ -467,7 +468,7 @@ Sensor Graph
 
 Graph-Laplacian learning from sensor-space signals estimates a sparse
 functional connectivity graph :math:`\mathcal{G} = (\mathcal{V}, \mathbf{W})`
-:footcite:p:`Kalofolias2016` :footcite:p:`Shabestari2026`.
+:footcite:p:`kalofolias2016learn` :footcite:p:`shabestari2026shared`.
 
 Given a signal matrix :math:`\mathbf{X} \in \mathbb{R}^{p \times n}`
 (:math:`p` sensor channels, :math:`n` samples), ANT solves the
@@ -551,7 +552,7 @@ Graph-Laplacian learning applied to source-space signals.
 After projecting sensor data to source estimates with the inverse operator,
 the same optimisation as :ref:`modality-sensor_graph` is solved on the
 source time-series matrix :math:`\hat{\mathbf{J}} \in \mathbb{R}^{q \times n}`
-:footcite:p:`Kalofolias2016` :footcite:p:`Shabestari2026`:
+:footcite:p:`kalofolias2016learn` :footcite:p:`shabestari2026shared`:
 
 .. math::
 
