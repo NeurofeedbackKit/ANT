@@ -8,8 +8,6 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/ant-nf/"><img alt="PyPI" src="https://img.shields.io/pypi/v/ant-nf?color=blue&logo=pypi&logoColor=white"></a>
-  <a href="https://pypi.org/project/ant-nf/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/ant-nf?logo=python&logoColor=white"></a>
   <a href="https://github.com/payamsash/ANT/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/payamsash/ANT?color=green"></a>
   <a href="https://payamsash.github.io/ANT/"><img alt="Docs" src="https://img.shields.io/badge/docs-online-brightgreen?logo=readthedocs&logoColor=white"></a>
 </p>
