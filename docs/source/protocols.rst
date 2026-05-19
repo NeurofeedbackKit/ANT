@@ -334,8 +334,6 @@ or use ``rng_seed`` for exact reproducibility.
     # After session:
     sham_indices = [i for i, s in enumerate(proto.sham_log) if s]
 
-References: :footcite:t:`Thibaut2018`
-
 ----
 
 Up-Down Staircase Protocol
