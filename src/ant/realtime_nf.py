@@ -549,6 +549,9 @@ class NFRealtime(ModalityMixin):
         save_raw: bool = False,
         ref_channel: str = "Fp1",
         signal_smoothing: float = 0.25,
+        display_smoothing: float = 0.3,
+        topo_display_smoothing: float = 1.0,
+        brain_display_smoothing: float = 0.3,
         track_artifact_rate: bool = True,
         artifact_threshold_uv: float = 100.0,
         track_snr: bool = False,
@@ -675,6 +678,21 @@ class NFRealtime(ModalityMixin):
 
             The EMA is applied after z-score normalisation (if enabled) and
             before protocol evaluation, so protocols see the smoothed value.
+        display_smoothing : float, default 0.3
+            Additional EMA factor applied **only** inside the live NF signal
+            plot.  Does not affect stored ``nf_data`` or protocol evaluation.
+            Lower values give a smoother, slower-reacting display curve;
+            ``1.0`` disables this extra layer and shows the already
+            ``signal_smoothing``-filtered values directly.
+        topo_display_smoothing : float, default 1.0
+            EMA factor for the :class:`~ant.viz.TopoPlot` band-power maps.
+            ``1.0`` (default) disables smoothing so transient artifacts remain
+            visible for operator monitoring.  Lower values progressively
+            smooth the spatial maps across consecutive windows.
+        brain_display_smoothing : float, default 0.3
+            EMA factor for the :class:`~ant.viz.BrainPlot` per-vertex
+            activation arrays.  Blends consecutive frames so the cortical
+            map transitions smoothly.  ``1.0`` disables smoothing.
         ref_channel : str, default "Fp1"
             Reference channel used for LMS artifact correction
             (``artifact_correction="lms"`` only).  Ignored for all other
@@ -843,6 +861,7 @@ class NFRealtime(ModalityMixin):
                 scales_dict=scales_dict,
                 sfreq=30.0,   # pump timer rate drives display at 30 fps
                 time_window=time_window,
+                display_smoothing=display_smoothing,
             )
             signal_plot.show()
 
@@ -851,6 +870,7 @@ class NFRealtime(ModalityMixin):
                 info=self.rec_info,
                 sfreq=self._sfreq,
                 bands=topo_bands,
+                display_smoothing=topo_display_smoothing,
             )
             topo_plot.show()
 
@@ -863,6 +883,7 @@ class NFRealtime(ModalityMixin):
                 subjects_fs_dir=self.subjects_fs_dir,
                 clim=[0, 0.6],
                 surf=brain_surf,
+                display_smoothing=brain_display_smoothing,
             )
 
         if show_raw_signal:
@@ -2065,7 +2086,8 @@ class NFRealtime(ModalityMixin):
             ``"data"`` block with per-modality value lists.  When
             ``track_snr=True`` was passed to :meth:`record_main`, the
             per-window SNR series is included in ``"data"`` under the key
-            ``"snr_db"``.
+            ``"snr_db"``.  Reward magnitudes delivered by the protocol are
+            saved under ``"reward_<modality>"`` keys (one per modality).
         acq_delay : bool, default True
             Include acquisition-loop timing in the delays file (only
             written when ``estimate_delays=True`` was set in
@@ -2081,10 +2103,10 @@ class NFRealtime(ModalityMixin):
         bids_tsv : bool, default False
             Additionally write a BIDS-compliant tab-separated values file
             ``beh/<stem>_task-neurofeedback_beh.tsv`` alongside the JSON.
-            Each column is one modality (plus ``snr_db`` when available);
-            each row is one analysis window.  This file passes a BIDS
-            validator and can be loaded directly by EEGLAB, Fieldtrip, or
-            any TSV reader.
+            Columns are: one per modality, ``reward_<modality>`` per
+            modality, and ``snr_db`` when available.  Each row is one
+            analysis window.  This file passes a BIDS validator and can be
+            loaded directly by EEGLAB, Fieldtrip, or any TSV reader.
         format : str, default "json"
             Serialisation format for NF data and delays.  Currently only
             ``"json"`` is supported.
@@ -2178,6 +2200,10 @@ class NFRealtime(ModalityMixin):
             snr = getattr(self, "snr_data", [])
             if snr:
                 payload["data"]["snr_db"] = [_ser(v) for v in snr]
+            reward = getattr(self, "reward_data", {})
+            for m, vals in reward.items():
+                if vals:
+                    payload["data"][f"reward_{m}"] = [_ser(v) for v in vals]
             p = self.subject_dir / "beh" / f"{stem}_task-neurofeedback_beh.json"
             with open(p, "w") as fh:
                 json.dump(payload, fh, indent=2)
@@ -2185,17 +2211,22 @@ class NFRealtime(ModalityMixin):
 
             if bids_tsv:
                 cols = list(self.nf_data.keys())
+                for m in reward:
+                    if reward[m]:
+                        cols.append(f"reward_{m}")
                 if snr:
                     cols.append("snr_db")
                 n_rows = max(len(self.nf_data[m]) for m in self.nf_data) if self.nf_data else 0
                 tsv_p = self.subject_dir / "beh" / f"{stem}_task-neurofeedback_beh.tsv"
+                combined = {**self.nf_data,
+                            **{f"reward_{m}": v for m, v in reward.items() if v},
+                            **({"snr_db": snr} if snr else {})}
                 with open(tsv_p, "w") as fh:
                     fh.write("\t".join(cols) + "\n")
                     for i in range(n_rows):
                         row = []
                         for col in cols:
-                            src = self.nf_data if col != "snr_db" else {"snr_db": snr}
-                            vals_col = src.get(col, [])
+                            vals_col = combined.get(col, [])
                             row.append(str(_ser(vals_col[i])) if i < len(vals_col) else "n/a")
                         fh.write("\t".join(row) + "\n")
                 saved["nf_tsv"] = tsv_p
