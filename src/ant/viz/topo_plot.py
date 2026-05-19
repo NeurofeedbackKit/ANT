@@ -137,6 +137,11 @@ class TopoPlot(QMainWindow):
         Whether to draw sensor markers on the topomap.
     contours : int, default 6
         Number of contour lines.  Set to ``0`` to disable.
+    display_smoothing : float, default 1.0
+        EMA factor applied to the per-channel band-power maps before
+        rendering.  ``1.0`` disables smoothing (raw per-window estimate
+        shown directly — good for artifact monitoring); lower values
+        progressively smooth the spatial maps across consecutive windows.
     verbose : bool | str | None, default None
         Verbosity level.  See :func:`~ant._logging.set_log_level`.
 
@@ -183,6 +188,7 @@ class TopoPlot(QMainWindow):
         cmap: str = "RdBu_r",
         sensors: bool = True,
         contours: int = 6,
+        display_smoothing: float = 1.0,
         verbose=None,
     ) -> None:
         from ant._logging import set_log_level
@@ -200,6 +206,8 @@ class TopoPlot(QMainWindow):
         self._paused = False
         self._last_data: Optional[np.ndarray] = None
         self._visible_bands: list[str] = list(self._bands.keys())
+        self._display_alpha = float(np.clip(display_smoothing, 0.0, 1.0))
+        self._bp_ema: dict[str, np.ndarray] = {}
 
         # Detect channel type for plot_topomap
         self._ch_type = self._detect_ch_type()
@@ -473,6 +481,13 @@ class TopoPlot(QMainWindow):
     def _update_topomaps(self, data: np.ndarray) -> None:
         """Redraw all visible topomaps from a raw data window."""
         band_powers = self._compute_band_powers(data)
+        if self._display_alpha < 1.0:
+            for band, pw in band_powers.items():
+                if band not in self._bp_ema:
+                    self._bp_ema[band] = pw.copy()
+                else:
+                    self._bp_ema[band] = self._display_alpha * pw + (1.0 - self._display_alpha) * self._bp_ema[band]
+                band_powers[band] = self._bp_ema[band]
         topo_info = mne.pick_info(self._info, self._topo_picks)
 
         freeze = getattr(self, "_freeze_clim", False)
