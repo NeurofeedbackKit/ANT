@@ -512,9 +512,9 @@ Method comparison
 
 ----
 
-See also the :ref:`artifact comparison example <sphx_glr_auto_examples_plot_artifact_comparison.py>`
+See also the :ref:`artifact comparison example <sphx_glr_auto_examples_ex_artifact_comparison.py>`
 for a quantitative benchmark of LMS, ASR, and GEDAI on simulated EEG, and the
-:ref:`RTMaxwell example <sphx_glr_auto_examples_plot_maxwell_realtime.py>`
+:ref:`RTMaxwell example <sphx_glr_auto_examples_ex_maxwell_realtime.py>`
 for a demonstration of real-time SSS on the MNE sample MEG dataset.
 
 ----

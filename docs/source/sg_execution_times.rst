@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**10:25.560** total execution time for 6 files **from all galleries**:
+**02:36.954** total execution time for 6 files **from all galleries**:
 
 .. container::
 
@@ -32,21 +32,21 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_ex_motor_imagery_nf.py` (``../../examples/ex_motor_imagery_nf.py``)
-     - 02:37.786
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_ex_alpha_laterality_nf.py` (``../../examples/ex_alpha_laterality_nf.py``)
-     - 02:35.443
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_ex_complete_nf_session.py` (``../../examples/ex_complete_nf_session.py``)
-     - 02:17.615
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_ex_bad_channel_detection.py` (``../../examples/ex_bad_channel_detection.py``)
-     - 01:19.246
+     - 02:36.954
      - 0.0
    * - :ref:`sphx_glr_auto_examples_ex_artifact_comparison.py` (``../../examples/ex_artifact_comparison.py``)
-     - 01:19.202
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_ex_bad_channel_detection.py` (``../../examples/ex_bad_channel_detection.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_ex_complete_nf_session.py` (``../../examples/ex_complete_nf_session.py``)
+     - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_ex_maxwell_realtime.py` (``../../examples/ex_maxwell_realtime.py``)
-     - 00:16.267
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_ex_motor_imagery_nf.py` (``../../examples/ex_motor_imagery_nf.py``)
+     - 00:00.000
      - 0.0

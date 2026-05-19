@@ -57,7 +57,7 @@ fname_sim = tmp / "right_alpha.fif"
 simulate_raw(
     brain_label="lateraloccipital-rh",
     frequency=10.0,
-    amplitude=1.5e-6,
+    amplitude=1.5,
     duration=4.0,
     gap_duration=2.0,
     n_repetition=8,
@@ -132,9 +132,17 @@ print(
 # %%
 # Visualise laterality signal and real-time rewards
 # --------------------------------------------------
-# The top panel shows the raw laterality index; the bottom panel shows the
-# reward magnitude delivered on each window by the ZScoreProtocol — these
-# values were computed **during streaming**, not after.
+# The **top panel** shows the raw laterality index per 1-second window.
+# Blue shading marks windows where right-hemisphere alpha was dominant
+# (L > 0); red shading marks left dominance (L < 0).  Because the
+# simulation injects a 10 Hz sine wave into the right lateral-occipital
+# cortex, the signal should trend positive throughout the session.
+#
+# The **bottom panel** shows the reward magnitude issued by
+# :class:`~ant.protocols.ZScoreProtocol` on each window — non-zero only
+# after the warmup period (orange dashed line) once the running statistics
+# are initialised.  Rewards accumulate whenever the z-scored laterality
+# exceeds the threshold of 0.5 σ above the running mean.
 
 fig, (ax1, ax2) = plt.subplots(
     2, 1, figsize=(11, 6), sharex=True, constrained_layout=True

@@ -18,10 +18,10 @@ pip (recommended)
 .. code-block:: bash
 
     # Latest release (OSC output included)
-    pip install ANT
+    pip install ant-nf
 
     # All optional extras (viz, dev, docs)
-    pip install "ANT[full]"
+    pip install "ant-nf[full]"
 
 Editable / development install
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -45,8 +45,8 @@ directly and handles all extras.
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
     # Install ANT into an active environment
-    uv pip install ANT
-    uv pip install "ANT[full]"   # all extras (viz, dev, docs)
+    uv pip install ant-nf
+    uv pip install "ant-nf[full]"   # all extras (viz, dev, docs)
 
     # Editable install from source (recommended for development)
     git clone https://github.com/payamsash/ANT.git
@@ -103,16 +103,16 @@ Optional extras
      - Install command
    * - ``viz``
      - 3D brain visualisation (pyvista, pyvistaqt) — needed for BrainPlot
-     - ``pip install "ANT[viz]"``
+     - ``pip install "ant-nf[viz]"``
    * - ``dev``
      - Testing only (pytest, pytest-cov)
-     - ``pip install "ANT[dev]"``
+     - ``pip install "ant-nf[dev]"``
    * - ``lint``
      - Linting and formatting (ruff, mypy, pre-commit)
-     - ``pip install "ANT[lint]"``
+     - ``pip install "ant-nf[lint]"``
    * - ``docs``
      - Documentation build tools (Sphinx, sphinx-gallery, …)
-     - ``pip install "ANT[docs]"``
+     - ``pip install "ant-nf[docs]"``
    * - ``full``
      - All of the above
-     - ``pip install "ANT[full]"``
+     - ``pip install "ant-nf[full]"``

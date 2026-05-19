@@ -81,7 +81,7 @@ to 64 biosemi64 scalp electrodes.
     simulate_raw(
         brain_label="lateraloccipital-rh",
         frequency=10.0,
-        amplitude=1.5e-6,
+        amplitude=1.5,
         duration=4.0,
         gap_duration=2.0,
         n_repetition=8,
@@ -102,7 +102,7 @@ to 64 biosemi64 scalp electrodes.
 
     /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:220: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       add_noise(raw, cov, iir_filter=iir_filter, verbose=verbose)
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:231: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_dv3h2_nl/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:231: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_2yz377oc/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       raw.save(fname=Path(fname_save), overwrite=True)
 
 
@@ -256,9 +256,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header general-8b118f5c-92b3-44ed-b7d6-6e32efca7610"
+    <tr class="mne-repr-section-header general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c"
          title="Hide section" 
-        onclick="toggleVisibility('general-8b118f5c-92b3-44ed-b7d6-6e32efca7610')">
+        onclick="toggleVisibility('general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -270,26 +270,26 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element general-8b118f5c-92b3-44ed-b7d6-6e32efca7610 ">
+    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>RawArray</td>
     </tr>
-    <tr class="repr-element general-8b118f5c-92b3-44ed-b7d6-6e32efca7610 ">
+    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-8b118f5c-92b3-44ed-b7d6-6e32efca7610 ">
+    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-8b118f5c-92b3-44ed-b7d6-6e32efca7610 ">
+    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -304,9 +304,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header acquisition-6d885ab5-14d0-46df-9dc0-1fa9ef766f70"
+    <tr class="mne-repr-section-header acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-6d885ab5-14d0-46df-9dc0-1fa9ef766f70')">
+        onclick="toggleVisibility('acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -318,7 +318,7 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element acquisition-6d885ab5-14d0-46df-9dc0-1fa9ef766f70 ">
+    <tr class="repr-element acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Duration</td>
         <td>00:00:19 (HH:MM:SS)</td>
@@ -331,14 +331,14 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="repr-element acquisition-6d885ab5-14d0-46df-9dc0-1fa9ef766f70 ">
+    <tr class="repr-element acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>256.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element acquisition-6d885ab5-14d0-46df-9dc0-1fa9ef766f70 ">
+    <tr class="repr-element acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Time points</td>
         <td>4,864</td>
@@ -353,9 +353,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header channels-bf71311b-fc3a-46ce-abb8-2479a9195e62"
+    <tr class="mne-repr-section-header channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc"
          title="Hide section" 
-        onclick="toggleVisibility('channels-bf71311b-fc3a-46ce-abb8-2479a9195e62')">
+        onclick="toggleVisibility('channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -368,7 +368,7 @@ to 64 biosemi64 scalp electrodes.
 
 
     
-    <tr class="repr-element channels-bf71311b-fc3a-46ce-abb8-2479a9195e62 ">
+    <tr class="repr-element channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -381,7 +381,7 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element channels-bf71311b-fc3a-46ce-abb8-2479a9195e62 ">
+    <tr class="repr-element channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -396,9 +396,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header filters-ce47dacd-3115-4e18-afd7-257a717a080e"
+    <tr class="mne-repr-section-header filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb"
          title="Hide section" 
-        onclick="toggleVisibility('filters-ce47dacd-3115-4e18-afd7-257a717a080e')">
+        onclick="toggleVisibility('filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -410,14 +410,14 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element filters-ce47dacd-3115-4e18-afd7-257a717a080e ">
+    <tr class="repr-element filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-ce47dacd-3115-4e18-afd7-257a717a080e ">
+    <tr class="repr-element filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>128.00 Hz</td>
@@ -464,7 +464,7 @@ its native sampling rate — identical to connecting to a live amplifier.
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/realtime_nf.py:416: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_dv3h2_nl/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/realtime_nf.py:416: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_2yz377oc/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       self._mock_player = Player(
     /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       inverse_operator = make_inverse_operator(
@@ -528,20 +528,28 @@ the reward gate activates from window 11 onward.
 
  .. code-block:: none
 
-    Windows: 238  |  Rewarded: 61 (26 %)  |  Protocol: μ=-0.0166  σ=0.0547  z=0.74
+    Windows: 241  |  Rewarded: 112 (46 %)  |  Protocol: μ=1.3385  σ=0.3251  z=0.67
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-138
+.. GENERATED FROM PYTHON SOURCE LINES 133-146
 
 Visualise laterality signal and real-time rewards
 --------------------------------------------------
-The top panel shows the raw laterality index; the bottom panel shows the
-reward magnitude delivered on each window by the ZScoreProtocol — these
-values were computed **during streaming**, not after.
+The **top panel** shows the raw laterality index per 1-second window.
+Blue shading marks windows where right-hemisphere alpha was dominant
+(L > 0); red shading marks left dominance (L < 0).  Because the
+simulation injects a 10 Hz sine wave into the right lateral-occipital
+cortex, the signal should trend positive throughout the session.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-166
+The **bottom panel** shows the reward magnitude issued by
+:class:`~ant.protocols.ZScoreProtocol` on each window — non-zero only
+after the warmup period (orange dashed line) once the running statistics
+are initialised.  Rewards accumulate whenever the z-scored laterality
+exceeds the threshold of 0.5 σ above the running mean.
+
+.. GENERATED FROM PYTHON SOURCE LINES 146-174
 
 .. code-block:: Python
 
@@ -586,20 +594,20 @@ values were computed **during streaming**, not after.
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/examples/ex_alpha_laterality_nf.py:164: UserWarning: The figure layout has changed to tight
+    /Users/payamsadeghishabestari/ANT/examples/ex_alpha_laterality_nf.py:172: UserWarning: The figure layout has changed to tight
       plt.tight_layout()
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-171
+.. GENERATED FROM PYTHON SOURCE LINES 175-179
 
 Clean up
 --------
 Stop the mock LSL player and disconnect the stream so subsequent examples
 in the Sphinx Gallery build do not encounter residual streams.
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-179
+.. GENERATED FROM PYTHON SOURCE LINES 179-187
 
 .. code-block:: Python
 
@@ -621,7 +629,7 @@ in the Sphinx Gallery build do not encounter residual streams.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 35.443 seconds)
+   **Total running time of the script:** (2 minutes 36.954 seconds)
 
 
 .. _sphx_glr_download_auto_examples_ex_alpha_laterality_nf.py:

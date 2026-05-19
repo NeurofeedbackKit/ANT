@@ -40,13 +40,6 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "Path"
@@ -54,44 +47,9 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePath"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase"
   },
   {
    "is_class": false,
@@ -143,6 +101,13 @@
   }
  ],
  "ant.protocols.ZScoreProtocol": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "ant.protocols",
+   "module_short": "ant",
+   "name": "ZScoreProtocol"
+  },
   {
    "is_class": false,
    "is_explicit": true,
@@ -852,13 +817,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -1441,13 +1399,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -1457,23 +1408,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.mkdir"
   },
   {
    "is_class": false,
@@ -1485,13 +1422,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.mkdir"
@@ -1499,44 +1429,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.mkdir"
   }
  ],
  "t": [
@@ -1574,13 +1469,6 @@
   }
  ],
  "tmp": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
