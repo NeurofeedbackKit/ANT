@@ -8,7 +8,7 @@ BadChannelDetector
 Notes
 -----
 The approach follows the methods used in EEGLAB's ``clean_rawdata`` plugin
-:footcite:p:`Mullen2015` and MNE's automated quality checks, adapted for
+:footcite:p:`mullen2015real` and MNE's automated quality checks, adapted for
 chunk-by-chunk streaming data with no look-ahead.
 
 References
