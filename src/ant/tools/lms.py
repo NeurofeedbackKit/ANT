@@ -16,7 +16,7 @@ class AdaptiveLMSFilter:
     """Adaptive LMS filter for real-time EOG / ECG artifact removal.
 
     Implements the Widrow–Hoff Least Mean Squares algorithm
-    :footcite:p:`Widrow1960` to regress out a reference artifact channel
+    :footcite:p:`widrow1988adaptive` to regress out a reference artifact channel
     (e.g. a frontal EOG electrode or an ECG lead) from all other M/EEG
     channels.  Filter weights are updated online — no calibration baseline
     is required.
