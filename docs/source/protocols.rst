@@ -347,7 +347,7 @@ Up-Down Staircase Protocol
    — converges to a target success rate.
    </div>
 
-The classic psychophysics staircase of :footcite:t:`Levitt1971`.
+The classic psychophysics staircase of :footcite:t:`levitt1971transformed`.
 The threshold :math:`\theta` is adjusted after each window based on the
 participant's recent success/failure run:
 
@@ -418,7 +418,7 @@ audiometry or psychophysics.
     # After session — estimate perceptual threshold:
     threshold_estimate = float(np.mean(proto.reversal_thresholds[-6:]))
 
-References: :footcite:t:`Levitt1971`, :footcite:t:`GarciaPerez1998`
+References: :footcite:t:`levitt1971transformed`, :footcite:t:`garcia1998forced`
 
 ----
 
@@ -435,7 +435,7 @@ Multi-Band Protocol
 Many clinical NF protocols target two frequency bands simultaneously —
 reward alpha *up-regulation* while penalising theta *up-regulation*
 (focus training), or reward SMR while suppressing theta (ADHD protocol
-:footcite:p:`Sterman2006`).
+:footcite:p:`sterman2006foundation`).
 
 :class:`~ant.protocols.MultiBandProtocol` wraps two independent inner
 protocols and combines their outputs:
@@ -489,7 +489,7 @@ alpha and a :class:`~ant.protocols.ZScoreProtocol` for theta.
     for alpha_val, theta_val in zip(alpha_stream, theta_stream):
         crossed, magnitude = proto.evaluate(alpha_val, theta_val)
 
-References: :footcite:t:`Sterman2006`
+References: :footcite:t:`sterman2006foundation`
 
 ----
 
@@ -553,7 +553,7 @@ Operant Protocol
    </div>
 
 Partial reinforcement schedules are more resistant to extinction than
-continuous reinforcement :footcite:t:`Ferster1957`.
+continuous reinforcement :footcite:t:`ferster1957schedules`.
 :class:`~ant.protocols.OperantProtocol` wraps any existing NF protocol and
 filters its reward output through one of four classical schedules:
 
@@ -594,7 +594,7 @@ engagement over long sessions by preventing saturation).
     for value in nf_stream:
         crossed, mag = proto.evaluate(value)
 
-References: :footcite:t:`Ferster1957`
+References: :footcite:t:`ferster1957schedules`
 
 ----
 
