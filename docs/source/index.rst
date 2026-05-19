@@ -162,8 +162,8 @@ Quick install
 
       .. code-block:: bash
 
-          pip install ANT                 # core  (MNE, LSL, OSC included)
-          pip install "ANT[full]"         # + 3-D viz, dev tools, docs
+          pip install ant-nf                 # core  (MNE, LSL, OSC included)
+          pip install "ant-nf[full]"         # + 3-D viz, dev tools, docs
 
    .. tab:: uv
 
@@ -172,8 +172,8 @@ Quick install
           # Install uv once
           curl -LsSf https://astral.sh/uv/install.sh | sh
 
-          uv pip install ANT
-          uv pip install "ANT[full]"      # + 3-D viz, dev tools, docs
+          uv pip install ant-nf
+          uv pip install "ant-nf[full]"      # + 3-D viz, dev tools, docs
 
           # Editable install from source
           git clone https://github.com/payamsash/ANT.git
@@ -185,7 +185,7 @@ Quick install
 
           mamba create -n ant python=3.11
           mamba activate ant
-          pip install "ANT[full]"
+          pip install "ant-nf[full]"
 
 See :doc:`install` for full instructions.
 
