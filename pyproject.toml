@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 # ---------------------------------------------------------------------------
 
 [project]
-name = "ANT"
+name = "ant-nf"
 version = "1.0.0"
 description = "Advanced Neurofeedback Toolbox — real-time M/EEG neurofeedback for research and clinical use"
 authors = [
