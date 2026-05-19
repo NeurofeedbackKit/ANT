@@ -111,6 +111,11 @@ class BrainPlot:
         Initial opacity of the activity overlay (0 = transparent, 1 = opaque).
     window_size : tuple of int, default (1600, 1000)
         Width × height of the render window in pixels.
+    display_smoothing : float, default 0.3
+        EMA factor applied to the per-vertex activation arrays before each
+        render.  ``1.0`` disables smoothing; lower values blend consecutive
+        frames so the cortical map transitions smoothly instead of jumping
+        between analysis windows.
     verbose : bool | str | None, default None
         Verbosity level.
 
@@ -137,12 +142,13 @@ class BrainPlot:
         cmap: str = "hot",
         opacity: float = 0.6,
         window_size: tuple[int, int] = (1600, 1000),
+        display_smoothing: float = 0.3,
         verbose: Union[bool, str, None] = None,
     ) -> None:
         if not _pyvista_available or not _pyvistaqt_available:
             raise ImportError(
                 "pyvista and pyvistaqt are required for BrainPlot. "
-                "Install them with:  pip install 'ANT[viz]'"
+                "Install them with:  pip install 'ant-nf[viz]'"
             )
         from ant._logging import set_log_level
         set_log_level(verbose)
@@ -165,11 +171,15 @@ class BrainPlot:
         self._recording = False
         self._video_writer = None
         self._video_path: Path | None = None
+        self._display_alpha = float(np.clip(display_smoothing, 0.0, 1.0))
+        self._lh_ema: np.ndarray | None = None
+        self._rh_ema: np.ndarray | None = None
 
         logger.info("Loading %s surface …", surf)
         self._load_surface(surf)
 
         self._plotter = self._build_plotter(window_size)
+        self._sync_scalar_bar_lut()  # link scalar bar to activity actor's LUT
         self._add_key_bindings()
         self._add_overlays()
         logger.info("BrainPlot ready.")
@@ -235,17 +245,17 @@ class BrainPlot:
             nan_opacity=0.0,
         )
 
-        # ── Scalar bar (no tick numbers) ──────────────────────────────────
+        # ── Scalar bar (no title, no tick numbers) ───────────────────────
         p.add_scalar_bar(
-            title="Activity",
-            italic=True,
+            title="",
+            italic=False,
             vertical=True,
             position_x=0.02,
             position_y=0.20,
             height=0.38,
             width=0.04,
             color="white",
-            title_font_size=12,
+            title_font_size=0,
             label_font_size=10,
             n_labels=0,
         )
@@ -563,7 +573,7 @@ class BrainPlot:
         p.render()
 
     def _sync_scalar_bar_lut(self) -> None:
-        """Point the scalar bar LUT at the current activity actor's mapper."""
+        """Sync the scalar bar LUT with the current activity actor's mapper."""
         import matplotlib
         cmap_obj = matplotlib.colormaps[_CMAPS[self._cmap_idx]]
         lut = self._act_actor.GetMapper().GetLookupTable()
@@ -572,6 +582,7 @@ class BrainPlot:
             r, g, b, a = cmap_obj(i / 255.0)
             lut.SetTableValue(i, r, g, b, a)
         lut.Build()
+        self._plotter.scalar_bar.SetLookupTable(lut)
 
     # ------------------------------------------------------------------
     # Public interface
@@ -625,6 +636,17 @@ class BrainPlot:
         deferred : bool, default False
             If ``True``, skip the immediate ``render()`` call.
         """
+        if self._display_alpha < 1.0:
+            if self._lh_ema is None:
+                self._lh_ema = lh_scalars.copy()
+                self._rh_ema = rh_scalars.copy()
+            else:
+                a = self._display_alpha
+                self._lh_ema = a * lh_scalars + (1.0 - a) * self._lh_ema
+                self._rh_ema = a * rh_scalars + (1.0 - a) * self._rh_ema
+            lh_scalars = self._lh_ema
+            rh_scalars = self._rh_ema
+
         n_lh = self._n_lh
         self._scalars_full[:n_lh] = lh_scalars[self._nn_map["lh"]]
         self._scalars_full[n_lh:] = rh_scalars[self._nn_map["rh"]]
@@ -699,8 +721,6 @@ class BrainPlot:
         self._clim[0] = clim_hint[0]
         self._clim[1] = clim_hint[1]
         self._act_actor.GetMapper().SetScalarRange(*self._clim)
-        label = mode.split("(")[0].strip()
-        self._plotter.scalar_bar.SetTitle(label)
         self._plotter.render()
         logger.info("BrainPlot display mode → %r  (clim %s)", mode, clim_hint)
 
