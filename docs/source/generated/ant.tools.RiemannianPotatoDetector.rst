@@ -1,23 +1,24 @@
-ant.tools.RiemannianPotatoDetector
-===================================
+﻿ant.tools.RiemannianPotatoDetector
+==================================
 
 .. currentmodule:: ant.tools
 
 .. autoclass:: RiemannianPotatoDetector
 
+   
+   .. automethod:: __init__
 
+   
    .. rubric:: Methods
 
    .. autosummary::
-
-      ~RiemannianPotatoDetector.fit
+   
+      ~RiemannianPotatoDetector.__init__
       ~RiemannianPotatoDetector.detect
+      ~RiemannianPotatoDetector.fit
+   
+   
 
-
-   .. rubric:: Attributes
-
-   .. autosummary::
-
-      ~RiemannianPotatoDetector.is_fitted_
-      ~RiemannianPotatoDetector.n_channels_
-      ~RiemannianPotatoDetector.n_calibration_windows_
+   
+   
+   

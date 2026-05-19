@@ -15,6 +15,7 @@
    
       ~ZScoredNormCombiner.__init__
       ~ZScoredNormCombiner.combine
+      ~ZScoredNormCombiner.reset
    
    
 

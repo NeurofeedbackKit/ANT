@@ -1,17 +1,23 @@
-ant.viz.TopoPlot
+﻿ant.viz.TopoPlot
 ================
 
 .. currentmodule:: ant.viz
 
 .. autoclass:: TopoPlot
-   :members:
-   :inherited-members: False
 
+   
+   .. automethod:: __init__
 
+   
    .. rubric:: Methods
 
    .. autosummary::
-
+   
+      ~TopoPlot.__init__
       ~TopoPlot.push
+   
+   
 
-
+   
+   
+   

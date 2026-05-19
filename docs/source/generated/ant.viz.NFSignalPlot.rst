@@ -1,17 +1,24 @@
-ant.viz.NFSignalPlot
+﻿ant.viz.NFSignalPlot
 ====================
 
 .. currentmodule:: ant.viz
 
 .. autoclass:: NFSignalPlot
-   :members:
-   :inherited-members: False
 
+   
+   .. automethod:: __init__
 
+   
    .. rubric:: Methods
 
    .. autosummary::
-
+   
+      ~NFSignalPlot.__init__
+      ~NFSignalPlot.closeEvent
       ~NFSignalPlot.push
+   
+   
 
-
+   
+   
+   

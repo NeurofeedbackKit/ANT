@@ -1,23 +1,32 @@
-ant.protocols.ThresholdProtocol
-================================
+﻿ant.protocols.ThresholdProtocol
+===============================
 
 .. currentmodule:: ant.protocols
 
 .. autoclass:: ThresholdProtocol
 
+   
+   .. automethod:: __init__
 
+   
    .. rubric:: Methods
 
    .. autosummary::
-
+   
+      ~ThresholdProtocol.__init__
       ~ThresholdProtocol.evaluate
       ~ThresholdProtocol.reset
+   
+   
 
-
+   
+   
    .. rubric:: Attributes
 
    .. autosummary::
-
+   
       ~ThresholdProtocol.hit_rate
-      ~ThresholdProtocol.threshold
       ~ThresholdProtocol.n_evaluated
+      ~ThresholdProtocol.threshold
+   
+   
