@@ -23,7 +23,7 @@ Adaptive LMS filter
 **Class:** :class:`ant.tools.AdaptiveLMSFilter`
 
 The Least Mean Squares (LMS) algorithm
-:footcite:p:`Widrow1960` is a stochastic gradient-descent adaptive filter
+:footcite:p:`widrow1988adaptive` is a stochastic gradient-descent adaptive filter
 designed to cancel a reference signal (e.g., an EOG or ECG channel) from
 the M/EEG data channels.
 
@@ -70,8 +70,8 @@ ORICA — Online Recursive ICA
 
 **Class:** :class:`ant.tools.ORICA`
 
-ORICA :footcite:p:`Choi2002` is an online (sample-recursive) variant of
-Independent Component Analysis (ICA) :footcite:p:`BellSejnowski1995` that
+ORICA :footcite:p:`choi2005blind` is an online (sample-recursive) variant of
+Independent Component Analysis (ICA) :footcite:p:`bell1995information` that
 continuously updates the unmixing matrix :math:`\mathbf{W}` as new data arrive.
 
 **ICA model.** EEG is assumed to be a linear mixture of independent sources:
@@ -124,9 +124,9 @@ GEDAI — GED-based Artifact Isolation
 
 **Class:** :class:`ant.tools.GEDAIDenoiser`
 
-GEDAI uses Generalized Eigendecomposition (GED) :footcite:p:`Cohen2022` to find
+GEDAI uses Generalized Eigendecomposition (GED) :footcite:p:`cohen2022tutorial` to find
 spatial filters that maximally separate brain signal from broadband activity,
-optionally anchored to a leadfield-derived forward model :footcite:p:`ROS2020`.
+optionally anchored to a leadfield-derived forward model :footcite:p:`ros2025return`.
 
 **GED formulation.** ANT uses a *band-vs-broadband* formulation.
 Let :math:`\mathbf{R}_\text{band}` be the covariance of the band-limited signal
@@ -182,7 +182,7 @@ ASR — Artifact Subspace Reconstruction
 
 **Class:** :class:`ant.tools.ASRDenoiser`
 
-ASR :footcite:p:`Mullen2015` :footcite:p:`deCheveigneArzounian2018` learns the
+ASR :footcite:p:`mullen2015real` :footcite:p:`de2018robust` learns the
 covariance statistics of a clean baseline segment, then projects out
 components that deviate beyond a threshold in subsequent data windows.
 
@@ -237,8 +237,8 @@ RTMaxwellFilter — Real-Time SSS / tSSS
 
 **Class:** :class:`ant.tools.RTMaxwellFilter`
 
-The Signal Space Separation (SSS) method :footcite:p:`Taulu2004` and its
-temporal extension (tSSS) :footcite:p:`Taulu2006` exploit the physics of
+The Signal Space Separation (SSS) method :footcite:p:`taulu2004suppression` and its
+temporal extension (tSSS) :footcite:p:`taulu2006spatiotemporal` exploit the physics of
 quasi-static magnetic fields to separate brain-origin signals from external
 interference in MEG recordings.
 
@@ -282,7 +282,7 @@ components that cannot originate inside the sensor array.
 **tSSS — temporal extension.** Internal components that correlate with
 external ones over a sliding time window indicate that interference has
 "leaked" into the internal space (e.g., due to a nearby ferromagnetic object).
-tSSS :footcite:p:`Taulu2006` removes these correlated components by projecting
+tSSS :footcite:p:`taulu2006spatiotemporal` removes these correlated components by projecting
 the internal coefficients onto the subspace *orthogonal* to the external ones:
 
 .. math::
@@ -391,7 +391,7 @@ Riemannian Potato — Online Artifact Detection
 
 **Class:** :class:`ant.tools.RiemannianPotatoDetector`
 
-The *Riemannian Potato* :footcite:p:`Barachant2014,Barthelemy2019` is a
+The *Riemannian Potato* :footcite:p:`barachant2014plug,barthelemy2019riemannian` is a
 covariance-based method for **detecting** — rather than correcting —
 artifactual data windows in real time.  It operates on the manifold of
 symmetric positive-definite (SPD) matrices by computing the Riemannian
