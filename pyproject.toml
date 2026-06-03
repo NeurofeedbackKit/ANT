@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mne-rt"
 version = "1.0.0"
-description = "MNE-RT — real-time M/EEG neurofeedback for research and clinical use"
+description = "MNE-RT — real-time M/EEG signal processing and analysis"
 authors = [
     { name = "Payam S. Shabestari", email = "payam.sadeghi74@gmail.com" },
 ]
