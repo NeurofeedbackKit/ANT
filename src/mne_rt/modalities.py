@@ -1,6 +1,6 @@
-"""ModalityMixin — real-time feature extraction for all NF modalities.
+"""ModalityMixin — real-time feature extraction for all modalities.
 
-Mixed into :class:`NFRealtime`. Assumes the following attributes exist on
+Mixed into :class:`RTStream`. Assumes the following attributes exist on
 ``self`` at call time:
 
 - ``rec_info``      — MNE :class:`~mne.Info`
@@ -46,8 +46,8 @@ from mne_features.univariate import (
     
 )
 
-from ant._logging import logger
-from ant.tools import (
+from mne_rt._logging import logger
+from mne_rt.tools import (
     butter_bandpass,
     compute_bandpower,
     compute_fft,
@@ -60,7 +60,7 @@ from ant.tools import (
 class ModalityMixin:
     """Feature-extraction engine for all ANT NF modalities.
 
-    :class:`ModalityMixin` is mixed into :class:`~ant.NFRealtime` and provides
+    :class:`ModalityMixin` is mixed into :class:`~mne_rt.RTStream` and provides
     the **prep / compute** pair for every modality:
 
     * **Prep** (``_<modality>_prep()``) — runs *once* before the main loop.
@@ -71,8 +71,8 @@ class ModalityMixin:
       inside a thread-pool worker.  Decorated with :func:`~ant.tools.timed` so
       it returns ``(value, elapsed_seconds)``.
 
-    Supported modalities (20 total)
-    --------------------------------
+    .. rubric:: Supported modalities (20 total)
+
 
     **Sensor-space power & time-domain**
 
@@ -93,8 +93,8 @@ class ModalityMixin:
     Notes
     -----
     All methods are private (single-underscore prefix) and are called
-    internally by :meth:`~ant.NFRealtime.record_main`.  To extend ANT with a
-    custom modality, sub-class :class:`~ant.NFRealtime` and add a matching
+    internally by :meth:`~mne_rt.RTStream.record_main`.  To extend ANT with a
+    custom modality, sub-class :class:`~mne_rt.RTStream` and add a matching
     ``_<name>_prep`` / ``_<name>`` pair following the same pattern.
     """
 
