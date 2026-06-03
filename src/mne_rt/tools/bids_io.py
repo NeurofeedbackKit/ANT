@@ -302,9 +302,9 @@ def _write_dataset_description(output_dir: Path, overwrite: bool) -> None:
     if desc_path.exists() and not overwrite:
         return
     payload = {
-        "Name": "ANT Neurofeedback Dataset",
+        "Name": "MNE-RT Dataset",
         "BIDSVersion": "1.9.0",
-        "GeneratedBy": [{"Name": "ANT", "Version": "1.0.0"}],
+        "GeneratedBy": [{"Name": "MNE-RT", "Version": "1.0.0"}],
         "DatasetType": "raw",
     }
     with open(desc_path, "w", encoding="utf-8") as fh:
