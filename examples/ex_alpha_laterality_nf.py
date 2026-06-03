@@ -8,11 +8,11 @@ neuroscience, particularly in depression and attention research.
 This example demonstrates the **full closed-loop pipeline** in real time:
 
 1. Simulate an EEG recording with right-hemisphere alpha enhancement using
-   :func:`~ant.tools.simulate_raw`.
+   :func:`~mne_rt.tools.simulate_raw`.
 2. Stream it over a mock LSL player (same path as a live amplifier).
 3. Record a brief resting-state baseline.
-4. Run :meth:`~ant.NFRealtime.record_main` extracting the ``laterality``
-   modality **and** passing a :class:`~ant.protocols.ZScoreProtocol` that
+4. Run :meth:`~mne_rt.RTStream.record_main` extracting the ``laterality``
+   modality **and** passing a :class:`~mne_rt.protocols.ZScoreProtocol` that
    evaluates each window **in real time** — the reward gate fires during
    acquisition, not post-hoc.
 5. Plot the laterality index alongside the per-window reward magnitudes.
@@ -37,7 +37,7 @@ laterality exceeds 0.5 standard deviations above the running mean.
 # %%
 # Simulate EEG with right-lateralised alpha
 # ------------------------------------------
-# :func:`~ant.tools.simulate_raw` uses the MNE ``fsaverage`` template and a
+# :func:`~mne_rt.tools.simulate_raw` uses the MNE ``fsaverage`` template and a
 # forward model to project a sinusoidal dipole from a right occipital label
 # to 64 biosemi64 scalp electrodes.
 
@@ -47,9 +47,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ant import NFRealtime
-from ant.protocols import ZScoreProtocol
-from ant.tools import simulate_raw
+from mne_rt import RTStream
+from mne_rt.protocols import ZScoreProtocol
+from mne_rt.tools import simulate_raw
 
 tmp = Path(tempfile.mkdtemp(prefix="ant_laterality_"))
 fname_sim = tmp / "right_alpha.fif"
@@ -71,14 +71,14 @@ simulate_raw(
 # %%
 # Session setup
 # -------------
-# :class:`~ant.NFRealtime` manages the full pipeline.  ``mock_lsl=True``
+# :class:`~mne_rt.RTStream` manages the full pipeline.  ``mock_lsl=True``
 # starts a :class:`~mne_lsl.player.PlayerLSL` that replays the FIF file at
 # its native sampling rate — identical to connecting to a live amplifier.
 
 subjects_dir = tmp / "subjects"
 subjects_dir.mkdir()
 
-nf = NFRealtime(
+nf = RTStream(
     subject_id="sub01",
     session="01",
     subjects_dir=str(subjects_dir),
@@ -92,7 +92,7 @@ nf.record_baseline(baseline_duration=10, verbose=False)
 # %%
 # Real-time closed-loop session with ZScoreProtocol
 # --------------------------------------------------
-# The :class:`~ant.protocols.ZScoreProtocol` is passed directly to
+# The :class:`~mne_rt.protocols.ZScoreProtocol` is passed directly to
 # ``record_main`` via the ``protocol`` argument.  On **every 1-second window**
 # the laterality value is both stored in ``nf.nf_data`` and evaluated by the
 # protocol — no post-hoc loop required.
@@ -139,7 +139,7 @@ print(
 # cortex, the signal should trend positive throughout the session.
 #
 # The **bottom panel** shows the reward magnitude issued by
-# :class:`~ant.protocols.ZScoreProtocol` on each window — non-zero only
+# :class:`~mne_rt.protocols.ZScoreProtocol` on each window — non-zero only
 # after the warmup period (orange dashed line) once the running statistics
 # are initialised.  Rewards accumulate whenever the z-scored laterality
 # exceeds the threshold of 0.5 σ above the running mean.

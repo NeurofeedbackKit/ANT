@@ -17,10 +17,10 @@ loaded via :func:`mne.datasets.eegbci.load_data`:
 3. Compute per-trial **ERD/ERS (%)** in the 8–30 Hz band for C3 and C4.
 4. Derive a **laterality index**: ``(C4 − C3) / (C4 + C3)`` — positive for
    right-hand imagery, negative for left-hand imagery.
-5. Demonstrate a closed-loop NF session using :func:`~ant.tools.simulate_raw`
+5. Demonstrate a closed-loop NF session using :func:`~mne_rt.tools.simulate_raw`
    to generate a right-hemisphere mu-band source with a clear 10 s on/off
-   pattern, stream it through :class:`~ant.NFRealtime` with ``mock_lsl=True``,
-   and drive a :class:`~ant.protocols.ZScoreProtocol` that rewards C4 > C3
+   pattern, stream it through :class:`~mne_rt.RTStream` with ``mock_lsl=True``,
+   and drive a :class:`~mne_rt.protocols.ZScoreProtocol` that rewards C4 > C3
    laterality **in real time**.
 
 .. note::
@@ -42,9 +42,9 @@ import mne
 import numpy as np
 from scipy.signal import butter, sosfiltfilt
 
-from ant import NFRealtime
-from ant.protocols import ZScoreProtocol
-from ant.tools import simulate_raw
+from mne_rt import RTStream
+from mne_rt.protocols import ZScoreProtocol
+from mne_rt.tools import simulate_raw
 
 mne.set_log_level("WARNING")
 
@@ -155,13 +155,13 @@ for label in ("left", "right"):
 # Real-time NF session with simulated motor lateralisation
 # ---------------------------------------------------------
 # Instead of streaming the mixed PhysioNet recording (rest + both imagery
-# classes interleaved), we use :func:`~ant.tools.simulate_raw` to synthesise a
+# classes interleaved), we use :func:`~mne_rt.tools.simulate_raw` to synthesise a
 # 64-channel biosemi64 EEG with a **right-hemisphere mu (12 Hz) source** in
 # ``precentral-rh``, alternating in **10 s ON / 10 s OFF** bursts.  During ON
 # bursts C4 receives the strongest forward-model projection and
 # laterality = (C4 − C3)/(C4 + C3) is clearly positive.
 #
-# The :class:`~ant.protocols.ZScoreProtocol` with ``direction="up"`` rewards
+# The :class:`~mne_rt.protocols.ZScoreProtocol` with ``direction="up"`` rewards
 # windows where C4 dominates, mimicking a closed-loop right-hemisphere mu
 # enhancement protocol (contralateral to left-hand imagery).
 #
@@ -194,7 +194,7 @@ protocol = ZScoreProtocol(
     zscore_threshold=0.5,
 )
 
-nf = NFRealtime(
+nf = RTStream(
     subject_id="motor01",
     session="01",
     subjects_dir=str(_tmp_dir),
