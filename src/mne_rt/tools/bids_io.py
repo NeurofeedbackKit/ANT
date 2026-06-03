@@ -1,4 +1,4 @@
-"""BIDS-format I/O utilities for ANT session data.
+"""BIDS-format I/O utilities for MNE-RT session data.
 
 Functions
 ---------
@@ -55,7 +55,7 @@ def save_as_bids(
         The raw EEG (or MEG) recording to export.
     nf_data : dict
         Dictionary mapping modality name → list of per-window values
-        (as returned by :meth:`~ant.NFRealtime.record_main`).
+        (as returned by :meth:`~mne_rt.RTStream.record_main`).
     output_dir : str | Path
         Root BIDS directory (created if it does not exist).
     subject : str

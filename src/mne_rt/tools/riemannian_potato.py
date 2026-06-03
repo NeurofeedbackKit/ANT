@@ -24,7 +24,7 @@ from typing import Union
 
 import numpy as np
 
-from ant._logging import logger
+from mne_rt._logging import logger
 
 
 class RiemannianPotatoDetector:
@@ -99,7 +99,7 @@ class RiemannianPotatoDetector:
         verbose: Union[bool, str, None] = None,
     ) -> None:
         self._check_pyriemann()
-        from ant._logging import set_log_level
+        from mne_rt._logging import set_log_level
         set_log_level(verbose)
 
         if threshold <= 0:

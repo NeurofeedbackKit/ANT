@@ -123,7 +123,7 @@ def simulate_raw(
     --------
     Simulate alpha-band EEG in the left parieto-occipital region::
 
-        from ant.tools.simulation import simulate_raw
+        from mne_rt.tools.simulation import simulate_raw
         raw = simulate_raw(
             brain_label="bankssts-lh",
             frequency=10.0,

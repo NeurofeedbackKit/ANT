@@ -50,7 +50,7 @@ class AdaptiveLMSFilter:
     Notes
     -----
     No :meth:`fit` call is required — the filter adapts from the first
-    sample.  Use ``artifact_correction="lms"`` in :class:`~ant.NFRealtime`
+    sample.  Use ``artifact_correction="lms"`` in :class:`~mne_rt.RTStream`
     to enable during recording, or call :meth:`transform` directly.
 
     See :ref:`denoising-lms` for the full mathematical background.

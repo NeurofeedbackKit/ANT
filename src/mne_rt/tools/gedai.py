@@ -10,7 +10,7 @@ import numpy as np
 from scipy import linalg
 from scipy.signal import sosfiltfilt
 
-from ant.tools.tools import butter_bandpass
+from mne_rt.tools.tools import butter_bandpass
 
 
 class GEDAIDenoiser:

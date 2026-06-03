@@ -21,7 +21,7 @@ from typing import Optional, Union
 
 import numpy as np
 
-from ant._logging import logger
+from mne_rt._logging import logger
 
 
 class RTMaxwellFilter:
@@ -85,13 +85,13 @@ class RTMaxwellFilter:
     --------
     mne.preprocessing.compute_maxwell_basis : Underlying SSS basis function.
     mne.preprocessing.maxwell_filter : Full offline Maxwell filtering.
-    ant.NFRealtime.fit_maxwell : Fit from a connected MEG session.
+    mne_rt.RTStream.fit_maxwell : Fit from a connected MEG session.
 
     Notes
     -----
     **No baseline recording is required.**  The SSS operator depends only on
     sensor geometry, not on brain signal statistics.  Simply call
-    :meth:`~ant.NFRealtime.connect_to_lsl` then :meth:`~ant.NFRealtime.fit_maxwell`.
+    :meth:`~mne_rt.RTStream.connect_to_lsl` then :meth:`~mne_rt.RTStream.fit_maxwell`.
 
     References
     ----------

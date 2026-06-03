@@ -91,7 +91,7 @@ class ASRDenoiser:
     --------
     ant.tools.GEDAIDenoiser : GED-based spatial filter (requires forward model).
     ant.tools.ORICA : Online recursive ICA for adaptive unmixing.
-    ant.NFRealtime.fit_asr : Fit from a live session baseline.
+    mne_rt.RTStream.fit_asr : Fit from a live session baseline.
 
     References
     ----------
