@@ -1,23 +1,23 @@
-"""Command-line interface for the Advanced Neurofeedback Toolbox (ANT).
+"""Command-line interface for MNE-RT.
 
 Usage
 -----
 ::
 
-    ANT --help
-    ANT --version
-    ANT info
-    ANT demo [options]
-    ANT baseline [options]
-    ANT run [options]
+    mne-rt --help
+    mne-rt --version
+    mne-rt info
+    mne-rt demo     [options]
+    mne-rt baseline [options]
+    mne-rt run      [options]
 
 Install note
 ------------
 After ``pip install -e .`` the entry-point in ``pyproject.toml`` exposes
-the ``ANT`` shell command::
+the ``mne-rt`` shell command::
 
     [project.scripts]
-    ANT = "ant.cli:main"
+    mne-rt = "mne_rt.cli:main"
 """
 from __future__ import annotations
 
@@ -32,18 +32,18 @@ import textwrap
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="ANT",
+        prog="mne-rt",
         description=textwrap.dedent("""\
-            Advanced Neurofeedback Toolbox (ANT)
+            MNE-RT
             ─────────────────────────────────────
-            Real-time M/EEG neurofeedback for research and clinical use.
+            Real-time M/EEG signal processing and analysis.
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Use 'ANT <command> --help' for per-command options.",
+        epilog="Use 'mne-rt <command> --help' for per-command options.",
     )
     parser.add_argument(
         "--version", action="store_true",
-        help="Print the installed ANT version and exit.",
+        help="Print the installed MNE-RT version and exit.",
     )
     parser.add_argument(
         "--verbose", "-v",
@@ -70,7 +70,7 @@ def _add_info_parser(sub):
     p = sub.add_parser(
         "info",
         help="Display system and dependency information.",
-        description="Print ANT version, Python version, and key dependency versions.",
+        description="Print MNE-RT version, Python version, and key dependency versions.",
     )
     return p
 
@@ -78,10 +78,10 @@ def _add_info_parser(sub):
 def _add_demo_parser(sub):
     p = sub.add_parser(
         "demo",
-        help="Launch a demo NF session from simulated EEG data.",
+        help="Launch a demo real-time session from simulated EEG data.",
         description=textwrap.dedent("""\
-            Run a full demo neurofeedback session using simulated EEG.
-            No amplifier or file is required.
+            Run a full demo real-time session using simulated EEG.
+            No amplifier or recording file is required.
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -94,7 +94,7 @@ def _add_demo_parser(sub):
         default=["sensor_power", "band_ratio", "entropy", "hjorth"],
         metavar="MODALITY",
         help=(
-            "NF modality(ies) to demonstrate.  "
+            "Feature modality(ies) to demonstrate.  "
             "Available: sensor_power, band_ratio, entropy, hjorth, "
             "sensor_connectivity, erd_ers, laterality, spectral_centroid, "
             "cfc_sensor, scp, peak_alpha_freq, connectivity_ratio.  "
@@ -107,11 +107,36 @@ def _add_demo_parser(sub):
     )
     p.add_argument(
         "--no-signal", action="store_true",
-        help="Disable the NF signal plot window.",
+        help="Disable the scrolling real-time signal plot.",
     )
     p.add_argument(
         "--no-raw", action="store_true",
         help="Disable the raw stream viewer.",
+    )
+    p.add_argument(
+        "--no-topo", action="store_true",
+        help="Disable the real-time scalp topomap display.",
+    )
+    p.add_argument(
+        "--no-brain", action="store_true",
+        help="Disable the 3-D brain activation display even if FreeSurfer is found.",
+    )
+    # ERP / epoch plot flags
+    p.add_argument(
+        "--erp", action="store_true",
+        help="Enable the scalp-layout ERP plot (requires a stimulus channel).",
+    )
+    p.add_argument(
+        "--butterfly", action="store_true",
+        help="Enable the butterfly overlay plot (all channels, region-coloured).",
+    )
+    p.add_argument(
+        "--compare-evoked", action="store_true",
+        help="Enable the per-channel comparison plot with SEM ribbons and peak markers.",
+    )
+    p.add_argument(
+        "--tfr", action="store_true",
+        help="Enable the Morlet wavelet TFR heatmap plot.",
     )
     p.add_argument(
         "--subjects-fs-dir", metavar="DIR",
@@ -119,14 +144,6 @@ def _add_demo_parser(sub):
             "FreeSurfer subjects directory (must contain fsaverage5).  "
             "Auto-detected from FREESURFER_HOME/subjects if not given."
         ),
-    )
-    p.add_argument(
-        "--no-brain", action="store_true",
-        help="Disable the 3D brain activation display even if FreeSurfer is found.",
-    )
-    p.add_argument(
-        "--no-topo", action="store_true",
-        help="Disable the real-time scalp topomap display.",
     )
     p.add_argument(
         "--surf",
@@ -137,13 +154,13 @@ def _add_demo_parser(sub):
     p.add_argument(
         "--smoothing", type=float, default=0.25, metavar="ALPHA",
         help=(
-            "EMA smoothing factor for the NF signal (default: 0.25). "
+            "EMA smoothing factor for feature values (default: 0.25). "
             "1.0 = no smoothing; 0.1 = heavy smoothing."
         ),
     )
     p.add_argument(
         "--no-save", action="store_true",
-        help="Skip saving NF data and report at the end of the demo.",
+        help="Skip saving session data and report at the end of the demo.",
     )
     return p
 
@@ -177,10 +194,10 @@ def _add_baseline_parser(sub):
 def _add_run_parser(sub):
     p = sub.add_parser(
         "run",
-        help="Run a closed-loop neurofeedback main session.",
+        help="Run a real-time M/EEG main session.",
         description=textwrap.dedent("""\
-            Connects to an LSL stream, extracts real-time NF features,
-            and drives all configured visualisation windows.
+            Connect to an LSL stream, extract real-time features,
+            and drive all configured visualisation windows.
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -193,7 +210,7 @@ def _add_run_parser(sub):
         "--modality", nargs="+",
         default=["sensor_power"],
         metavar="MODALITY",
-        help="NF modality(ies) to extract (default: sensor_power).",
+        help="Feature modality(ies) to extract (default: sensor_power).",
     )
     p.add_argument(
         "--winsize", type=float, default=1.0,
@@ -218,19 +235,36 @@ def _add_run_parser(sub):
     )
     p.add_argument(
         "--no-signal", action="store_true",
-        help="Disable the NF signal plot window.",
+        help="Disable the scrolling real-time signal plot.",
     )
     p.add_argument(
         "--no-raw", action="store_true",
         help="Disable the raw stream viewer.",
     )
     p.add_argument(
-        "--brain", action="store_true",
-        help="Show the 3D brain activation display.",
-    )
-    p.add_argument(
         "--topo", action="store_true",
         help="Show the real-time scalp topomap display.",
+    )
+    p.add_argument(
+        "--brain", action="store_true",
+        help="Show the 3-D brain activation display.",
+    )
+    # ERP / epoch plot flags
+    p.add_argument(
+        "--erp", action="store_true",
+        help="Enable the scalp-layout ERP plot (requires a stimulus channel).",
+    )
+    p.add_argument(
+        "--butterfly", action="store_true",
+        help="Enable the butterfly overlay plot (all channels, region-coloured).",
+    )
+    p.add_argument(
+        "--compare-evoked", action="store_true",
+        help="Enable the per-channel comparison plot with SEM ribbons and peak markers.",
+    )
+    p.add_argument(
+        "--tfr", action="store_true",
+        help="Enable the Morlet wavelet TFR heatmap plot.",
     )
     p.add_argument(
         "--surf",
@@ -247,26 +281,26 @@ def _add_run_parser(sub):
         help="OSC destination port (default: 9000).",
     )
     p.add_argument(
-        "--osc-prefix", metavar="PREFIX", default="/ant",
-        help="OSC address prefix (default: /ant).",
+        "--osc-prefix", metavar="PREFIX", default="/mne_rt",
+        help="OSC address prefix (default: /mne_rt).",
     )
     p.add_argument(
         "--lsl-output", action="store_true",
         help=(
-            "Broadcast NF values as an LSL stream outlet named 'ANT_NF'.  "
+            "Broadcast feature values as an LSL stream outlet named 'MNE_RT'.  "
             "Any LSL-aware application (PsychoPy, Psychtoolbox, OpenViBE, …) "
             "can subscribe to this stream.  Faster and more reliable than OSC "
-            "for same-machine feedback."
+            "for same-machine integration."
         ),
     )
     p.add_argument(
-        "--lsl-stream-name", metavar="NAME", default="ANT_NF",
-        help="LSL outlet stream name (default: ANT_NF).  Only used with --lsl-output.",
+        "--lsl-stream-name", metavar="NAME", default="MNE_RT",
+        help="LSL outlet stream name (default: MNE_RT).  Only used with --lsl-output.",
     )
     p.add_argument(
         "--smoothing", type=float, default=0.25, metavar="ALPHA",
         help=(
-            "EMA smoothing factor for the NF signal (default: 0.25). "
+            "EMA smoothing factor for feature values (default: 0.25). "
             "1.0 = no smoothing; 0.1 = heavy smoothing."
         ),
     )
@@ -310,40 +344,40 @@ def _cmd_info(args) -> None:
     import platform
 
     lines = [
-        "Advanced Neurofeedback Toolbox (ANT)",
+        "MNE-RT — Real-Time M/EEG Analysis",
         "─" * 40,
     ]
     try:
-        from ant import __version__
-        lines.append(f"  ANT version  : {__version__}")
+        from mne_rt import __version__
+        lines.append(f"  mne-rt version : {__version__}")
     except Exception:
-        lines.append("  ANT version  : unknown")
+        lines.append("  mne-rt version : unknown")
 
-    lines.append(f"  Python       : {platform.python_version()}")
+    lines.append(f"  Python         : {platform.python_version()}")
 
     for pkg in ["mne", "numpy", "scipy", "pyvista", "PyQt6", "pyqtgraph",
                 "mne_lsl", "mne_connectivity", "mne_features"]:
         try:
             from importlib.metadata import version
-            lines.append(f"  {pkg:<20}: {version(pkg)}")
+            lines.append(f"  {pkg:<22}: {version(pkg)}")
         except Exception:
-            lines.append(f"  {pkg:<20}: not installed")
+            lines.append(f"  {pkg:<22}: not installed")
 
     print("\n".join(lines))
 
 
 def _cmd_demo(args) -> None:
-    """Run a demo NF session from simulated EEG."""
-    from ant import NFRealtime, set_log_level
+    """Run a demo real-time session from simulated EEG."""
+    from mne_rt import RTStream, set_log_level
 
     set_log_level(args.verbose)
 
-    print("ANT Demo — simulating EEG …")
+    print("MNE-RT Demo — simulating EEG …")
     import os
     import tempfile
     from pathlib import Path
 
-    tmp = Path(tempfile.mkdtemp(prefix="ant_demo_"))
+    tmp = Path(tempfile.mkdtemp(prefix="mne_rt_demo_"))
     subjects_dir = str(tmp)
 
     # Use the bundled pericalcarine simulation (loops automatically via n_repeat=inf)
@@ -352,7 +386,7 @@ def _cmd_demo(args) -> None:
     if not fname_sim.is_file():
         raise FileNotFoundError(
             f"Demo simulation file not found: {fname_sim}\n"
-            "Re-run from the ANT repository root or reinstall the package."
+            "Re-run from the MNE-RT repository root or reinstall the package."
         )
 
     # Resolve FreeSurfer subjects directory: explicit arg → env vars → known paths
@@ -378,7 +412,7 @@ def _cmd_demo(args) -> None:
     if show_brain:
         print(f"Brain activation: using {subjects_fs_dir}")
 
-    nf = NFRealtime(
+    nf = RTStream(
         subject_id="demo",
         session="01",
         subjects_dir=subjects_dir,
@@ -420,10 +454,10 @@ def _cmd_demo(args) -> None:
 
 def _cmd_baseline(args) -> None:
     """Record a baseline session."""
-    from ant import NFRealtime, set_log_level
+    from mne_rt import RTStream, set_log_level
     set_log_level(args.verbose)
 
-    nf = NFRealtime(
+    nf = RTStream(
         subject_id=args.subject,
         session=args.session,
         subjects_dir=args.subjects_dir,
@@ -442,13 +476,13 @@ def _cmd_baseline(args) -> None:
 
 
 def _cmd_run(args) -> None:
-    """Run a main NF session."""
-    from ant import NFRealtime, set_log_level
+    """Run a real-time M/EEG session."""
+    from mne_rt import RTStream, set_log_level
     set_log_level(args.verbose)
 
     artifact_correction = args.artifact_correction or False
 
-    nf = NFRealtime(
+    nf = RTStream(
         subject_id=args.subject,
         session=args.session,
         subjects_dir=args.subjects_dir,
@@ -478,7 +512,7 @@ def _cmd_run(args) -> None:
 
     osc_sender = None
     if getattr(args, "osc_host", None):
-        from ant.osc import OSCSender
+        from mne_rt.osc import OSCSender
         osc_sender = OSCSender(
             host=args.osc_host,
             port=args.osc_port,
@@ -488,8 +522,8 @@ def _cmd_run(args) -> None:
 
     lsl_sender = None
     if getattr(args, "lsl_output", False):
-        from ant.lsl_output import LSLSender
-        lsl_sender = LSLSender(stream_name=getattr(args, "lsl_stream_name", "ANT_NF"))
+        from mne_rt.lsl_output import LSLSender
+        lsl_sender = LSLSender(stream_name=getattr(args, "lsl_stream_name", "MNE_RT"))
         print(f"LSL output → stream '{lsl_sender.stream_name}'")
 
     try:
@@ -532,10 +566,10 @@ def main(argv=None) -> None:
 
     if args.version:
         try:
-            from ant import __version__
-            print(f"ANT {__version__}")
+            from mne_rt import __version__
+            print(f"mne-rt {__version__}")
         except Exception:
-            print("ANT (version unknown)")
+            print("mne-rt (version unknown)")
         return
 
     if args.command is None:
