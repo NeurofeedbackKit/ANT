@@ -1,14 +1,14 @@
-"""Logging and verbosity utilities for Advanced Neurofeedback Toolbox (ANT).
+"""Logging and verbosity utilities for MNE-RT.
 
 Integrates with MNE's logging infrastructure so that setting ``verbose``
-on any ANT function also silences or expands MNE's own output consistently.
+on any MNE-RT function also silences or expands MNE's own output consistently.
 
 Usage
 -----
 Apply ``@verbose`` to any public function or method that accepts a
 ``verbose`` keyword argument::
 
-    from ant._logging import verbose, logger
+    from mne_rt._logging import verbose, logger
 
     @verbose
     def my_function(a, b, verbose=None):
