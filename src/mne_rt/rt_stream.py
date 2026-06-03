@@ -1,14 +1,14 @@
-"""Core session class for the Advanced Neurofeedback Toolbox (ANT).
+"""Core session class for the MNE-RT.
 
-This module provides :class:`NFRealtime`, the top-level object that
+This module provides :class:`RTStream`, the top-level object that
 orchestrates LSL streaming, artifact rejection, feature extraction, and
-real-time visualisation for an M/EEG neurofeedback session.
+real-time M/EEG signal processing, feature extraction, and visualisation.
 
 Typical workflow
 ----------------
 ::
 
-    nf = NFRealtime(subject_id="sub01", session="01",
+    nf = RTStream(subject_id="sub01", session="01",
                     subjects_dir="/data/subjects", montage="easycap-M1")
     nf.connect_to_lsl()
     nf.record_baseline(baseline_duration=120)
@@ -16,9 +16,9 @@ Typical workflow
 
 Classes
 -------
-NFRealtime
+RTStream
     Main session controller — inherits all feature-extraction methods from
-    :class:`~ant.modalities.ModalityMixin`.
+    :class:`~mne_rt.modalities.ModalityMixin`.
 """
 from __future__ import annotations
 
@@ -53,20 +53,20 @@ from mne_lsl.lsl import local_clock
 from mne_lsl.player import PlayerLSL as Player
 from mne_lsl.stream import StreamLSL as Stream
 
-from ant.modalities import ModalityMixin
-from ant._logging import logger, set_log_level, verbose
-from ant.tools import (
+from mne_rt.modalities import ModalityMixin
+from mne_rt._logging import logger, set_log_level, verbose
+from mne_rt.tools import (
     _compute_inv_operator,
     create_blink_template,
     get_params,
     plot_glass_brain,
     remove_blinks_lms,
 )
-from ant.tools.asr import ASRDenoiser
-from ant.tools.gedai import GEDAIDenoiser
-from ant.tools.maxwell import RTMaxwellFilter
-from ant.tools.orica import ORICA
-from ant.viz import BrainPlot, NFSignalPlot, TopoPlot
+from mne_rt.tools.asr import ASRDenoiser
+from mne_rt.tools.gedai import GEDAIDenoiser
+from mne_rt.tools.maxwell import RTMaxwellFilter
+from mne_rt.tools.orica import ORICA
+from mne_rt.viz import BrainPlot, SignalPlot, TopoPlot
 
 # Package root — resolves correctly both in editable installs and installed wheels
 _PKG_DIR = Path(__file__).resolve().parent
@@ -110,13 +110,13 @@ def _make_demo_raw_fif(
     return fif_path
 
 
-class NFRealtime(ModalityMixin):
-    """Real-time M/EEG neurofeedback session controller.
+class RTStream(ModalityMixin):
+    """Real-time Real-time M/EEG session controller.
 
     Orchestrates LSL streaming, optional artifact rejection, parallel
     feature extraction, and real-time visualisation for a complete
     neurofeedback session.  Inherits all feature-extraction methods from
-    :class:`~ant.modalities.ModalityMixin`.
+    :class:`~mne_rt.modalities.ModalityMixin`.
 
     Parameters
     ----------
@@ -175,7 +175,7 @@ class NFRealtime(ModalityMixin):
           (:class:`~ant.tools.RTMaxwellFilter`)
 
     save_nf_signal : bool, default True
-        Save extracted NF feature time-series as JSON.
+        Save extracted feature time-series as JSON.
     config_file : str | None, default None
         Path to a YAML configuration file.  ``None`` uses the bundled
         default (``config_methods.yml``).
@@ -192,22 +192,22 @@ class NFRealtime(ModalityMixin):
     See Also
     --------
     ant.modalities.ModalityMixin : All supported NF feature methods.
-    ant.viz.NFSignalPlot : Scrolling NF signal display.
-    ant.viz.BrainPlot : 3D brain activation display.
+    mne_rt.viz.SignalPlot : Scrolling real-time signal display.
+    mne_rt.viz.BrainPlot : 3D brain activation display.
 
     Notes
     -----
     **Typical workflow**::
 
-        nf = NFRealtime("sub01", session="01",
+        nf = RTStream("sub01", session="01",
                         subjects_dir="/data/subjects",
                         montage="easycap-M1")
         nf.connect_to_lsl()
         nf.record_baseline(baseline_duration=120)
         nf.record_main(duration=600, modality=["sensor_power", "erd_ers"])
 
-    The main NF loop runs M/EEG acquisition in a background daemon thread
-    and drives all visualisation windows (StreamViewer, NF signal plot,
+    The main main loop runs M/EEG acquisition in a background daemon thread
+    and drives all visualisation windows (StreamViewer, signal plot,
     brain plot) from the Qt event loop on the main thread via a 33 ms pump
     timer, ensuring all three windows are truly parallel and non-blocking.
 
@@ -374,7 +374,7 @@ class NFRealtime(ModalityMixin):
         Notes
         -----
         All public methods of :class:`mne_lsl.stream.StreamLSL` are
-        also exposed directly on the :class:`NFRealtime` instance after
+        also exposed directly on the :class:`RTStream` instance after
         connection.
 
         Examples
@@ -563,13 +563,13 @@ class NFRealtime(ModalityMixin):
         This is the main closed-loop entry point.  It:
 
         1. Prepares each requested modality (calls ``_<modality>_prep``).
-        2. Opens the selected visualisation windows (StreamViewer, NF signal
+        2. Opens the selected visualisation windows (StreamViewer, signal
            plot, brain plot) on the main thread.
         3. Starts a background daemon thread that continuously fetches data,
-           runs artifact correction, and computes NF features in parallel via
+           runs artifact correction, and computes features in parallel via
            a thread pool.
         4. Drives all windows from the Qt event loop via a 33 ms pump timer.
-        5. Saves raw data and NF feature time-series to disk when finished.
+        5. Saves raw data and feature time-series to disk when finished.
 
         Parameters
         ----------
@@ -603,18 +603,18 @@ class NFRealtime(ModalityMixin):
             Open the mne-lsl :class:`~mne_lsl.stream_viewer.StreamViewer`
             for live raw signal inspection.
         show_nf_signal : bool, default True
-            Show the :class:`~ant.viz.NFSignalPlot` real-time NF monitor.
+            Show the :class:`~mne_rt.viz.SignalPlot` real-time NF monitor.
         time_window : float, default 10.0
-            Visible time range in seconds for the NF signal plot.
+            Visible time range in seconds for the signal plot.
         show_topo : bool, default False
-            Show the :class:`~ant.viz.TopoPlot` real-time scalp topomap
+            Show the :class:`~mne_rt.viz.TopoPlot` real-time scalp topomap
             display.  Requires the montage to be set on the channel info.
         topo_bands : dict | None, default None
             Frequency bands to show in the topomap as
             ``{label: (f_low, f_high)}``.  ``None`` uses the default
             δ/θ/α/β/γ bands.
         show_brain_activation : bool, default False
-            Show the :class:`~ant.viz.BrainPlot` 3D brain activation
+            Show the :class:`~mne_rt.viz.BrainPlot` 3D brain activation
             display (requires ``subjects_fs_dir`` and a fitted inverse
             operator).
         brain_surf : {"inflated", "pial", "white", "sphere"}, default "pial"
@@ -679,18 +679,18 @@ class NFRealtime(ModalityMixin):
             The EMA is applied after z-score normalisation (if enabled) and
             before protocol evaluation, so protocols see the smoothed value.
         display_smoothing : float, default 0.3
-            Additional EMA factor applied **only** inside the live NF signal
+            Additional EMA factor applied **only** inside the live signal
             plot.  Does not affect stored ``nf_data`` or protocol evaluation.
             Lower values give a smoother, slower-reacting display curve;
             ``1.0`` disables this extra layer and shows the already
             ``signal_smoothing``-filtered values directly.
         topo_display_smoothing : float, default 1.0
-            EMA factor for the :class:`~ant.viz.TopoPlot` band-power maps.
+            EMA factor for the :class:`~mne_rt.viz.TopoPlot` band-power maps.
             ``1.0`` (default) disables smoothing so transient artifacts remain
             visible for operator monitoring.  Lower values progressively
             smooth the spatial maps across consecutive windows.
         brain_display_smoothing : float, default 0.3
-            EMA factor for the :class:`~ant.viz.BrainPlot` per-vertex
+            EMA factor for the :class:`~mne_rt.viz.BrainPlot` per-vertex
             activation arrays.  Blends consecutive frames so the cortical
             map transitions smoothly.  ``1.0`` disables smoothing.
         ref_channel : str, default "Fp1"
@@ -845,7 +845,7 @@ class NFRealtime(ModalityMixin):
             "scp":                  50e-6,
         }
 
-        signal_plot: Optional[NFSignalPlot] = None
+        signal_plot: Optional[SignalPlot] = None
         topo_plot: Optional[TopoPlot] = None
         brain_plot: Optional[BrainPlot] = None
 
@@ -856,7 +856,7 @@ class NFRealtime(ModalityMixin):
             app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
         if show_nf_signal:
-            signal_plot = NFSignalPlot(
+            signal_plot = SignalPlot(
                 modalities=mods,
                 scales_dict=scales_dict,
                 sfreq=30.0,   # pump timer rate drives display at 30 fps
@@ -1075,7 +1075,7 @@ class NFRealtime(ModalityMixin):
                 data = _correct(data)
 
                 if track_snr:
-                    from ant.tools import compute_bandpower
+                    from mne_rt.tools import compute_bandpower
                     _sig = compute_bandpower(data, self._sfreq, _snr_frange, method="welch")
                     _all = compute_bandpower(data, self._sfreq, (0.5, self._sfreq / 2 - 1), method="welch")
                     _noise = _all.mean() - _sig.mean()
@@ -1144,7 +1144,7 @@ class NFRealtime(ModalityMixin):
             _n_steps: int = max(1, int(30 * winsize // 2))
 
             def _pump_signal() -> None:
-                """Fast timer (~30 fps) — NF signal plot only.
+                """Fast timer (~30 fps) — signal plot only.
 
                 Linearly interpolates between the two most-recent NF estimates
                 so the trace ramps smoothly over one window period.
@@ -1317,7 +1317,7 @@ class NFRealtime(ModalityMixin):
         --------
         Replay a saved EEG file and run a ZScore protocol offline::
 
-            from ant.protocols import ZScoreProtocol
+            from mne_rt.protocols import ZScoreProtocol
             nf.replay(
                 "sub-01/ses-01/eeg/sub-01_ses-01_task-neurofeedback_eeg.fif",
                 modality="sensor_power",
@@ -1465,8 +1465,8 @@ class NFRealtime(ModalityMixin):
         to keyword arguments forwarded to the corresponding feature extractor.
         ``None`` is accepted on assignment and normalised to ``{}``.
 
-        Example
-        -------
+        Examples
+        --------
         >>> nf.modality_params = {"sensor_power": {"frange": [10, 12]},
         ...                       "erd_ers": {"frange": [8, 13]}}
         """
@@ -1594,14 +1594,14 @@ class NFRealtime(ModalityMixin):
         See Also
         --------
         ant.tools.ORICA : The underlying ORICA implementation.
-        NFRealtime.get_blink_template : Compute a blink spatial template
+        RTStream.get_blink_template : Compute a blink spatial template
             to guide component identification.
 
         Notes
         -----
         :meth:`run_orica` is called automatically inside
         :meth:`record_baseline` when ``artifact_correction="orica"``
-        is set on the :class:`NFRealtime` instance.  Call it manually
+        is set on the :class:`RTStream` instance.  Call it manually
         only if you need to tune the ORICA hyperparameters.
         """
         self.orica = ORICA(
@@ -1663,7 +1663,7 @@ class NFRealtime(ModalityMixin):
         See Also
         --------
         ant.tools.GEDAIDenoiser : The underlying GED denoiser class.
-        NFRealtime.compute_inv_operator : Computes the forward solution
+        RTStream.compute_inv_operator : Computes the forward solution
             required for leadfield mode.
 
         References
@@ -1752,7 +1752,7 @@ class NFRealtime(ModalityMixin):
         See Also
         --------
         ant.tools.ASRDenoiser : The underlying ASR implementation.
-        NFRealtime.record_baseline : Records and stores the baseline segment.
+        RTStream.record_baseline : Records and stores the baseline segment.
 
         References
         ----------
@@ -2046,7 +2046,7 @@ class NFRealtime(ModalityMixin):
 
         # StreamViewer.start() calls sys.exit(app.exec_()), which would block
         # the main thread and prevent the acquisition thread from ever starting.
-        # Run it in a separate process so the NF loop continues uninterrupted.
+        # Run it in a separate process so the main loop continues uninterrupted.
         code = (
             "from mne_lsl.stream_viewer import StreamViewer; "
             f"StreamViewer(stream_name={self.stream.name!r}).start({bufsize})"
@@ -2079,7 +2079,7 @@ class NFRealtime(ModalityMixin):
         Parameters
         ----------
         nf_data : bool, default True
-            Save NF feature time-series as
+            Save feature time-series as
             ``beh/<stem>_task-neurofeedback_beh.json``.  The JSON contains a
             ``"meta"`` block (subject, modalities, sfreq, duration, artifact
             correction, artifact rate, SNR, start/end timestamps) and a
@@ -2168,7 +2168,7 @@ class NFRealtime(ModalityMixin):
                 return float(v)
             return v
 
-        # ── NF feature time-series ───────────────────────────────────────
+        # ── feature time-series ───────────────────────────────────────
 
         if nf_data and hasattr(self, "nf_data"):
             start_iso = (
@@ -2296,7 +2296,7 @@ class NFRealtime(ModalityMixin):
 
         Examples
         --------
-        >>> d = NFRealtime.load_nf_data("subjects/sub-sub01/ses-01/beh/sub-sub01_ses-01_task-neurofeedback_beh.json")
+        >>> d = RTStream.load_nf_data("subjects/sub-sub01/ses-01/beh/sub-sub01_ses-01_task-neurofeedback_beh.json")
         >>> import numpy as np
         >>> alpha = np.array(d["data"]["sensor_power"])
         >>> print(f"Mean alpha power: {alpha.mean():.3e}")
@@ -2319,7 +2319,7 @@ class NFRealtime(ModalityMixin):
         """Generate an HTML MNE report for the session.
 
         Produces a self-contained HTML file containing baseline recording
-        info, sensor layouts, optional PSD, NF feature time-series, and
+        info, sensor layouts, optional PSD, feature time-series, and
         brain-label diagrams for source-space modalities.
 
         Parameters
@@ -2400,7 +2400,7 @@ class NFRealtime(ModalityMixin):
                 plt.close(fig_brain)
         '''
 
-        # ── NF signal time-series ─────────────────────────────────────────
+        # ── signal time-series ─────────────────────────────────────────
         if include_nf_signal and hasattr(self, "nf_data") and self.nf_data:
             fig_nf, axes_nf = plt.subplots(
                 len(modalities), 1,
@@ -2415,9 +2415,9 @@ class NFRealtime(ModalityMixin):
                 ax.set_ylabel(mod, fontsize=9)
                 ax.grid(True, alpha=0.3)
             axes_nf[-1, 0].set_xlabel("Window index")
-            fig_nf.suptitle("NF feature time-series", fontsize=11)
+            fig_nf.suptitle("feature time-series", fontsize=11)
             fig_nf.tight_layout()
-            report.add_figure(fig=fig_nf, title="NF signal")
+            report.add_figure(fig=fig_nf, title="signal")
             plt.close(fig_nf)
 
         # ── Summary table ─────────────────────────────────────────────────
