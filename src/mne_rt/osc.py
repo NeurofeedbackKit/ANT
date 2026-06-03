@@ -1,6 +1,6 @@
-"""Open Sound Control (OSC) output for the Advanced Neurofeedback Toolbox.
+"""Open Sound Control (OSC) output for the MNE-RT.
 
-Allows NF feature values to be streamed in real-time to any OSC-capable
+Allows real-time feature values to be streamed in real-time to any OSC-capable
 application — Max/MSP, SuperCollider, Pure Data, TouchDesigner, Unity, etc.
 
 Requirements
@@ -27,7 +27,7 @@ Send alpha power to SuperCollider on localhost::
     sender.send("sensor_power", 0.42)
     sender.close()
 
-Or pass it to :meth:`~ant.NFRealtime.record_main`::
+Or pass it to :meth:`~mne_rt.RTStream.record_main`::
 
     nf.record_main(duration=300, modality="sensor_power",
                    osc_sender=OSCSender(port=9000))
