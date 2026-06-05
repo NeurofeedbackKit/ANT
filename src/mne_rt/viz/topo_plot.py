@@ -147,9 +147,9 @@ class TopoPlot(QMainWindow):
 
     See Also
     --------
-    ant.viz.NFSignalPlot : Scrolling NF signal display.
-    ant.viz.BrainPlot : 3D brain activation display.
-    ant.NFRealtime.record_main : Main NF loop that drives all plots.
+    mne_rt.viz.SignalPlot : Scrolling NF signal display.
+    mne_rt.viz.BrainPlot : 3D brain activation display.
+    mne_rt.RTStream.record_main : Main NF loop that drives all plots.
 
     Notes
     -----
@@ -191,7 +191,7 @@ class TopoPlot(QMainWindow):
         display_smoothing: float = 1.0,
         verbose=None,
     ) -> None:
-        from ant._logging import set_log_level
+        from mne_rt._logging import set_log_level
         set_log_level(verbose)
         super().__init__()
 
@@ -546,7 +546,7 @@ class TopoPlot(QMainWindow):
         """Update all visible topomaps from a new raw data window.
 
         Called at ~5 fps by the Qt pump timer inside
-        :meth:`~ant.NFRealtime.record_main`.
+        :meth:`~mne_rt.RTStream.record_main`.
 
         Parameters
         ----------
