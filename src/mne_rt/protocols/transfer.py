@@ -3,7 +3,7 @@
 This module provides :class:`TransferProtocol`, which loads baseline
 statistics from a previous session's BIDS behavioural JSON file and uses them
 to seed a Welford online-mean/variance tracker.  This eliminates the warmup
-period of :class:`~ant.protocols.ZScoreProtocol` and provides consistent
+period of :class:`~mne_rt.protocols.ZScoreProtocol` and provides consistent
 cross-day normalisation for longitudinal NF studies.
 
 Classes
