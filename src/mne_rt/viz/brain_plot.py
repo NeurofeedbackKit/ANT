@@ -30,8 +30,8 @@ except ImportError:
     _BackgroundPlotter = None  # type: ignore[assignment]
     _pyvistaqt_available = False
 
-from ant._logging import logger
-from ant.tools import setup_surface
+from mne_rt._logging import logger
+from mne_rt.tools import setup_surface
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class BrainPlot:
 
     Renders bilateral ``fsaverage`` cortical surfaces with a colour-mapped
     activity overlay and a Qt control panel docked on the right.  Designed
-    to run alongside :class:`~ant.viz.NFSignalPlot` inside a shared Qt
+    to run alongside :class:`~mne_rt.viz.SignalPlot` inside a shared Qt
     event loop — call :meth:`update_from_arrays` or :meth:`update` from the
     acquisition thread's pump timer.
 
@@ -121,8 +121,8 @@ class BrainPlot:
 
     See Also
     --------
-    ant.viz.NFSignalPlot : Scrolling real-time NF signal plot.
-    ant.NFRealtime.record_main : Main NF loop that drives both plots.
+    mne_rt.viz.SignalPlot : Scrolling real-time NF signal plot.
+    mne_rt.RTStream.record_main : Main NF loop that drives both plots.
 
     Notes
     -----
@@ -148,9 +148,9 @@ class BrainPlot:
         if not _pyvista_available or not _pyvistaqt_available:
             raise ImportError(
                 "pyvista and pyvistaqt are required for BrainPlot. "
-                "Install them with:  pip install 'ant-nf[viz]'"
+                "Install them with:  pip install 'mne-rt[viz]'"
             )
-        from ant._logging import set_log_level
+        from mne_rt._logging import set_log_level
         set_log_level(verbose)
 
         if cmap not in _CMAPS:
@@ -210,7 +210,7 @@ class BrainPlot:
         p = _BackgroundPlotter(
             window_size=tuple(window_size),
             lighting="three lights",
-            title="Advanced Neurofeedback Toolbox — Brain Activation",
+            title="MNE-RT — Brain Activation",
             toolbar=False,
             menu_bar=False,
             editor=False,
@@ -456,7 +456,7 @@ class BrainPlot:
         mode_combo.setCurrentText(self._display_mode)
         mode_lbl = QLabel(
             "<span style='color:#666;font-size:9px;'>"
-            "Configure NFRealtime modality to match selected mode"
+            "Configure RTStream modality to match selected mode"
             "</span>"
         )
         mode_lbl.setWordWrap(True)
@@ -697,7 +697,7 @@ class BrainPlot:
 
         The display mode is a **label only** — it tells both the operator and
         the visualisation what kind of values are being streamed in.  Configure
-        :meth:`~ant.NFRealtime.record_main` with the matching ``modality`` to
+        :meth:`~mne_rt.RTStream.record_main` with the matching ``modality`` to
         pass the correct data.
 
         Parameters
