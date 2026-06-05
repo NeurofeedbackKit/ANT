@@ -160,19 +160,19 @@ class RTStream(ModalityMixin):
         * ``False``       — no correction
         * ``"lms"``       — adaptive LMS regression on a frontal reference
           channel; fast and lightweight (EEG only).
-          (:class:`~ant.tools.AdaptiveLMSFilter`)
+          (:class:`~mne_rt.tools.AdaptiveLMSFilter`)
         * ``"orica"``     — online recursive ICA; blind source separation
           with continuous weight updates.
-          (:class:`~ant.tools.ORICA`)
+          (:class:`~mne_rt.tools.ORICA`)
         * ``"gedai"``     — generalised eigendecomposition artefact
           isolation; call :meth:`fit_gedai` after :meth:`record_baseline`.
-          (:class:`~ant.tools.GEDAIDenoiser`)
+          (:class:`~mne_rt.tools.GEDAIDenoiser`)
         * ``"asr"``       — Artifact Subspace Reconstruction; call
           :meth:`fit_asr` after :meth:`record_baseline`.
-          (:class:`~ant.tools.ASRDenoiser`)
+          (:class:`~mne_rt.tools.ASRDenoiser`)
         * ``"maxwell"``   — Signal Space Separation / tSSS for MEG;
           call :meth:`fit_maxwell` before :meth:`record_main` (MEG only).
-          (:class:`~ant.tools.RTMaxwellFilter`)
+          (:class:`~mne_rt.tools.RTMaxwellFilter`)
 
     save_nf_signal : bool, default True
         Save extracted feature time-series as JSON.
@@ -647,16 +647,16 @@ class RTStream(ModalityMixin):
         osc_sender : OSCSender | None, default None
             If provided, each computed NF value is also broadcast over OSC
             to the configured host/port after every update cycle.
-            See :class:`~ant.osc.OSCSender`.
+            See :class:`~mne_rt.osc.OSCSender`.
         lsl_sender : LSLSender | None, default None
             If provided, each computed NF value is pushed into an LSL stream
             outlet after every update cycle.  Faster and more reliable than
             OSC for same-machine feedback delivery.
-            See :class:`~ant.lsl_output.LSLSender`.
+            See :class:`~mne_rt.lsl_output.LSLSender`.
         protocol : Protocol instance | dict | None, default None
             Real-time NF reward protocol evaluated on every analysis window.
             Pass a single Protocol instance (e.g.
-            :class:`~ant.protocols.ThresholdProtocol`) to apply it to the
+            :class:`~mne_rt.protocols.ThresholdProtocol`) to apply it to the
             first modality, or a ``{modality_name: protocol}`` dict to
             apply different protocols to different modalities.  On each
             window the protocol's ``evaluate(value)`` method is called and
@@ -1623,7 +1623,7 @@ class RTStream(ModalityMixin):
         use_leadfield: bool = True,
         verbose: Union[bool, str, None] = None,
     ) -> None:
-        """Fit a :class:`~ant.tools.GEDAIDenoiser` from the recorded baseline.
+        """Fit a :class:`~mne_rt.tools.GEDAIDenoiser` from the recorded baseline.
 
         Must be called after :meth:`record_baseline` and before
         :meth:`record_main` when ``artifact_correction="gedai"``.
@@ -1722,7 +1722,7 @@ class RTStream(ModalityMixin):
         max_dropout_fraction: float = 0.1,
         verbose: Union[bool, str, None] = None,
     ) -> None:
-        """Fit an :class:`~ant.tools.ASRDenoiser` from the recorded baseline.
+        """Fit an :class:`~mne_rt.tools.ASRDenoiser` from the recorded baseline.
 
         Must be called after :meth:`record_baseline` and before
         :meth:`record_main` when ``artifact_correction="asr"``.
@@ -1872,7 +1872,7 @@ class RTStream(ModalityMixin):
 
         Notes
         -----
-        See :class:`~ant.tools.RTMaxwellFilter` for the underlying filter
+        See :class:`~mne_rt.tools.RTMaxwellFilter` for the underlying filter
         class and :meth:`fit_asr` for the EEG alternative (ASR).
 
         Unlike :meth:`fit_asr` and :meth:`fit_gedai`, **no baseline
