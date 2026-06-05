@@ -56,6 +56,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     _add_info_parser(subparsers)
     _add_demo_parser(subparsers)
+    _add_demo_erp_parser(subparsers)
     _add_baseline_parser(subparsers)
     _add_run_parser(subparsers)
 
@@ -121,23 +122,6 @@ def _add_demo_parser(sub):
         "--no-brain", action="store_true",
         help="Disable the 3-D brain activation display even if FreeSurfer is found.",
     )
-    # ERP / epoch plot flags
-    p.add_argument(
-        "--erp", action="store_true",
-        help="Enable the scalp-layout ERP plot (requires a stimulus channel).",
-    )
-    p.add_argument(
-        "--butterfly", action="store_true",
-        help="Enable the butterfly overlay plot (all channels, region-coloured).",
-    )
-    p.add_argument(
-        "--compare-evoked", action="store_true",
-        help="Enable the per-channel comparison plot with SEM ribbons and peak markers.",
-    )
-    p.add_argument(
-        "--tfr", action="store_true",
-        help="Enable the Morlet wavelet TFR heatmap plot.",
-    )
     p.add_argument(
         "--subjects-fs-dir", metavar="DIR",
         help=(
@@ -161,6 +145,41 @@ def _add_demo_parser(sub):
     p.add_argument(
         "--no-save", action="store_true",
         help="Skip saving session data and report at the end of the demo.",
+    )
+    return p
+
+
+def _add_demo_erp_parser(sub):
+    p = sub.add_parser(
+        "demo-erp",
+        help="Launch an ERP demo: RTEpochs + epoch visualisation plots.",
+        description=textwrap.dedent("""\
+            Run a demo that streams MNE sample-dataset EEG through a mock LSL
+            player, collects auditory epochs via RTEpochs, and drives the four
+            epoch visualisation plots (ERPPlot, ButterflyPlot, CompareEvoked,
+            TFRPlot).  Downloads MNE sample data on first run (~1.5 GB).
+        """),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p.add_argument(
+        "--n-trials", type=int, default=70, metavar="N",
+        help="Number of EEG trials to collect (default: 70).",
+    )
+    p.add_argument(
+        "--no-erp", action="store_true",
+        help="Disable the scalp-layout ERPPlot.",
+    )
+    p.add_argument(
+        "--no-butterfly", action="store_true",
+        help="Disable the ButterflyPlot (all-channel overlay).",
+    )
+    p.add_argument(
+        "--no-compare", action="store_true",
+        help="Disable CompareEvoked (per-channel comparison with peak markers).",
+    )
+    p.add_argument(
+        "--no-tfr", action="store_true",
+        help="Disable the TFRPlot (Morlet wavelet time-frequency heatmaps).",
     )
     return p
 
@@ -252,19 +271,38 @@ def _add_run_parser(sub):
     # ERP / epoch plot flags
     p.add_argument(
         "--erp", action="store_true",
-        help="Enable the scalp-layout ERP plot (requires a stimulus channel).",
+        help="Enable the scalp-layout ERPPlot (requires --stim-ch).",
     )
     p.add_argument(
         "--butterfly", action="store_true",
-        help="Enable the butterfly overlay plot (all channels, region-coloured).",
+        help="Enable the ButterflyPlot overlay (requires --stim-ch).",
     )
     p.add_argument(
         "--compare-evoked", action="store_true",
-        help="Enable the per-channel comparison plot with SEM ribbons and peak markers.",
+        help="Enable CompareEvoked per-channel plot (requires --stim-ch).",
     )
     p.add_argument(
         "--tfr", action="store_true",
-        help="Enable the Morlet wavelet TFR heatmap plot.",
+        help="Enable the TFRPlot Morlet wavelet heatmap (requires --stim-ch).",
+    )
+    p.add_argument(
+        "--stim-ch", metavar="CHANNEL",
+        help="Stimulus/trigger channel name for epoch extraction (e.g. STI 014).",
+    )
+    p.add_argument(
+        "--tmin", type=float, default=-0.1, metavar="SEC",
+        help="Epoch start relative to stimulus in seconds (default: -0.1).",
+    )
+    p.add_argument(
+        "--tmax", type=float, default=0.5, metavar="SEC",
+        help="Epoch end relative to stimulus in seconds (default: 0.5).",
+    )
+    p.add_argument(
+        "--event-id", nargs="+", metavar="NAME=CODE",
+        help=(
+            "Event definitions as NAME=CODE pairs, e.g. "
+            "--event-id left=1 right=2 (default: stimulus=1)."
+        ),
     )
     p.add_argument(
         "--surf",
@@ -452,6 +490,143 @@ def _cmd_demo(args) -> None:
             print(f"  [report] skipped ({exc})")
 
 
+def _cmd_demo_erp(args) -> None:
+    """Run an ERP demo using MNE sample data and the four epoch plot windows."""
+    import os
+    import sys
+    import time
+    import threading
+
+    os.environ.setdefault("MPLBACKEND", "Agg")
+
+    import mne
+    import numpy as np
+
+    print("MNE-RT ERP Demo — downloading/loading MNE sample data …")
+    data_path  = mne.datasets.sample.data_path()
+    raw_full   = mne.io.read_raw_fif(
+        str(data_path) + "/MEG/sample/sample_audvis_raw.fif",
+        preload=True, verbose=False,
+    )
+    raw_full.filter(1.0, 40.0, verbose=False)
+    raw_demo   = raw_full.copy().crop(tmax=277.0)
+
+    mock_path  = "/tmp/mne_rt_demo_erp_raw.fif"
+    raw_demo.save(mock_path, overwrite=True, verbose=False)
+    print(f"  Saved {raw_demo.times[-1]:.0f} s demo file → {mock_path}")
+
+    from PyQt6.QtWidgets import QApplication
+    app = QApplication.instance() or QApplication(sys.argv)
+
+    stim_ch  = "STI 014"
+    event_id = {"auditory/left": 1, "auditory/right": 2}
+    tmin, tmax = -0.1, 0.4
+
+    show_erp       = not args.no_erp
+    show_butterfly = not args.no_butterfly
+    show_compare   = not args.no_compare
+    show_tfr       = not args.no_tfr
+
+    if not any([show_erp, show_butterfly, show_compare, show_tfr]):
+        print("All plots disabled — nothing to show.  "
+              "Remove --no-* flags to enable plots.")
+        return
+
+    print("\n── Connecting RTEpochs ──────────────────────────────────────────────")
+    from mne_rt import RTEpochs
+    rt = RTEpochs(
+        event_id=event_id,
+        event_channels=stim_ch,
+        tmin=tmin, tmax=tmax,
+        baseline=(None, 0),
+        picks="eeg",
+        reject={"eeg": 150e-6},
+    )
+    rt.connect_to_lsl(mock_lsl=True, fname=mock_path, timeout=15.0)
+
+    from mne_rt.viz.erp_plot       import ERPPlot
+    from mne_rt.viz.butterfly_plot import ButterflyPlot
+    from mne_rt.viz.compare_evoked import CompareEvoked
+    from mne_rt.viz.tfr_plot       import TFRPlot
+
+    common_kw = dict(
+        ch_names = list(rt.epochs_stream_.info["ch_names"]),
+        sfreq    = rt.epochs_stream_.info["sfreq"],
+        tmin     = tmin,
+        tmax     = tmax,
+        event_id = event_id,
+        info     = rt.epochs_stream_.info,
+        baseline = (None, 0),
+    )
+
+    erp_w   = ERPPlot(**common_kw)       if show_erp       else None
+    butt_w  = ButterflyPlot(**common_kw) if show_butterfly else None
+    comp_w  = CompareEvoked(**common_kw) if show_compare   else None
+    tfr_w   = TFRPlot(**common_kw)       if show_tfr       else None
+
+    _interactive = os.environ.get("QT_QPA_PLATFORM") != "offscreen"
+    positions = [(0, 0), (730, 0), (0, 520), (730, 520)]
+    idx = 0
+    for w in (erp_w, butt_w, comp_w, tfr_w):
+        if w is not None:
+            if _interactive:
+                x, y = positions[idx]
+                w.move(x, y)
+                w.resize(720, 500)
+            w.show()
+            idx += 1
+    app.processEvents()
+
+    update_times: list[float] = []
+
+    def on_trial(n_accepted: int, data, event_code: int, condition: str) -> None:
+        t0    = time.perf_counter()
+        batch = rt._buf_[:n_accepted]
+        conds = list(rt._cond_list_)
+        if erp_w  is not None: erp_w .update(batch, conds)
+        if butt_w is not None: butt_w.update(batch, conds)
+        if comp_w is not None: comp_w.update(batch, conds)
+        if tfr_w  is not None: tfr_w .update(batch, conds)
+        dt = (time.perf_counter() - t0) * 1000
+        update_times.append(dt)
+        print(f"  trial {n_accepted:3d} | {condition:<22s} | update {dt:.1f} ms")
+        app.processEvents()
+
+    rt.on_trial = on_trial
+
+    print(f"\n── Collecting {args.n_trials} trials ───────────────────────────────────────")
+    done = threading.Event()
+
+    def _collect():
+        rt.run(n_trials=args.n_trials, show_erp=False)
+        done.set()
+
+    threading.Thread(target=_collect, daemon=True).start()
+
+    sentinel = next((w for w in (erp_w, butt_w, comp_w, tfr_w) if w is not None), None)
+    while not done.is_set():
+        app.processEvents()
+        time.sleep(0.02)
+        if sentinel is not None and not sentinel.isVisible():
+            print("\n  Window closed — stopping early.")
+            rt.stop()
+            break
+
+    rt.disconnect()
+    print(f"\n  Accepted: {rt.n_accepted_} trials")
+    if update_times:
+        import numpy as np
+        print(f"  Latency : mean={np.mean(update_times):.1f} ms  "
+              f"max={np.max(update_times):.1f} ms")
+
+    open_windows = [w for w in (erp_w, butt_w, comp_w, tfr_w) if w is not None]
+    if any(w.isVisible() for w in open_windows):
+        print("\nAll trials collected — close all windows to exit.")
+        app.exec()
+    else:
+        print("\nDone.")
+
+
 def _cmd_baseline(args) -> None:
     """Record a baseline session."""
     from mne_rt import RTStream, set_log_level
@@ -477,8 +652,28 @@ def _cmd_baseline(args) -> None:
 
 def _cmd_run(args) -> None:
     """Run a real-time M/EEG session."""
+    import sys
+    import time
+    import threading
+
     from mne_rt import RTStream, set_log_level
     set_log_level(args.verbose)
+
+    want_epoch_plots = any([
+        getattr(args, "erp", False),
+        getattr(args, "butterfly", False),
+        getattr(args, "compare_evoked", False),
+        getattr(args, "tfr", False),
+    ])
+
+    if want_epoch_plots and not getattr(args, "stim_ch", None):
+        import sys as _sys
+        print(
+            "ERROR: --erp / --butterfly / --compare-evoked / --tfr require "
+            "--stim-ch <CHANNEL>  (e.g. --stim-ch 'STI 014')",
+            file=_sys.stderr,
+        )
+        _sys.exit(1)
 
     artifact_correction = args.artifact_correction or False
 
@@ -526,6 +721,85 @@ def _cmd_run(args) -> None:
         lsl_sender = LSLSender(stream_name=getattr(args, "lsl_stream_name", "MNE_RT"))
         print(f"LSL output → stream '{lsl_sender.stream_name}'")
 
+    # ── Epoch plot windows (RTEpochs side-channel) ────────────────────────
+    rt_epochs = None
+    erp_w = butt_w = comp_w = tfr_w = None
+
+    if want_epoch_plots:
+        # Parse --event-id name=code pairs; default to stimulus=1
+        raw_event_id = getattr(args, "event_id", None) or ["stimulus=1"]
+        event_id: dict[str, int] = {}
+        for pair in raw_event_id:
+            name, _, code = pair.partition("=")
+            event_id[name.strip()] = int(code.strip())
+
+        tmin = getattr(args, "tmin", -0.1)
+        tmax = getattr(args, "tmax",  0.5)
+
+        from mne_rt import RTEpochs
+        rt_epochs = RTEpochs(
+            event_id=event_id,
+            event_channels=args.stim_ch,
+            tmin=tmin, tmax=tmax,
+            baseline=(None, 0),
+        )
+        rt_epochs.connect_to_lsl(
+            mock_lsl=args.mock,
+            fname=getattr(args, "fname", None),
+            timeout=30.0,
+        )
+
+        from mne_rt.viz.erp_plot       import ERPPlot
+        from mne_rt.viz.butterfly_plot import ButterflyPlot
+        from mne_rt.viz.compare_evoked import CompareEvoked
+        from mne_rt.viz.tfr_plot       import TFRPlot
+
+        common_kw = dict(
+            ch_names = list(rt_epochs.epochs_stream_.info["ch_names"]),
+            sfreq    = rt_epochs.epochs_stream_.info["sfreq"],
+            tmin     = tmin,
+            tmax     = tmax,
+            event_id = event_id,
+            info     = rt_epochs.epochs_stream_.info,
+            baseline = (None, 0),
+        )
+
+        erp_w  = ERPPlot(**common_kw)       if args.erp             else None
+        butt_w = ButterflyPlot(**common_kw) if args.butterfly        else None
+        comp_w = CompareEvoked(**common_kw) if args.compare_evoked   else None
+        tfr_w  = TFRPlot(**common_kw)       if args.tfr              else None
+
+        _interactive = os.environ.get("QT_QPA_PLATFORM") != "offscreen"
+        positions = [(0, 0), (730, 0), (0, 520), (730, 520)]
+        idx = 0
+        for w in (erp_w, butt_w, comp_w, tfr_w):
+            if w is not None:
+                if _interactive:
+                    x, y = positions[idx]
+                    w.move(x, y)
+                    w.resize(720, 500)
+                w.show()
+                idx += 1
+
+        def _epoch_on_trial(n_accepted, data, event_code, condition):
+            batch = rt_epochs._buf_[:n_accepted]
+            conds = list(rt_epochs._cond_list_)
+            if erp_w  is not None: erp_w .update(batch, conds)
+            if butt_w is not None: butt_w.update(batch, conds)
+            if comp_w is not None: comp_w.update(batch, conds)
+            if tfr_w  is not None: tfr_w .update(batch, conds)
+
+        rt_epochs.on_trial = _epoch_on_trial
+
+        _epoch_done = threading.Event()
+
+        def _collect_epochs():
+            rt_epochs.run(n_trials=999_999, show_erp=False)
+            _epoch_done.set()
+
+        threading.Thread(target=_collect_epochs, daemon=True).start()
+        print(f"Epoch plots active — stimulus channel: {args.stim_ch}")
+
     try:
         nf.record_main(
             duration=args.duration,
@@ -541,6 +815,9 @@ def _cmd_run(args) -> None:
             verbose=args.verbose,
         )
     finally:
+        if rt_epochs is not None:
+            rt_epochs.stop()
+            rt_epochs.disconnect()
         if osc_sender is not None:
             osc_sender.close()
         if lsl_sender is not None:
@@ -579,6 +856,7 @@ def main(argv=None) -> None:
     dispatch = {
         "info":     _cmd_info,
         "demo":     _cmd_demo,
+        "demo-erp": _cmd_demo_erp,
         "baseline": _cmd_baseline,
         "run":      _cmd_run,
     }
