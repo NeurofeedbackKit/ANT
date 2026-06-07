@@ -107,16 +107,16 @@ def _add_demo_parser(sub):
         help="Analysis window length in seconds (default: 1.0).",
     )
     p.add_argument(
-        "--no-signal", action="store_true",
-        help="Disable the scrolling real-time signal plot.",
+        "--no-nf", action="store_true",
+        help="Disable the scrolling real-time NF signal plot (NFPlot).",
     )
     p.add_argument(
         "--no-raw", action="store_true",
-        help="Disable the raw stream viewer.",
+        help="Disable the scrolling raw M/EEG viewer (RawPlot).",
     )
     p.add_argument(
-        "--no-topo", action="store_true",
-        help="Disable the real-time scalp topomap display.",
+        "--no-topomap", action="store_true",
+        help="Disable the real-time scalp topomap display (TopomapPlot).",
     )
     p.add_argument(
         "--no-brain", action="store_true",
@@ -156,7 +156,7 @@ def _add_demo_erp_parser(sub):
         description=textwrap.dedent("""\
             Run a demo that streams MNE sample-dataset EEG through a mock LSL
             player, collects auditory epochs via RTEpochs, and drives the four
-            epoch visualisation plots (ERPPlot, ButterflyPlot, CompareEvoked,
+            epoch visualisation plots (TopoPlot, ButterflyPlot, CompareEvoked,
             TFRPlot).  Downloads MNE sample data on first run (~1.5 GB).
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -167,7 +167,7 @@ def _add_demo_erp_parser(sub):
     )
     p.add_argument(
         "--no-erp", action="store_true",
-        help="Disable the scalp-layout ERPPlot.",
+        help="Disable the scalp-layout TopoPlot (ERP display).",
     )
     p.add_argument(
         "--no-butterfly", action="store_true",
@@ -253,16 +253,16 @@ def _add_run_parser(sub):
         ),
     )
     p.add_argument(
-        "--no-signal", action="store_true",
-        help="Disable the scrolling real-time signal plot.",
+        "--no-nf", action="store_true",
+        help="Disable the scrolling real-time NF signal plot (NFPlot).",
     )
     p.add_argument(
         "--no-raw", action="store_true",
-        help="Disable the raw stream viewer.",
+        help="Disable the scrolling raw M/EEG viewer (RawPlot).",
     )
     p.add_argument(
-        "--topo", action="store_true",
-        help="Show the real-time scalp topomap display.",
+        "--topomap", action="store_true",
+        help="Show the real-time scalp topomap display (TopomapPlot).",
     )
     p.add_argument(
         "--brain", action="store_true",
@@ -271,7 +271,7 @@ def _add_run_parser(sub):
     # ERP / epoch plot flags
     p.add_argument(
         "--erp", action="store_true",
-        help="Enable the scalp-layout ERPPlot (requires --stim-ch).",
+        help="Enable the scalp-layout TopoPlot ERP display (requires --stim-ch).",
     )
     p.add_argument(
         "--butterfly", action="store_true",
@@ -445,7 +445,7 @@ def _cmd_demo(args) -> None:
                 break
 
     show_brain = (subjects_fs_dir is not None) and not getattr(args, "no_brain", True)
-    show_topo = not getattr(args, "no_topo", False)
+    show_topo = not getattr(args, "no_topomap", False)
     do_save = not getattr(args, "no_save", True)
     if show_brain:
         print(f"Brain activation: using {subjects_fs_dir}")
@@ -470,7 +470,7 @@ def _cmd_demo(args) -> None:
         modality=args.modality,
         winsize=args.winsize,
         signal_smoothing=args.smoothing,
-        show_nf_signal=not args.no_signal,
+        show_nf_signal=not args.no_nf,
         show_raw_signal=not args.no_raw,
         show_topo=show_topo,
         show_brain_activation=show_brain,
@@ -544,7 +544,7 @@ def _cmd_demo_erp(args) -> None:
     )
     rt.connect_to_lsl(mock_lsl=True, fname=mock_path, timeout=15.0)
 
-    from mne_rt.viz.erp_plot       import ERPPlot
+    from mne_rt.viz.topo_plot      import TopoPlot as ERPTopoPlot
     from mne_rt.viz.butterfly_plot import ButterflyPlot
     from mne_rt.viz.compare_evoked import CompareEvoked
     from mne_rt.viz.tfr_plot       import TFRPlot
@@ -559,7 +559,7 @@ def _cmd_demo_erp(args) -> None:
         baseline = (None, 0),
     )
 
-    erp_w   = ERPPlot(**common_kw)       if show_erp       else None
+    erp_w   = ERPTopoPlot(**common_kw)   if show_erp       else None
     butt_w  = ButterflyPlot(**common_kw) if show_butterfly else None
     comp_w  = CompareEvoked(**common_kw) if show_compare   else None
     tfr_w   = TFRPlot(**common_kw)       if show_tfr       else None
@@ -749,7 +749,7 @@ def _cmd_run(args) -> None:
             timeout=30.0,
         )
 
-        from mne_rt.viz.erp_plot       import ERPPlot
+        from mne_rt.viz.topo_plot      import TopoPlot as ERPTopoPlot
         from mne_rt.viz.butterfly_plot import ButterflyPlot
         from mne_rt.viz.compare_evoked import CompareEvoked
         from mne_rt.viz.tfr_plot       import TFRPlot
@@ -764,7 +764,7 @@ def _cmd_run(args) -> None:
             baseline = (None, 0),
         )
 
-        erp_w  = ERPPlot(**common_kw)       if args.erp             else None
+        erp_w  = ERPTopoPlot(**common_kw)   if args.erp             else None
         butt_w = ButterflyPlot(**common_kw) if args.butterfly        else None
         comp_w = CompareEvoked(**common_kw) if args.compare_evoked   else None
         tfr_w  = TFRPlot(**common_kw)       if args.tfr              else None
@@ -806,9 +806,9 @@ def _cmd_run(args) -> None:
             modality=args.modality,
             winsize=args.winsize,
             signal_smoothing=args.smoothing,
-            show_nf_signal=not args.no_signal,
+            show_nf_signal=not args.no_nf,
             show_raw_signal=not args.no_raw,
-            show_topo=args.topo,
+            show_topo=args.topomap,
             show_brain_activation=args.brain,
             osc_sender=osc_sender,
             lsl_sender=lsl_sender,
