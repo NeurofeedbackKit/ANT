@@ -44,7 +44,7 @@ class RTEpochs:
 
     Connects a :class:`~mne_lsl.stream.StreamLSL` to an
     :class:`~mne_lsl.stream.EpochsStream`, polls for new epochs, and
-    optionally drives an :class:`~mne_rt.viz.ERPPlot` that redraws after
+    optionally drives an :class:`~mne_rt.viz.TopoPlot` that redraws after
     every new trial.
 
     Parameters
@@ -88,7 +88,7 @@ class RTEpochs:
 
     See Also
     --------
-    mne_rt.viz.ERPPlot : Live ERP display driven by this class.
+    mne_rt.viz.TopoPlot : Live ERP display driven by this class.
     mne_rt.RTStream : Continuous sliding-window stream processor.
 
     Examples
@@ -233,7 +233,7 @@ class RTEpochs:
         n_trials : int, default 100
             Stop after this many accepted epochs.
         show_erp : bool, default False
-            Open an :class:`~mne_rt.viz.ERPPlot` that redraws every
+            Open an :class:`~mne_rt.viz.TopoPlot` that redraws every
             ``erp_update_every`` accepted epochs.
         erp_update_every : int, default 1
             ERP redraw cadence in number of accepted epochs.
@@ -253,8 +253,8 @@ class RTEpochs:
         es = self.epochs_stream_
         erp_plot = None
         if show_erp:
-            from mne_rt.viz.erp_plot import ERPPlot
-            erp_plot = ERPPlot(
+            from mne_rt.viz.topo_plot import TopoPlot
+            erp_plot = TopoPlot(
                 ch_names=list(es.info["ch_names"]),
                 sfreq=es.info["sfreq"],
                 tmin=self.tmin,
