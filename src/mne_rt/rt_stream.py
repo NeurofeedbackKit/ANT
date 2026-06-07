@@ -66,7 +66,7 @@ from mne_rt.tools.asr import ASRDenoiser
 from mne_rt.tools.gedai import GEDAIDenoiser
 from mne_rt.tools.maxwell import RTMaxwellFilter
 from mne_rt.tools.orica import ORICA
-from mne_rt.viz import BrainPlot, SignalPlot, TopoPlot
+from mne_rt.viz import BrainPlot, NFPlot, RawPlot, TopomapPlot
 
 # Package root — resolves correctly both in editable installs and installed wheels
 _PKG_DIR = Path(__file__).resolve().parent
@@ -192,7 +192,8 @@ class RTStream(ModalityMixin):
     See Also
     --------
     ant.modalities.ModalityMixin : All supported NF feature methods.
-    mne_rt.viz.SignalPlot : Scrolling real-time signal display.
+    mne_rt.viz.NFPlot : Scrolling real-time NF signal display.
+    mne_rt.viz.RawPlot : Scrolling raw M/EEG channel viewer.
     mne_rt.viz.BrainPlot : 3D brain activation display.
 
     Notes
@@ -600,14 +601,13 @@ class RTStream(ModalityMixin):
             values are dicts of ``{parameter: new_value}`` pairs that
             override the config-file defaults.
         show_raw_signal : bool, default True
-            Open the mne-lsl :class:`~mne_lsl.stream_viewer.StreamViewer`
-            for live raw signal inspection.
+            Show the :class:`~mne_rt.viz.RawPlot` scrolling raw M/EEG viewer.
         show_nf_signal : bool, default True
-            Show the :class:`~mne_rt.viz.SignalPlot` real-time NF monitor.
+            Show the :class:`~mne_rt.viz.NFPlot` real-time NF monitor.
         time_window : float, default 10.0
             Visible time range in seconds for the signal plot.
         show_topo : bool, default False
-            Show the :class:`~mne_rt.viz.TopoPlot` real-time scalp topomap
+            Show the :class:`~mne_rt.viz.TopomapPlot` real-time scalp topomap
             display.  Requires the montage to be set on the channel info.
         topo_bands : dict | None, default None
             Frequency bands to show in the topomap as
@@ -685,7 +685,7 @@ class RTStream(ModalityMixin):
             ``1.0`` disables this extra layer and shows the already
             ``signal_smoothing``-filtered values directly.
         topo_display_smoothing : float, default 1.0
-            EMA factor for the :class:`~mne_rt.viz.TopoPlot` band-power maps.
+            EMA factor for the :class:`~mne_rt.viz.TopomapPlot` band-power maps.
             ``1.0`` (default) disables smoothing so transient artifacts remain
             visible for operator monitoring.  Lower values progressively
             smooth the spatial maps across consecutive windows.
@@ -845,8 +845,9 @@ class RTStream(ModalityMixin):
             "scp":                  50e-6,
         }
 
-        signal_plot: Optional[SignalPlot] = None
-        topo_plot: Optional[TopoPlot] = None
+        nf_plot: Optional[NFPlot] = None
+        raw_plot: Optional[RawPlot] = None
+        topo_plot: Optional[TopomapPlot] = None
         brain_plot: Optional[BrainPlot] = None
 
         needs_qt = show_nf_signal or show_brain_activation or show_raw_signal or show_topo
@@ -856,17 +857,17 @@ class RTStream(ModalityMixin):
             app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
         if show_nf_signal:
-            signal_plot = SignalPlot(
+            nf_plot = NFPlot(
                 modalities=mods,
                 scales_dict=scales_dict,
                 sfreq=30.0,   # pump timer rate drives display at 30 fps
                 time_window=time_window,
                 display_smoothing=display_smoothing,
             )
-            signal_plot.show()
+            nf_plot.show()
 
         if show_topo:
-            topo_plot = TopoPlot(
+            topo_plot = TopomapPlot(
                 info=self.rec_info,
                 sfreq=self._sfreq,
                 bands=topo_bands,
@@ -887,7 +888,12 @@ class RTStream(ModalityMixin):
             )
 
         if show_raw_signal:
-            self.open_stream_viewer()
+            raw_plot = RawPlot(
+                ch_names=self.rec_info["ch_names"],
+                sfreq=self._sfreq,
+                info=self.rec_info,
+            )
+            raw_plot.show()
 
         if self.bandpass_freq is not None:
             self.stream.filter(
@@ -911,6 +917,9 @@ class RTStream(ModalityMixin):
         )
         brain_queue: Optional[_queue.Queue] = (
             _queue.Queue(maxsize=2) if brain_plot is not None else None
+        )
+        raw_queue: Optional[_queue.Queue] = (
+            _queue.Queue(maxsize=4) if raw_plot is not None else None
         )
         done_event = threading.Event()
         nf_data: dict[str, list] = {m: [] for m in mods}
@@ -1054,9 +1063,24 @@ class RTStream(ModalityMixin):
             while local_clock() < t_start + duration:
                 # Block until half a window of new samples has arrived, then
                 # fetch the latest winsize seconds (50 % overlap with prev window).
-                while self.stream.n_new_samples < _hop:
+                # While waiting, flush any accumulated raw samples to the display
+                # queue at ~30 fps so RawPlot scrolls smoothly.
+                _t_hop = local_clock()
+                _hop_dur = _hop / self._sfreq
+                while local_clock() < _t_hop + _hop_dur:
                     if local_clock() >= t_start + duration:
                         break
+                    if raw_queue is not None:
+                        n_avail = self.stream.n_new_samples
+                        if n_avail >= max(1, int(0.033 * self._sfreq)):
+                            try:
+                                raw_chunk = self.stream.get_data(
+                                    n_avail / self._sfreq
+                                )[0]
+                                if raw_chunk.shape[1] > 0:
+                                    raw_queue.put_nowait(raw_chunk)
+                            except (_queue.Full, Exception):
+                                pass
                     time.sleep(0.005)
 
                 tic = time.time()
@@ -1158,7 +1182,7 @@ class RTStream(ModalityMixin):
                 except Exception:
                     pass
 
-                if signal_plot is not None and _interp[1]:
+                if nf_plot is not None and _interp[1]:
                     step = _interp[2][0]
                     if _interp[0] and step < _n_steps:
                         alpha = step / _n_steps
@@ -1168,7 +1192,7 @@ class RTStream(ModalityMixin):
                         ]
                     else:
                         vals = _interp[1]
-                    signal_plot.push(vals)
+                    nf_plot.push(vals)
                     _interp[2][0] += 1
 
                 if done_event.is_set():
@@ -1177,6 +1201,8 @@ class RTStream(ModalityMixin):
                         topo_timer.stop()
                     if brain_timer is not None:
                         brain_timer.stop()
+                    if raw_timer is not None:
+                        raw_timer.stop()
                     QTimer.singleShot(600, app.quit)
 
             signal_timer = QTimer()
@@ -1229,6 +1255,21 @@ class RTStream(ModalityMixin):
                 brain_timer.setInterval(200)  # 5 fps — brain doesn't need more
                 brain_timer.timeout.connect(_pump_brain)
                 brain_timer.start()
+
+            raw_timer: Optional[QTimer] = None
+            if raw_plot is not None:
+                def _pump_raw() -> None:
+                    try:
+                        while not raw_queue.empty():
+                            chunk = raw_queue.get_nowait()
+                            raw_plot.push(chunk)
+                    except Exception:
+                        pass
+
+                raw_timer = QTimer()
+                raw_timer.setInterval(33)  # ~30 fps
+                raw_timer.timeout.connect(_pump_raw)
+                raw_timer.start()
 
             app.exec()          # blocks here; drives all three windows in parallel
 
