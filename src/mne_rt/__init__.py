@@ -10,10 +10,12 @@ Main entry points
     feature extraction, and visualisation.
 :class:`~mne_rt.RTEpochs`
     Event-triggered epoch accumulator with per-trial feature statistics.
-:class:`~mne_rt.viz.SignalPlot`
-    Scrolling multi-channel real-time signal monitor (PyQt6 + pyqtgraph).
-:class:`~mne_rt.viz.ERPPlot`
-    Live-updating evoked-potential display with scalp-layout channel grid,
+:class:`~mne_rt.viz.NFPlot`
+    Scrolling multi-channel real-time NF signal monitor (PyQt6 + pyqtgraph).
+:class:`~mne_rt.viz.RawPlot`
+    Scrolling raw M/EEG channel viewer (PyQt6 + pyqtgraph).
+:class:`~mne_rt.viz.TopoPlot`
+    Live-updating scalp-layout ERP display — one mini-plot per electrode,
     ±SEM shading, re-referencing, and unit-aware amplitude display.
 :class:`~mne_rt.viz.ButterflyPlot`
     All channels overlaid per condition, coloured by scalp region.
@@ -48,7 +50,7 @@ from mne_rt._logging import logger, set_log_level  # noqa: F401 — public API
 from mne_rt.rt_stream import RTStream
 from mne_rt.rt_epochs import RTEpochs
 from mne_rt.viz import (
-    BrainPlot, SignalPlot, TopoPlot, ERPPlot,
+    BrainPlot, NFPlot, RawPlot, TopomapPlot, TopoPlot,
     ButterflyPlot, TFRPlot, CompareEvoked,
 )
 from mne_rt.tools import ORICA, GEDAIDenoiser
@@ -71,9 +73,10 @@ __all__ = [
     "RTStream",
     "RTEpochs",
     "BrainPlot",
-    "SignalPlot",
+    "NFPlot",
+    "RawPlot",
+    "TopomapPlot",
     "TopoPlot",
-    "ERPPlot",
     "ButterflyPlot",
     "TFRPlot",
     "CompareEvoked",
