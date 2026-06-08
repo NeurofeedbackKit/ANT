@@ -25,7 +25,7 @@ def test_demo_defaults(parser):
     assert args.duration == 120.0
     assert "sensor_power" in args.modality
     assert args.winsize == 1.0
-    assert args.no_signal is False
+    assert args.no_nf is False
     assert args.no_raw is False
     assert args.no_brain is False
 
@@ -36,12 +36,12 @@ def test_demo_custom(parser):
         "--duration", "30",
         "--modality", "sensor_power", "band_ratio",
         "--winsize", "2.0",
-        "--no-signal",
+        "--no-nf",
     ])
     assert args.duration == 30.0
     assert args.modality == ["sensor_power", "band_ratio"]
     assert args.winsize == 2.0
-    assert args.no_signal is True
+    assert args.no_nf is True
 
 
 def test_baseline_required_args(parser):
