@@ -1,0 +1,40 @@
+name: Build and deploy docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # allow manual trigger from the Actions tab
+
+# Allow this workflow to write to gh-pages branch
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package and docs dependencies
+        run: |
+          pip install -e ".[docs]"
+          pip install pyriemann   # needed for RiemannianPotatoDetector in autodoc
+
+      - name: Build Sphinx docs
+        run: |
+          sphinx-build -b html docs/source docs/_build/html -q
+        env:
+          MPLBACKEND: Agg
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/_build/html
+          force_orphan: true   # keep gh-pages branch clean (no history)
