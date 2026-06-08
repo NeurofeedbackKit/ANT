@@ -88,7 +88,8 @@ class RTEpochs:
 
     See Also
     --------
-    mne_rt.viz.TopoPlot : Live ERP display driven by this class.
+    mne_rt.viz.TopoPlot : Live scalp-layout ERP display driven by this class.
+    mne_rt.viz.EpochPlot : Scrolling raw viewer with trigger/epoch overlays.
     mne_rt.RTStream : Continuous sliding-window stream processor.
 
     Examples
