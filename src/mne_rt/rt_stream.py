@@ -193,7 +193,8 @@ class RTStream(ModalityMixin):
     --------
     ant.modalities.ModalityMixin : All supported NF feature methods.
     mne_rt.viz.NFPlot : Scrolling real-time NF signal display.
-    mne_rt.viz.RawPlot : Scrolling raw M/EEG channel viewer.
+    mne_rt.viz.RawPlot : Scrolling raw M/EEG channel viewer (bad-channel / bad-segment marking).
+    mne_rt.viz.EpochPlot : Scrolling raw viewer with trigger/epoch overlays.
     mne_rt.viz.BrainPlot : 3D brain activation display.
 
     Notes
