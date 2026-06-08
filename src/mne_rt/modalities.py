@@ -58,7 +58,7 @@ from mne_rt.tools import (
 
 
 class ModalityMixin:
-    """Feature-extraction engine for all ANT NF modalities.
+    """Feature-extraction engine for all MNE-RT NF modalities.
 
     :class:`ModalityMixin` is mixed into :class:`~mne_rt.RTStream` and provides
     the **prep / compute** pair for every modality:
@@ -93,7 +93,7 @@ class ModalityMixin:
     Notes
     -----
     All methods are private (single-underscore prefix) and are called
-    internally by :meth:`~mne_rt.RTStream.record_main`.  To extend ANT with a
+    internally by :meth:`~mne_rt.RTStream.record_main`.  To extend MNE-RT with a
     custom modality, sub-class :class:`~mne_rt.RTStream` and add a matching
     ``_<name>_prep`` / ``_<name>`` pair following the same pattern.
     """
