@@ -17,7 +17,7 @@
 ---
 
 **MNE-RT** is an open-source Python library for **real-time M/EEG signal
-processing and neurofeedback**, built on [MNE-Python](https://mne.tools) and
+processing**, built on [MNE-Python](https://mne.tools) and
 [MNE-LSL](https://mne.tools/mne-lsl). It covers the full closed-loop pipeline —
 from amplifier to 3-D brain display — in a single API designed for neurofeedback,
 BCI, and clinical or basic-science monitoring.
