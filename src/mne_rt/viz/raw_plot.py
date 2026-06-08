@@ -10,12 +10,13 @@ RawPlot
 from __future__ import annotations
 
 import datetime
+from collections import deque
 from pathlib import Path
 
 import numpy as np
 import pyqtgraph as pg
 import pyqtgraph.exporters
-from PyQt6.QtCore import QEvent, QObject, Qt
+from PyQt6.QtCore import QEvent, QObject, Qt, QTimer
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -290,6 +291,17 @@ class RawPlot(QMainWindow):
         self._reref_idx: int = 0         # index of the single reference channel
         self._reref_idxs: list[int] = [] # indices for multi-channel references
 
+        # Bad channels — toggled by left-clicking the channel label
+        self._bad_ch_idxs: set[int] = set()
+
+        # Bad segments — marked by double-clicking on the signal canvas
+        self._total_pushed: int = 0           # cumulative samples pushed
+        self._bad_segs: list[tuple[float, float]] = []   # (abs_start_s, abs_end_s)
+        self._bad_seg_overlays: list = []     # pg.LinearRegionItem objects on plot
+        self._bad_seg_click1: float | None = None   # absolute session time of first click
+        self._bad_seg_start_line = None       # pg.InfiniteLine shown while waiting for end
+        self._bad_seg_start_line_on_plot: bool = False
+
         # Per-channel colours and types
         self._ch_types: list[str] = []
         self._ch_colors: list[str] = []
@@ -299,10 +311,26 @@ class RawPlot(QMainWindow):
         self._time_axis = np.linspace(0.0, time_window, n_pts)
         self._buf = np.zeros((self._n_ch, n_pts))
 
+        # Thread-safe data queue: push() (background thread) queues processed
+        # chunks here; _flush_data_queue() (main thread, 30 Hz) drains it.
+        self._data_queue: deque = deque()
+
+        # Riemannian Potato auto-bad-segment detection
+        self._rp_detector = None          # RiemannianPotatoDetector | None
+        self._rp_active: bool = False
+        self._rp_seg_samples: int = max(2, int(sfreq * 1.0))  # updated from spinbox
+        self._rp_last_tested: int = 0     # abs sample idx of last tested window end
+
         pg.setConfigOptions(antialias=True, foreground="#c0c0d8", background="#0d0d1a")
         self._build_ui()
         self.setWindowTitle("MNE-RT — Raw")
         self.resize(1500, 720)
+
+        # 30 Hz render timer — all Qt widget updates happen in the main thread.
+        self._flush_timer = QTimer(self)
+        self._flush_timer.setInterval(33)
+        self._flush_timer.timeout.connect(self._flush_data_queue)
+        self._flush_timer.start()
 
     # ------------------------------------------------------------------
     # Colour resolution
@@ -416,6 +444,8 @@ class RawPlot(QMainWindow):
         layout.addWidget(self._grp_filter())
         layout.addWidget(self._grp_reref())
         layout.addWidget(self._grp_correction())
+        layout.addWidget(self._grp_bad_segs())
+        layout.addWidget(self._grp_potato())
         layout.addStretch()
 
         scroll.setWidget(panel)
@@ -738,6 +768,97 @@ class RawPlot(QMainWindow):
 
         return grp
 
+    def _grp_bad_segs(self) -> QGroupBox:
+        grp = QGroupBox("Bad Segments")
+        lay = QVBoxLayout(grp)
+        lay.setSpacing(5)
+
+        hint = QLabel("Double-click signal to set\nstart, then end of bad segment")
+        hint.setWordWrap(True)
+        hint.setStyleSheet("color:#7a7a9a; font-size:9px;")
+        lay.addWidget(hint)
+
+        self._bad_seg_status_lbl = QLabel("Ready")
+        self._bad_seg_status_lbl.setStyleSheet("color:#505070; font-size:10px;")
+        self._bad_seg_status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lay.addWidget(self._bad_seg_status_lbl)
+
+        self._bad_seg_count_lbl = QLabel("No bad segments")
+        self._bad_seg_count_lbl.setStyleSheet("color:#505070; font-size:10px;")
+        self._bad_seg_count_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lay.addWidget(self._bad_seg_count_lbl)
+
+        btn_clear_bad = QPushButton("Clear all bad segments")
+        btn_clear_bad.clicked.connect(self._clear_bad_segs)
+        lay.addWidget(btn_clear_bad)
+
+        return grp
+
+    def _grp_potato(self) -> QGroupBox:
+        grp = QGroupBox("Auto Bad Seg (Riemann)")
+        lay = QVBoxLayout(grp)
+        lay.setSpacing(5)
+
+        # Segment length
+        seg_row = QHBoxLayout()
+        seg_row.addWidget(QLabel("Seg:"))
+        self._rp_seg_spin = QDoubleSpinBox()
+        self._rp_seg_spin.setRange(0.2, 5.0)
+        self._rp_seg_spin.setValue(1.0)
+        self._rp_seg_spin.setSuffix(" s")
+        self._rp_seg_spin.setDecimals(1)
+        self._rp_seg_spin.setSingleStep(0.1)
+        self._rp_seg_spin.setToolTip(
+            "Window length (seconds) for covariance estimation.\n"
+            "Longer = more reliable covariance; shorter = finer time resolution."
+        )
+        seg_row.addWidget(self._rp_seg_spin)
+        lay.addLayout(seg_row)
+
+        # Z-threshold
+        thr_row = QHBoxLayout()
+        thr_row.addWidget(QLabel("Z-thr:"))
+        self._rp_thr_spin = QDoubleSpinBox()
+        self._rp_thr_spin.setRange(1.0, 6.0)
+        self._rp_thr_spin.setValue(3.0)
+        self._rp_thr_spin.setDecimals(1)
+        self._rp_thr_spin.setSingleStep(0.1)
+        self._rp_thr_spin.setToolTip(
+            "Z-score threshold for declaring a segment as bad.\n"
+            "Lower = more aggressive (more rejections)."
+        )
+        thr_row.addWidget(self._rp_thr_spin)
+        lay.addLayout(thr_row)
+
+        # Calibrate button
+        btn_cal = QPushButton("Calibrate on buffer")
+        btn_cal.setStyleSheet(
+            "background:#132744; color:#80d8ff; border:1px solid #2a6090;"
+            "border-radius:4px; padding:4px; font-size:11px;"
+        )
+        btn_cal.setToolTip(
+            "Segment the current buffer into clean windows and fit\n"
+            "the Riemannian Potato.  Run with artifact-free data."
+        )
+        btn_cal.clicked.connect(self._calibrate_potato)
+        lay.addWidget(btn_cal)
+
+        # Active checkbox
+        self._rp_chk = QCheckBox("Active (auto-detect)")
+        self._rp_chk.setChecked(False)
+        self._rp_chk.setEnabled(False)   # enabled after calibration
+        self._rp_chk.toggled.connect(self._toggle_potato_active)
+        lay.addWidget(self._rp_chk)
+
+        # Status label
+        self._rp_status_lbl = QLabel("Not calibrated")
+        self._rp_status_lbl.setWordWrap(True)
+        self._rp_status_lbl.setStyleSheet("color:#505070; font-size:10px;")
+        self._rp_status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lay.addWidget(self._rp_status_lbl)
+
+        return grp
+
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -753,10 +874,12 @@ class RawPlot(QMainWindow):
     def _update_tick_labels(self) -> None:
         end = min(self._page_start + self._n_shown, self._n_ch)
         n_actual = end - self._page_start
-        ticks = [
-            (n_actual - 1 - i, self._ch_names[self._page_start + i])
-            for i in range(n_actual)
-        ]
+        ticks = []
+        for i in range(n_actual):
+            ch_idx = self._page_start + i
+            name = self._ch_names[ch_idx]
+            label = f"✕ {name}" if ch_idx in self._bad_ch_idxs else name
+            ticks.append((n_actual - 1 - i, label))
         self._pi.getAxis("left").setTicks([ticks, []])
 
     def _set_page_start(self, new_start: int, source: str = "other") -> None:
@@ -788,19 +911,32 @@ class RawPlot(QMainWindow):
     # ------------------------------------------------------------------
 
     def _on_scene_clicked(self, event) -> None:
-        if event.button() != Qt.MouseButton.RightButton:
-            return
         pos = event.scenePos()
+        btn = event.button()
         axis = self._pi.getAxis("left")
-        if not axis.sceneBoundingRect().contains(pos):
+        vb   = self._pi.getViewBox()
+
+        # ── Y-axis clicks ──────────────────────────────────────────────
+        if axis.sceneBoundingRect().contains(pos):
+            y_val = vb.mapSceneToView(pos).y()
+            end = min(self._page_start + self._n_shown, self._n_ch)
+            n_actual = end - self._page_start
+            vis_idx = int(round(n_actual - 1 - y_val))
+            if 0 <= vis_idx < n_actual:
+                ch_idx = self._page_start + vis_idx
+                if btn == Qt.MouseButton.RightButton:
+                    self._show_channel_location(self._ch_names[ch_idx])
+                elif btn == Qt.MouseButton.LeftButton and not event.double():
+                    # Single-click only; defer to keep Qt widget calls in main thread
+                    QTimer.singleShot(0, lambda idx=ch_idx: self._toggle_bad_channel(idx))
             return
-        y_val = self._pi.getViewBox().mapSceneToView(pos).y()
-        end = min(self._page_start + self._n_shown, self._n_ch)
-        n_actual = end - self._page_start
-        vis_idx = int(round(n_actual - 1 - y_val))
-        if 0 <= vis_idx < n_actual:
-            ch_idx = self._page_start + vis_idx
-            self._show_channel_location(self._ch_names[ch_idx])
+
+        # ── Signal-area double-click: bad-segment marking ──────────────
+        if btn == Qt.MouseButton.LeftButton and event.double():
+            if vb.sceneBoundingRect().contains(pos):
+                x_val = vb.mapSceneToView(pos).x()
+                if 0.0 <= x_val <= self._time_window:
+                    self._on_bad_seg_click(x_val)
 
     def _show_channel_location(self, ch_name: str) -> None:
         if self._info is None:
@@ -1118,6 +1254,246 @@ class RawPlot(QMainWindow):
             self._corr_status.setStyleSheet("color:#ff8080; font-size:10px;")
 
     # ------------------------------------------------------------------
+    # Bad channels
+    # ------------------------------------------------------------------
+
+    def _toggle_bad_channel(self, ch_idx: int) -> None:
+        if ch_idx in self._bad_ch_idxs:
+            self._bad_ch_idxs.discard(ch_idx)
+        else:
+            self._bad_ch_idxs.add(ch_idx)
+        # Do NOT write to self._info["bads"] here: mne_lsl's get_data() uses
+        # exclude="bads" by default, so syncing bads into the shared Info object
+        # causes the stream to return one fewer channel on the next get_data()
+        # call, which breaks the circular buffer write in _flush_data_queue.
+        bads = sorted(self._bad_ch_idxs)
+        if bads:
+            self._status.showMessage(
+                f"Bad channels: {', '.join(self._ch_names[i] for i in bads)}"
+            )
+        else:
+            self._status.showMessage("No bad channels marked")
+        self._update_tick_labels()
+        self._redraw()
+
+    # ------------------------------------------------------------------
+    # Bad segments
+    # ------------------------------------------------------------------
+
+    def _on_bad_seg_click(self, x_val: float) -> None:
+        # Convert plot x-coordinate to absolute session time immediately, so
+        # that a scrolling buffer between click 1 and click 2 doesn't shift it.
+        buf_size    = self._buf.shape[1]
+        buf_start_s = max(0.0, (self._total_pushed - buf_size) / self._sfreq)
+        abs_time    = buf_start_s + x_val
+
+        if self._bad_seg_click1 is None:
+            # First double-click — store absolute start time
+            self._bad_seg_click1 = abs_time
+            self._bad_seg_status_lbl.setText(f"Start: {abs_time:.2f} s")
+            self._bad_seg_status_lbl.setStyleSheet(
+                "color:#ff8a65; font-size:10px; font-weight:bold;"
+            )
+            self._status.showMessage(
+                f"Bad segment start: {abs_time:.2f} s — double-click to set end"
+            )
+            self._redraw()   # redraws start indicator via _update_bad_seg_overlays
+        else:
+            # Second double-click — finalize segment
+            abs_start = self._bad_seg_click1
+            abs_end   = abs_time
+            self._bad_seg_click1 = None
+            if self._bad_seg_start_line is not None:
+                if self._bad_seg_start_line_on_plot:
+                    try:
+                        self._pi.removeItem(self._bad_seg_start_line)
+                    except Exception:
+                        pass
+                self._bad_seg_start_line = None
+                self._bad_seg_start_line_on_plot = False
+            if abs_end < abs_start:
+                abs_start, abs_end = abs_end, abs_start
+            self._bad_segs.append((abs_start, abs_end))
+            n = len(self._bad_segs)
+            self._bad_seg_count_lbl.setText(
+                f"{n} bad segment{'s' if n > 1 else ''}"
+            )
+            self._bad_seg_count_lbl.setStyleSheet("color:#ff8a65; font-size:10px;")
+            self._bad_seg_status_lbl.setText("Ready")
+            self._bad_seg_status_lbl.setStyleSheet("color:#505070; font-size:10px;")
+            self._status.showMessage(
+                f"Bad segment added: {abs_start:.2f}–{abs_end:.2f} s"
+            )
+            self._redraw()
+
+    def _update_bad_seg_overlays(self) -> None:
+        for region in self._bad_seg_overlays:
+            self._pi.removeItem(region)
+        self._bad_seg_overlays.clear()
+
+        buf_size    = self._buf.shape[1]
+        buf_start_s = max(0.0, (self._total_pushed - buf_size) / self._sfreq)
+
+        # ── pending start indicator ────────────────────────────────────
+        def _remove_start_line() -> None:
+            if self._bad_seg_start_line_on_plot and self._bad_seg_start_line is not None:
+                try:
+                    self._pi.removeItem(self._bad_seg_start_line)
+                except Exception:
+                    pass
+            self._bad_seg_start_line_on_plot = False
+
+        if self._bad_seg_click1 is not None:
+            x_ind = self._bad_seg_click1 - buf_start_s
+            if 0.0 <= x_ind <= self._time_window:
+                if self._bad_seg_start_line is None:
+                    self._bad_seg_start_line = pg.InfiniteLine(
+                        pos=x_ind, angle=90,
+                        pen=pg.mkPen(color="#ff8a65", width=2,
+                                     style=Qt.PenStyle.DashLine),
+                    )
+                else:
+                    self._bad_seg_start_line.setPos(x_ind)
+                if not self._bad_seg_start_line_on_plot:
+                    self._pi.addItem(self._bad_seg_start_line)
+                    self._bad_seg_start_line_on_plot = True
+            else:
+                _remove_start_line()   # scrolled off-screen; keep click1 state
+        else:
+            _remove_start_line()
+            self._bad_seg_start_line = None
+
+        # ── completed bad-segment regions ──────────────────────────────
+        for (abs_start, abs_end) in self._bad_segs:
+            x_s = abs_start - buf_start_s
+            x_e = abs_end   - buf_start_s
+            if x_e < 0 or x_s > self._time_window:
+                continue
+            x_s = max(0.0, x_s)
+            x_e = min(self._time_window, x_e)
+            region = pg.LinearRegionItem(
+                values=(x_s, x_e),
+                brush=pg.mkBrush(200, 50, 50, 45),
+                movable=False,
+                pen=pg.mkPen(color="#cc3333", width=1),
+            )
+            self._pi.addItem(region)
+            self._bad_seg_overlays.append(region)
+
+    def _clear_bad_segs(self) -> None:
+        self._bad_segs.clear()
+        for region in self._bad_seg_overlays:
+            self._pi.removeItem(region)
+        self._bad_seg_overlays.clear()
+        self._bad_seg_click1 = None
+        if self._bad_seg_start_line is not None:
+            if self._bad_seg_start_line_on_plot:
+                try:
+                    self._pi.removeItem(self._bad_seg_start_line)
+                except Exception:
+                    pass
+            self._bad_seg_start_line = None
+            self._bad_seg_start_line_on_plot = False
+        self._bad_seg_count_lbl.setText("No bad segments")
+        self._bad_seg_count_lbl.setStyleSheet("color:#505070; font-size:10px;")
+        self._bad_seg_status_lbl.setText("Ready")
+        self._bad_seg_status_lbl.setStyleSheet("color:#505070; font-size:10px;")
+
+    # ------------------------------------------------------------------
+    # Riemannian Potato auto-detection
+    # ------------------------------------------------------------------
+
+    def _calibrate_potato(self) -> None:
+        seg_s  = self._rp_seg_spin.value()
+        z_thr  = self._rp_thr_spin.value()
+        n_seg  = max(2, int(self._sfreq * seg_s))
+        n_wins = self._buf.shape[1] // n_seg
+
+        if n_wins < 3:
+            self._rp_status_lbl.setText(
+                f"Buffer too short: need ≥3 × {seg_s:.1f} s windows. "
+                "Increase time window or wait for more data."
+            )
+            self._rp_status_lbl.setStyleSheet("color:#ff8a65; font-size:10px;")
+            return
+
+        try:
+            from mne_rt.tools import RiemannianPotatoDetector
+            windows = np.stack([
+                self._buf[:, i * n_seg:(i + 1) * n_seg]
+                for i in range(n_wins)
+            ])  # (n_wins, n_ch, n_seg)
+            det = RiemannianPotatoDetector(threshold=z_thr)
+            det.fit(windows)
+
+            self._rp_detector  = det
+            self._rp_seg_samples = n_seg
+            self._rp_last_tested = self._total_pushed  # start detecting from now
+            self._rp_chk.setEnabled(True)
+            self._rp_status_lbl.setText(
+                f"✓ Calibrated\n{n_wins} windows · z>{z_thr:.1f}"
+            )
+            self._rp_status_lbl.setStyleSheet("color:#69f0ae; font-size:10px;")
+            self._status.showMessage(
+                f"Potato calibrated on {n_wins} windows ({seg_s:.1f} s each)"
+            )
+        except Exception as exc:
+            self._rp_detector = None
+            self._rp_chk.setEnabled(False)
+            self._rp_status_lbl.setText(f"Error: {exc}")
+            self._rp_status_lbl.setStyleSheet("color:#ff8a65; font-size:10px;")
+
+    def _toggle_potato_active(self, checked: bool) -> None:
+        self._rp_active = checked
+        if checked:
+            self._rp_last_tested = self._total_pushed
+            self._rp_status_lbl.setStyleSheet(
+                "color:#69f0ae; font-size:10px; font-weight:bold;"
+            )
+        else:
+            self._rp_status_lbl.setStyleSheet("color:#69f0ae; font-size:10px;")
+
+    def _run_potato_detection(self) -> None:
+        """Test any newly completed windows against the fitted potato."""
+        if not self._rp_active or self._rp_detector is None:
+            return
+
+        n_seg = self._rp_seg_samples
+        buf_size = self._buf.shape[1]
+        buf_start_abs = self._total_pushed - buf_size   # absolute sample of buf[:,0]
+        added = False
+
+        while (self._total_pushed - self._rp_last_tested) >= n_seg:
+            win_start_abs = self._rp_last_tested
+            win_end_abs   = win_start_abs + n_seg
+            # Locate in buffer
+            s = win_start_abs - buf_start_abs
+            e = win_end_abs   - buf_start_abs
+            self._rp_last_tested = win_end_abs
+
+            if s < 0 or e > buf_size:
+                continue   # window fell outside the buffer (edge case at startup)
+
+            window = self._buf[:, s:e]
+            try:
+                is_clean, z_score = self._rp_detector.detect(window)
+            except Exception:
+                continue
+
+            if not is_clean:
+                abs_start = win_start_abs / self._sfreq
+                abs_end   = win_end_abs   / self._sfreq
+                self._bad_segs.append((abs_start, abs_end))
+                added = True
+
+        if added:
+            n = len(self._bad_segs)
+            self._bad_seg_count_lbl.setText(
+                f"{n} bad segment{'s' if n > 1 else ''}"
+            )
+            self._bad_seg_count_lbl.setStyleSheet("color:#ff8a65; font-size:10px;")
+
+    # ------------------------------------------------------------------
     # Redraw — purely displays whatever is in _buf
     # ------------------------------------------------------------------
 
@@ -1135,13 +1511,17 @@ class RawPlot(QMainWindow):
                 if nz.size > 0:
                     raw -= nz.mean()
 
-            color = self._ch_colors[ch_idx]
-            self._curves[vis_idx].setPen(pg.mkPen(color=color, width=1))
+            is_bad = ch_idx in self._bad_ch_idxs
+            color  = "#505050" if is_bad else self._ch_colors[ch_idx]
+            width  = 1
+            self._curves[vis_idx].setPen(pg.mkPen(color=color, width=width))
             offset = float(n_actual - 1 - vis_idx)
             self._curves[vis_idx].setData(self._time_axis, offset + raw * gain)
 
         for vis_idx in range(n_actual, self._n_shown):
             self._curves[vis_idx].setData([], [])
+
+        self._update_bad_seg_overlays()
 
     # ------------------------------------------------------------------
     # Public interface
@@ -1165,6 +1545,8 @@ class RawPlot(QMainWindow):
         The call is a no-op when the plot is paused.
         """
         if self._paused:
+            return
+        if data.shape[0] != self._n_ch:
             return
 
         chunk = data.copy()
@@ -1207,16 +1589,59 @@ class RawPlot(QMainWindow):
         except Exception:
             pass
 
-        # Write into circular buffer
-        n = chunk.shape[1]
-        self._buf = np.roll(self._buf, -n, axis=1)
-        self._buf[:, -n:] = chunk
+        # Queue the processed chunk — buffer write + redraw happen in the
+        # main thread via _flush_data_queue() to avoid Qt thread-safety issues.
+        self._data_queue.append(chunk)
 
+    def _flush_data_queue(self) -> None:
+        """Drain the data queue and redraw — called from the main thread at 30 Hz."""
+        if not self._data_queue:
+            return
+        while self._data_queue:
+            chunk = self._data_queue.popleft()
+            n = chunk.shape[1]
+            self._buf = np.roll(self._buf, -n, axis=1)
+            self._buf[:, -n:] = chunk
+            self._total_pushed += n
+        self._run_potato_detection()
         end = min(self._page_start + self._n_shown, self._n_ch)
         self._status.showMessage(
             f"Streaming  —  ch {self._page_start + 1}–{end} of {self._n_ch}"
         )
         self._redraw()
 
+    @property
+    def bad_channels(self) -> list[str]:
+        """Channel names currently marked as bad."""
+        return [self._ch_names[i] for i in sorted(self._bad_ch_idxs)]
+
+    @property
+    def bad_segments(self) -> list[tuple[float, float]]:
+        """Bad segments as list of (start_s, end_s) in absolute seconds."""
+        return list(self._bad_segs)
+
+    def to_annotations(self):
+        """Return bad segments as :class:`mne.Annotations`.
+
+        Returns
+        -------
+        annotations : mne.Annotations or None
+            ``None`` when no bad segments have been marked.
+        """
+        if not self._bad_segs:
+            return None
+        try:
+            import mne
+            onsets   = [s for s, _ in self._bad_segs]
+            durations = [e - s for s, e in self._bad_segs]
+            return mne.Annotations(
+                onset=onsets,
+                duration=durations,
+                description=["BAD_segment"] * len(onsets),
+            )
+        except Exception:
+            return None
+
     def closeEvent(self, event) -> None:
+        self._flush_timer.stop()
         super().closeEvent(event)
