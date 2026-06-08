@@ -4,7 +4,7 @@ Real-time Maxwell filtering (SSS) with LSL streaming
 
 Signal Space Separation (SSS) is the gold-standard preprocessing step for
 MEG data, suppressing external interference while preserving brain signals.
-ANT's :class:`~ant.tools.RTMaxwellFilter` pre-computes the SSS projection
+ANT's :class:`~mne_rt.tools.RTMaxwellFilter` pre-computes the SSS projection
 operator once from sensor geometry and applies it as a single matrix multiply
 per incoming chunk — zero added latency, numerically equivalent to offline
 MNE processing.
@@ -12,7 +12,7 @@ MNE processing.
 This example:
 
 1. Loads the MNE sample MEG dataset.
-2. Fits :class:`~ant.tools.RTMaxwellFilter` from sensor geometry (no
+2. Fits :class:`~mne_rt.tools.RTMaxwellFilter` from sensor geometry (no
    baseline data required).
 3. Broadcasts the recording over a local LSL stream with
    :class:`~mne_lsl.player.PlayerLSL` and collects every arriving chunk
@@ -43,7 +43,7 @@ import seaborn as sns
 from mne.preprocessing import maxwell_filter
 from scipy.stats import pearsonr
 
-from ant.tools import RTMaxwellFilter
+from mne_rt.tools import RTMaxwellFilter
 from mne_lsl.player import PlayerLSL
 from mne_lsl.stream import StreamLSL
 
@@ -77,7 +77,7 @@ print(f"Internal moments retained: {rt_mf.n_use_in}")
 # ---------------------------------------------------
 # We save the recording to a temporary FIF file, broadcast it over a local
 # LSL stream at its native sampling rate, and apply
-# :meth:`~ant.tools.RTMaxwellFilter.transform` on every arriving chunk.
+# :meth:`~mne_rt.tools.RTMaxwellFilter.transform` on every arriving chunk.
 #
 # Crucially, we also collect the **raw** (unfiltered) LSL chunks so that we
 # can apply offline SSS to the exact same data for a fair comparison.

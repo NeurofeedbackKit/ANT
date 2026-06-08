@@ -1,52 +1,8 @@
 {
- "NFRealtime": [
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
-   "name": "ModalityMixin"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ModalityMixin"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  }
- ],
  "Path.home": [
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.home"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "Path.home"
@@ -54,44 +10,9 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.home"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.home"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePath.home"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.home"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.home"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.home"
   },
   {
    "is_class": false,
@@ -101,6 +22,43 @@
    "name": "home"
   }
  ],
+ "RTStream": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  }
+ ],
  "_alpha_on": [
   {
    "is_class": false,
@@ -108,83 +66,6 @@
    "module": "builtins",
    "module_short": "builtins",
    "name": "list"
-  }
- ],
- "ant.NFRealtime": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  }
- ],
- "ant.NFRealtime.save": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.NFRealtime",
-   "module_short": "ant.NFRealtime",
-   "name": "save"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.NFRealtime",
-   "module_short": "ant.NFRealtime",
-   "name": "save"
-  }
- ],
- "ant.tools.save_as_bids": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "save_as_bids"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "save_as_bids"
-  }
- ],
- "ant.tools.simulate_raw": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_raw"
-  }
- ],
- "ant.viz.BrainPlot": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.viz",
-   "module_short": "ant",
-   "name": "BrainPlot"
-  }
- ],
- "ant.viz.NFSignalPlot": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.viz",
-   "module_short": "ant",
-   "name": "NFSignalPlot"
-  }
- ],
- "ant.viz.TopoPlot": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.viz",
-   "module_short": "ant",
-   "name": "TopoPlot"
   }
  ],
  "ax": [
@@ -596,26 +477,12 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
   }
  ],
  "bids_path": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
@@ -628,23 +495,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.rglob"
   },
   {
    "is_class": false,
@@ -656,13 +509,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePosixPath.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.rglob"
@@ -670,44 +516,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePath.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.rglob"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.rglob"
   }
  ],
  "color": [
@@ -783,13 +594,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -849,6 +653,83 @@
    "name": "PlayerLSL"
   }
  ],
+ "mne_rt.RTStream": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  }
+ ],
+ "mne_rt.RTStream.save": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.RTStream",
+   "module_short": "mne_rt.RTStream",
+   "name": "save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.RTStream",
+   "module_short": "mne_rt.RTStream",
+   "name": "save"
+  }
+ ],
+ "mne_rt.tools.save_as_bids": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "save_as_bids"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "save_as_bids"
+  }
+ ],
+ "mne_rt.tools.simulate_raw": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_raw"
+  }
+ ],
+ "mne_rt.viz.BrainPlot": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.viz",
+   "module_short": "mne_rt",
+   "name": "BrainPlot"
+  }
+ ],
+ "mne_rt.viz.SignalPlot": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.viz",
+   "module_short": "mne_rt",
+   "name": "SignalPlot"
+  }
+ ],
+ "mne_rt.viz.TopomapPlot": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.viz",
+   "module_short": "mne_rt",
+   "name": "TopomapPlot"
+  }
+ ],
  "mod": [
   {
    "is_class": false,
@@ -862,45 +743,45 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
   }
  ],
  "nf.connect_to_lsl": [
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.connect_to_lsl"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.connect_to_lsl"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.connect_to_lsl"
   }
  ],
@@ -908,29 +789,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.create_report"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.create_report"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.create_report"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.create_report"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.create_report"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.create_report"
   }
  ],
@@ -986,29 +867,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.record_baseline"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.record_baseline"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.record_baseline"
   }
  ],
@@ -1016,29 +897,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.record_main"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.record_main"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.record_main"
   }
  ],
@@ -1046,29 +927,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.save"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.save"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.save"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.save"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.save"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.save"
   }
  ],
@@ -1108,13 +989,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -1124,23 +998,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.relative_to"
   },
   {
    "is_class": false,
@@ -1152,13 +1012,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePosixPath.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.relative_to"
@@ -1166,44 +1019,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePath.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.relative_to"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.relative_to"
   }
  ],
  "palette": [
@@ -1216,13 +1034,6 @@
   }
  ],
  "path": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
@@ -1267,13 +1078,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -1283,23 +1087,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.name"
   },
   {
    "is_class": false,
@@ -1311,13 +1101,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePosixPath.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.name"
@@ -1325,67 +1108,18 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePath.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.name"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.name"
   }
  ],
  "rel.parts": [
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.parts"
   },
   {
    "is_class": false,
@@ -1397,13 +1131,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePosixPath.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.parts"
@@ -1411,54 +1138,12 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePath.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.parts"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.parts"
   }
  ],
  "report_path": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
@@ -1478,8 +1163,8 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
    "name": "save_as_bids"
   }
  ],
@@ -1512,19 +1197,12 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
    "name": "simulate_raw"
   }
  ],
  "subjects_dir": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
@@ -1537,23 +1215,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.mkdir"
   },
   {
    "is_class": false,
@@ -1565,13 +1229,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.mkdir"
@@ -1579,44 +1236,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.mkdir"
   }
  ],
  "t": [
@@ -1650,13 +1272,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -1666,23 +1281,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path.mkdir"
   },
   {
    "is_class": false,
@@ -1694,13 +1295,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePosixPath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePosixPath.mkdir"
@@ -1708,44 +1302,9 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib._local",
-   "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase.mkdir"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase.mkdir"
   }
  ],
  "vals": [

@@ -4,7 +4,7 @@ Real-time bad channel detection
 
 EEG and MEG recordings often contain disconnected, noisy, or poorly coupled
 channels that contaminate downstream artifact correction and NF feature
-extraction.  :class:`~ant.tools.BadChannelDetector` evaluates independent
+extraction.  :class:`~mne_rt.tools.BadChannelDetector` evaluates independent
 criteria per incoming window and uses a rolling majority-vote to flag
 persistently bad channels — no baseline recording is needed.
 
@@ -48,7 +48,7 @@ import matplotlib.pyplot as plt
 import mne
 import numpy as np
 
-from ant.tools import BadChannelDetector
+from mne_rt.tools import BadChannelDetector
 
 mne.set_log_level("WARNING")
 

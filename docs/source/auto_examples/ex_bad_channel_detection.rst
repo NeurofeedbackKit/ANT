@@ -23,7 +23,7 @@ Real-time bad channel detection
 
 EEG and MEG recordings often contain disconnected, noisy, or poorly coupled
 channels that contaminate downstream artifact correction and NF feature
-extraction.  :class:`~ant.tools.BadChannelDetector` evaluates independent
+extraction.  :class:`~mne_rt.tools.BadChannelDetector` evaluates independent
 criteria per incoming window and uses a rolling majority-vote to flag
 persistently bad channels — no baseline recording is needed.
 
@@ -72,7 +72,7 @@ validation.
     import mne
     import numpy as np
 
-    from ant.tools import BadChannelDetector
+    from mne_rt.tools import BadChannelDetector
 
     mne.set_log_level("WARNING")
 
@@ -319,7 +319,7 @@ decision threshold while all others stay near zero.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 19.246 seconds)
+   **Total running time of the script:** (1 minutes 19.218 seconds)
 
 
 .. _sphx_glr_download_auto_examples_ex_bad_channel_detection.py:

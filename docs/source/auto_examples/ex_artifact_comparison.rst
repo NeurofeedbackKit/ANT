@@ -22,16 +22,16 @@ Real-time artifact correction comparison
 =========================================
 
 This example generates a realistic EEG recording with
-:func:`~ant.tools.simulate_nf_session`, injects it into a local LSL stream
+:func:`~mne_rt.tools.simulate_nf_session`, injects it into a local LSL stream
 with :class:`~mne_lsl.player.PlayerLSL`, and compares four artifact handling
 approaches **applied in real time** as data arrives window-by-window:
 
-* :class:`~ant.tools.AdaptiveLMSFilter` — reference-based adaptive filter.
-* :class:`~ant.tools.ASRDenoiser` — baseline-calibrated subspace rejection.
-* :class:`~ant.tools.GEDAIDenoiser` — band-selective eigendecomposition.
-* :class:`~ant.tools.ORICA` — online independent component analysis.
+* :class:`~mne_rt.tools.AdaptiveLMSFilter` — reference-based adaptive filter.
+* :class:`~mne_rt.tools.ASRDenoiser` — baseline-calibrated subspace rejection.
+* :class:`~mne_rt.tools.GEDAIDenoiser` — band-selective eigendecomposition.
+* :class:`~mne_rt.tools.ORICA` — online independent component analysis.
 
-:func:`~ant.tools.simulate_nf_session` produces 64-channel biosemi64 EEG
+:func:`~mne_rt.tools.simulate_nf_session` produces 64-channel biosemi64 EEG
 with realistic 1/f background, alpha oscillations, eye blinks, muscle bursts,
 slow drift, and an NF-state marker — no MRI data required.
 
@@ -39,7 +39,7 @@ slow drift, and an NF-state marker — no MRI data required.
 
 Generate simulated NF session data
 ------------------------------------
-:func:`~ant.tools.simulate_nf_session` returns a :class:`~mne.io.RawArray`
+:func:`~mne_rt.tools.simulate_nf_session` returns a :class:`~mne.io.RawArray`
 and a boolean NF-state mask.  We use it as our ground truth and stream it
 via :class:`~mne_lsl.player.PlayerLSL`.
 
@@ -57,7 +57,7 @@ via :class:`~mne_lsl.player.PlayerLSL`.
     import mne
     from scipy.signal import welch
 
-    from ant.tools import (
+    from mne_rt.tools import (
         simulate_nf_session,
         AdaptiveLMSFilter, ASRDenoiser, GEDAIDenoiser, ORICA,
     )
@@ -245,8 +245,8 @@ StreamLSL, and process every 1-second chunk through each corrector.
  .. code-block:: none
 
     Streaming: ANT_ArtComp_demo  |  sfreq=256 Hz  |  n_ch=64
-    /opt/homebrew/Caskroom/mambaforge/base/envs/tinreg/lib/python3.13/concurrent/futures/thread.py:59: RuntimeWarning: ANT_ArtComp_demo: End of file reached with an empty chunk. This should not happen with a chunk_size different from 1.
-      result = self.fn(*self.args, **self.kwargs)
+    /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/thread.py:73: RuntimeWarning: ANT_ArtComp_demo: End of file reached with an empty chunk. This should not happen with a chunk_size different from 1.
+      return fn(*args, **kwargs)
     Processed 57 windows via LSL streaming
 
 
@@ -362,7 +362,7 @@ Figure 2 — PSD comparison
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 19.202 seconds)
+   **Total running time of the script:** (1 minutes 19.265 seconds)
 
 
 .. _sphx_glr_download_auto_examples_ex_artifact_comparison.py:

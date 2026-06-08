@@ -26,54 +26,10 @@
    "name": "int"
   }
  ],
- "NFRealtime": [
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
-   "name": "ModalityMixin"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ModalityMixin"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  }
- ],
  "Path": [
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "Path"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "Path"
@@ -81,44 +37,9 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PurePath"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PurePath"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib._abc",
-   "module_short": "pathlib._abc",
-   "name": "PurePathBase"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "pathlib",
-   "module_short": "pathlib",
-   "name": "PurePathBase"
   },
   {
    "is_class": false,
@@ -126,6 +47,43 @@
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "Path"
+  }
+ ],
+ "RTStream": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
   }
  ],
  "RUNS": [
@@ -175,24 +133,10 @@
  ],
  "ZScoreProtocol": [
   {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
+   "module": "mne_rt.protocols",
+   "module_short": "mne_rt",
    "name": "ZScoreProtocol"
   }
  ],
@@ -218,13 +162,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -246,47 +183,6 @@
    "module": "numpy",
    "module_short": "numpy",
    "name": "ndarray"
-  }
- ],
- "ant.NFRealtime": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  }
- ],
- "ant.protocols.ZScoreProtocol": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  }
- ],
- "ant.tools.simulate_raw": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_raw"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_raw"
   }
  ],
  "ax": [
@@ -2845,13 +2741,6 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
    "module": "pathlib",
    "module_short": "pathlib",
    "name": "PosixPath"
@@ -3379,6 +3268,47 @@
    "name": "tfr_array_morlet"
   }
  ],
+ "mne_rt.RTStream": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  }
+ ],
+ "mne_rt.protocols.ZScoreProtocol": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.protocols",
+   "module_short": "mne_rt",
+   "name": "ZScoreProtocol"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.protocols",
+   "module_short": "mne_rt",
+   "name": "ZScoreProtocol"
+  }
+ ],
+ "mne_rt.tools.simulate_raw": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_raw"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_raw"
+  }
+ ],
  "n_cycles": [
   {
    "is_class": false,
@@ -3392,45 +3322,45 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
   }
  ],
  "nf.connect_to_lsl": [
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.connect_to_lsl"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.connect_to_lsl"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.connect_to_lsl"
   }
  ],
@@ -3447,29 +3377,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.record_baseline"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.record_baseline"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.record_baseline"
   }
  ],
@@ -3477,29 +3407,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.record_main"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.record_main"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.record_main"
   }
  ],
@@ -3606,22 +3536,6 @@
    "module": "matplotlib.pyplot",
    "module_short": "matplotlib.pyplot",
    "name": "subplots"
-  }
- ],
- "protocol": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
   }
  ],
  "raw": [
@@ -4283,8 +4197,8 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
    "name": "simulate_raw"
   }
  ],

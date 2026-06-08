@@ -27,11 +27,11 @@ neuroscience, particularly in depression and attention research.
 This example demonstrates the **full closed-loop pipeline** in real time:
 
 1. Simulate an EEG recording with right-hemisphere alpha enhancement using
-   :func:`~ant.tools.simulate_raw`.
+   :func:`~mne_rt.tools.simulate_raw`.
 2. Stream it over a mock LSL player (same path as a live amplifier).
 3. Record a brief resting-state baseline.
-4. Run :meth:`~ant.NFRealtime.record_main` extracting the ``laterality``
-   modality **and** passing a :class:`~ant.protocols.ZScoreProtocol` that
+4. Run :meth:`~mne_rt.RTStream.record_main` extracting the ``laterality``
+   modality **and** passing a :class:`~mne_rt.protocols.ZScoreProtocol` that
    evaluates each window **in real time** — the reward gate fires during
    acquisition, not post-hoc.
 5. Plot the laterality index alongside the per-window reward magnitudes.
@@ -56,7 +56,7 @@ laterality exceeds 0.5 standard deviations above the running mean.
 
 Simulate EEG with right-lateralised alpha
 ------------------------------------------
-:func:`~ant.tools.simulate_raw` uses the MNE ``fsaverage`` template and a
+:func:`~mne_rt.tools.simulate_raw` uses the MNE ``fsaverage`` template and a
 forward model to project a sinusoidal dipole from a right occipital label
 to 64 biosemi64 scalp electrodes.
 
@@ -71,9 +71,9 @@ to 64 biosemi64 scalp electrodes.
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from ant import NFRealtime
-    from ant.protocols import ZScoreProtocol
-    from ant.tools import simulate_raw
+    from mne_rt import RTStream
+    from mne_rt.protocols import ZScoreProtocol
+    from mne_rt.tools import simulate_raw
 
     tmp = Path(tempfile.mkdtemp(prefix="ant_laterality_"))
     fname_sim = tmp / "right_alpha.fif"
@@ -100,9 +100,9 @@ to 64 biosemi64 scalp electrodes.
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:220: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/simulation.py:220: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       add_noise(raw, cov, iir_filter=iir_filter, verbose=verbose)
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:231: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_2yz377oc/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/simulation.py:231: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_37cj69t8/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       raw.save(fname=Path(fname_save), overwrite=True)
 
 
@@ -256,9 +256,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c"
+    <tr class="mne-repr-section-header general-5edcc5ca-9dbc-4ee6-8708-3879d1e5b6d2"
          title="Hide section" 
-        onclick="toggleVisibility('general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c')">
+        onclick="toggleVisibility('general-5edcc5ca-9dbc-4ee6-8708-3879d1e5b6d2')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -270,26 +270,26 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
+    <tr class="repr-element general-5edcc5ca-9dbc-4ee6-8708-3879d1e5b6d2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>MNE object type</td>
         <td>RawArray</td>
     </tr>
-    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
+    <tr class="repr-element general-5edcc5ca-9dbc-4ee6-8708-3879d1e5b6d2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Measurement date</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
+    <tr class="repr-element general-5edcc5ca-9dbc-4ee6-8708-3879d1e5b6d2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Participant</td>
     
         <td>Unknown</td>
     
     </tr>
-    <tr class="repr-element general-5765aecf-8f8b-44b0-9c43-b10d2cca6c3c ">
+    <tr class="repr-element general-5edcc5ca-9dbc-4ee6-8708-3879d1e5b6d2 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Experimenter</td>
     
@@ -304,9 +304,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5"
+    <tr class="mne-repr-section-header acquisition-7b37c948-70f1-469d-a32d-1c4ccd05b8dc"
          title="Hide section" 
-        onclick="toggleVisibility('acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5')">
+        onclick="toggleVisibility('acquisition-7b37c948-70f1-469d-a32d-1c4ccd05b8dc')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -318,7 +318,7 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5 ">
+    <tr class="repr-element acquisition-7b37c948-70f1-469d-a32d-1c4ccd05b8dc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Duration</td>
         <td>00:00:19 (HH:MM:SS)</td>
@@ -331,14 +331,14 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="repr-element acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5 ">
+    <tr class="repr-element acquisition-7b37c948-70f1-469d-a32d-1c4ccd05b8dc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Sampling frequency</td>
         <td>256.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element acquisition-7dd29d8b-b20a-41b2-add0-662df35821e5 ">
+    <tr class="repr-element acquisition-7b37c948-70f1-469d-a32d-1c4ccd05b8dc ">
         <td class="mne-repr-section-toggle"></td>
         <td>Time points</td>
         <td>4,864</td>
@@ -353,9 +353,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc"
+    <tr class="mne-repr-section-header channels-d005334d-de6a-459f-9199-e790182059f7"
          title="Hide section" 
-        onclick="toggleVisibility('channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc')">
+        onclick="toggleVisibility('channels-d005334d-de6a-459f-9199-e790182059f7')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -368,7 +368,7 @@ to 64 biosemi64 scalp electrodes.
 
 
     
-    <tr class="repr-element channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc ">
+    <tr class="repr-element channels-d005334d-de6a-459f-9199-e790182059f7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>EEG</td>
         <td>
@@ -381,7 +381,7 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element channels-ba8e4c50-fd01-4570-812a-a80a8a2027bc ">
+    <tr class="repr-element channels-d005334d-de6a-459f-9199-e790182059f7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Head & sensor digitization</td>
     
@@ -396,9 +396,9 @@ to 64 biosemi64 scalp electrodes.
 
 
 
-    <tr class="mne-repr-section-header filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb"
+    <tr class="mne-repr-section-header filters-b3742c11-dade-496a-a064-f0a1bec582b7"
          title="Hide section" 
-        onclick="toggleVisibility('filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb')">
+        onclick="toggleVisibility('filters-b3742c11-dade-496a-a064-f0a1bec582b7')">
         <th class="mne-repr-section-toggle">
             <button >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
@@ -410,14 +410,14 @@ to 64 biosemi64 scalp electrodes.
     </tr>
 
 
-    <tr class="repr-element filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb ">
+    <tr class="repr-element filters-b3742c11-dade-496a-a064-f0a1bec582b7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Highpass</td>
         <td>0.00 Hz</td>
     </tr>
 
 
-    <tr class="repr-element filters-f1799413-1bb4-4882-82f7-49c3d33ecfcb ">
+    <tr class="repr-element filters-b3742c11-dade-496a-a064-f0a1bec582b7 ">
         <td class="mne-repr-section-toggle"></td>
         <td>Lowpass</td>
         <td>128.00 Hz</td>
@@ -433,7 +433,7 @@ to 64 biosemi64 scalp electrodes.
 
 Session setup
 -------------
-:class:`~ant.NFRealtime` manages the full pipeline.  ``mock_lsl=True``
+:class:`~mne_rt.RTStream` manages the full pipeline.  ``mock_lsl=True``
 starts a :class:`~mne_lsl.player.PlayerLSL` that replays the FIF file at
 its native sampling rate — identical to connecting to a live amplifier.
 
@@ -445,7 +445,7 @@ its native sampling rate — identical to connecting to a live amplifier.
     subjects_dir = tmp / "subjects"
     subjects_dir.mkdir()
 
-    nf = NFRealtime(
+    nf = RTStream(
         subject_id="sub01",
         session="01",
         subjects_dir=str(subjects_dir),
@@ -464,11 +464,11 @@ its native sampling rate — identical to connecting to a live amplifier.
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/realtime_nf.py:416: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_2yz377oc/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/rt_stream.py:416: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/ant_laterality_37cj69t8/right_alpha.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       self._mock_player = Player(
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       inverse_operator = make_inverse_operator(
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       inverse_operator = make_inverse_operator(
 
 
@@ -478,7 +478,7 @@ its native sampling rate — identical to connecting to a live amplifier.
 
 Real-time closed-loop session with ZScoreProtocol
 --------------------------------------------------
-The :class:`~ant.protocols.ZScoreProtocol` is passed directly to
+The :class:`~mne_rt.protocols.ZScoreProtocol` is passed directly to
 ``record_main`` via the ``protocol`` argument.  On **every 1-second window**
 the laterality value is both stored in ``nf.nf_data`` and evaluated by the
 protocol — no post-hoc loop required.
@@ -528,7 +528,7 @@ the reward gate activates from window 11 onward.
 
  .. code-block:: none
 
-    Windows: 241  |  Rewarded: 112 (46 %)  |  Protocol: μ=1.3385  σ=0.3251  z=0.67
+    Windows: 240  |  Rewarded: 90 (38 %)  |  Protocol: μ=1.2449  σ=0.3388  z=0.78
 
 
 
@@ -544,7 +544,7 @@ simulation injects a 10 Hz sine wave into the right lateral-occipital
 cortex, the signal should trend positive throughout the session.
 
 The **bottom panel** shows the reward magnitude issued by
-:class:`~ant.protocols.ZScoreProtocol` on each window — non-zero only
+:class:`~mne_rt.protocols.ZScoreProtocol` on each window — non-zero only
 after the warmup period (orange dashed line) once the running statistics
 are initialised.  Rewards accumulate whenever the z-scored laterality
 exceeds the threshold of 0.5 σ above the running mean.
@@ -629,7 +629,7 @@ in the Sphinx Gallery build do not encounter residual streams.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 36.954 seconds)
+   **Total running time of the script:** (2 minutes 35.454 seconds)
 
 
 .. _sphx_glr_download_auto_examples_ex_alpha_laterality_nf.py:

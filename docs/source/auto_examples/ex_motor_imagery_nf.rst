@@ -36,10 +36,10 @@ loaded via :func:`mne.datasets.eegbci.load_data`:
 3. Compute per-trial **ERD/ERS (%)** in the 8–30 Hz band for C3 and C4.
 4. Derive a **laterality index**: ``(C4 − C3) / (C4 + C3)`` — positive for
    right-hand imagery, negative for left-hand imagery.
-5. Demonstrate a closed-loop NF session using :func:`~ant.tools.simulate_raw`
+5. Demonstrate a closed-loop NF session using :func:`~mne_rt.tools.simulate_raw`
    to generate a right-hemisphere mu-band source with a clear 10 s on/off
-   pattern, stream it through :class:`~ant.NFRealtime` with ``mock_lsl=True``,
-   and drive a :class:`~ant.protocols.ZScoreProtocol` that rewards C4 > C3
+   pattern, stream it through :class:`~mne_rt.RTStream` with ``mock_lsl=True``,
+   and drive a :class:`~mne_rt.protocols.ZScoreProtocol` that rewards C4 > C3
    laterality **in real time**.
 
 .. note::
@@ -66,9 +66,9 @@ Load PhysioNet EEGBCI motor imagery data
     import numpy as np
     from scipy.signal import butter, sosfiltfilt
 
-    from ant import NFRealtime
-    from ant.protocols import ZScoreProtocol
-    from ant.tools import simulate_raw
+    from mne_rt import RTStream
+    from mne_rt.protocols import ZScoreProtocol
+    from mne_rt.tools import simulate_raw
 
     mne.set_log_level("WARNING")
 
@@ -245,13 +245,13 @@ Negative dB = ERD (power below baseline), positive dB = ERS.
 Real-time NF session with simulated motor lateralisation
 ---------------------------------------------------------
 Instead of streaming the mixed PhysioNet recording (rest + both imagery
-classes interleaved), we use :func:`~ant.tools.simulate_raw` to synthesise a
+classes interleaved), we use :func:`~mne_rt.tools.simulate_raw` to synthesise a
 64-channel biosemi64 EEG with a **right-hemisphere mu (12 Hz) source** in
 ``precentral-rh``, alternating in **10 s ON / 10 s OFF** bursts.  During ON
 bursts C4 receives the strongest forward-model projection and
 laterality = (C4 − C3)/(C4 + C3) is clearly positive.
 
-The :class:`~ant.protocols.ZScoreProtocol` with ``direction="up"`` rewards
+The :class:`~mne_rt.protocols.ZScoreProtocol` with ``direction="up"`` rewards
 windows where C4 dominates, mimicking a closed-loop right-hemisphere mu
 enhancement protocol (contralateral to left-hand imagery).
 
@@ -289,7 +289,7 @@ Expected mu-ON windows in the 120 s main session:
         zscore_threshold=0.5,
     )
 
-    nf = NFRealtime(
+    nf = RTStream(
         subject_id="motor01",
         session="01",
         subjects_dir=str(_tmp_dir),
@@ -326,17 +326,17 @@ Expected mu-ON windows in the 120 s main session:
 
  .. code-block:: none
 
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:220: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/simulation.py:220: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       add_noise(raw, cov, iir_filter=iir_filter, verbose=verbose)
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/simulation.py:231: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/tmpe0khudvb/motor_sim.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/simulation.py:231: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/tmpxyteoxk9/motor_sim.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       raw.save(fname=Path(fname_save), overwrite=True)
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/realtime_nf.py:416: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/tmpe0khudvb/motor_sim.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/rt_stream.py:416: RuntimeWarning: This filename (/var/folders/20/hsy69tx529ndn3rkv5gzcf0c0000gn/T/tmpxyteoxk9/motor_sim.fif) does not conform to MNE naming conventions. All raw files should end with raw.fif, raw_sss.fif, raw_tsss.fif, _meg.fif, _eeg.fif, _ieeg.fif, raw.fif.gz, raw_sss.fif.gz, raw_tsss.fif.gz, _meg.fif.gz, _eeg.fif.gz or _ieeg.fif.gz
       self._mock_player = Player(
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       inverse_operator = make_inverse_operator(
-    /Users/payamsadeghishabestari/ANT/docs/source/../../src/ant/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
+    /Users/payamsadeghishabestari/ANT/docs/source/../../src/mne_rt/tools/tools.py:502: RuntimeWarning: No average EEG reference present in info["projs"], covariance may be adversely affected. Consider recomputing covariance using with an average eeg reference projector added.
       inverse_operator = make_inverse_operator(
-    NF windows : 120  |  rewards : 51  (42 % of all windows)
+    NF windows : 120  |  rewards : 53  (44 % of all windows)
 
 
 
@@ -489,7 +489,7 @@ Grey bands mark expected mu-ON periods; rewards should align with them.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 37.786 seconds)
+   **Total running time of the script:** (2 minutes 36.744 seconds)
 
 
 .. _sphx_glr_download_auto_examples_ex_motor_imagery_nf.py:

@@ -23,7 +23,7 @@ Real-time Maxwell filtering (SSS) with LSL streaming
 
 Signal Space Separation (SSS) is the gold-standard preprocessing step for
 MEG data, suppressing external interference while preserving brain signals.
-ANT's :class:`~ant.tools.RTMaxwellFilter` pre-computes the SSS projection
+ANT's :class:`~mne_rt.tools.RTMaxwellFilter` pre-computes the SSS projection
 operator once from sensor geometry and applies it as a single matrix multiply
 per incoming chunk — zero added latency, numerically equivalent to offline
 MNE processing.
@@ -31,7 +31,7 @@ MNE processing.
 This example:
 
 1. Loads the MNE sample MEG dataset.
-2. Fits :class:`~ant.tools.RTMaxwellFilter` from sensor geometry (no
+2. Fits :class:`~mne_rt.tools.RTMaxwellFilter` from sensor geometry (no
    baseline data required).
 3. Broadcasts the recording over a local LSL stream with
    :class:`~mne_lsl.player.PlayerLSL` and collects every arriving chunk
@@ -67,7 +67,7 @@ Load MNE sample MEG data
     from mne.preprocessing import maxwell_filter
     from scipy.stats import pearsonr
 
-    from ant.tools import RTMaxwellFilter
+    from mne_rt.tools import RTMaxwellFilter
     from mne_lsl.player import PlayerLSL
     from mne_lsl.stream import StreamLSL
 
@@ -135,7 +135,7 @@ Stream via PlayerLSL and apply RT-SSS in real time
 ---------------------------------------------------
 We save the recording to a temporary FIF file, broadcast it over a local
 LSL stream at its native sampling rate, and apply
-:meth:`~ant.tools.RTMaxwellFilter.transform` on every arriving chunk.
+:meth:`~mne_rt.tools.RTMaxwellFilter.transform` on every arriving chunk.
 
 Crucially, we also collect the **raw** (unfiltered) LSL chunks so that we
 can apply offline SSS to the exact same data for a fair comparison.
@@ -227,7 +227,7 @@ can apply offline SSS to the exact same data for a fair comparison.
     Connected to ANT_RT_SSS_demo  |  sfreq=600.615 Hz  |  n_ch=306
     Drained 2403 ring-buffer init samples (zeros)
     Processed 59 chunks (35459 samples) via LSL streaming
-    Latency — mean: 2.12 ms  median: 1.86 ms  p95: 3.93 ms
+    Latency — mean: 2.01 ms  median: 1.85 ms  p95: 3.47 ms
 
 
 
@@ -301,7 +301,7 @@ Numerical equivalence check
 
  .. code-block:: none
 
-    Residual RMS (mag): 0.000148 fT  (7.77e-05 % of signal)
+    Residual RMS (mag): 0.000149 fT  (7.76e-05 % of signal)
     Mean Pearson r (offline vs RT-SSS): 1.000000
 
 
@@ -369,7 +369,7 @@ Figure 1 — Time-series comparison
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_ex_maxwell_realtime_001.png
-   :alt: Channel: MEG 0111, Channel: MEG 0121, Channel: MEG 0131, Residual (Offline − RT-SSS) | RMS Error = 0.136 aT
+   :alt: Channel: MEG 0111, Channel: MEG 0121, Channel: MEG 0131, Residual (Offline − RT-SSS) | RMS Error = 0.135 aT
    :srcset: /auto_examples/images/sphx_glr_ex_maxwell_realtime_001.png
    :class: sphx-glr-single-img
 
@@ -483,7 +483,7 @@ Figure 3 — LSL latency
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 16.267 seconds)
+   **Total running time of the script:** (0 minutes 15.135 seconds)
 
 
 .. _sphx_glr_download_auto_examples_ex_maxwell_realtime.py:

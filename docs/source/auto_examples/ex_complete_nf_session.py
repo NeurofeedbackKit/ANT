@@ -13,9 +13,9 @@ Full end-to-end pipeline with ANT:
 6. Inspect the feature time-series — the 10 s on / 10 s off alpha rhythm is
    clearly visible as modulation in every NF feature.
 
-The three interactive windows — :class:`~ant.viz.NFSignalPlot` (NF signal),
-:class:`~ant.viz.TopoPlot` (scalp topomap), and
-:class:`~ant.viz.BrainPlot` (3D brain) — open automatically during
+The three interactive windows — :class:`~mne_rt.viz.SignalPlot` (NF signal),
+:class:`~mne_rt.viz.TopomapPlot` (scalp topomap), and
+:class:`~mne_rt.viz.BrainPlot` (3D brain) — open automatically during
 ``record_main`` when ``show_nf_signal=True``, ``show_topo=True``, and
 ``show_brain_activation=True`` respectively.  This example runs headlessly
 for documentation purposes.
@@ -37,7 +37,7 @@ for documentation purposes.
 # %%
 # Simulate a recording
 # --------------------
-# :func:`~ant.tools.simulate_raw` generates a synthetic 64-channel BioSemi EEG
+# :func:`~mne_rt.tools.simulate_raw` generates a synthetic 64-channel BioSemi EEG
 # recording with a configurable alpha burst pattern projected from the left
 # lateral-occipital cortex.
 #
@@ -60,8 +60,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ant import NFRealtime
-from ant.tools import simulate_raw, save_as_bids
+from mne_rt import RTStream
+from mne_rt.tools import simulate_raw, save_as_bids
 
 # Results land in ~/ANT_session_results — inspect subject dir and HTML report there
 tmp = Path.home() / "ANT_session_results"
@@ -87,13 +87,13 @@ print(f"Simulated EEG saved to: {fname_sim}")
 # %%
 # Set up the NF session
 # ---------------------
-# :class:`~ant.NFRealtime` holds all session state: subject metadata, LSL
+# :class:`~mne_rt.RTStream` holds all session state: subject metadata, LSL
 # stream handle, inverse operator, and recorded NF data.
 
 subjects_dir = tmp / "subjects"
 subjects_dir.mkdir(exist_ok=True)
 
-nf = NFRealtime(
+nf = RTStream(
     subject_id="sub01",
     session="01",
     subjects_dir=str(subjects_dir),
@@ -157,7 +157,7 @@ nf.record_main(
 # %%
 # Save data and generate the HTML report
 # ----------------------------------------
-# :meth:`~ant.NFRealtime.save` writes the NF feature time-series as a JSON
+# :meth:`~mne_rt.RTStream.save` writes the NF feature time-series as a JSON
 # file under ``beh/<stem>_task-neurofeedback_beh.json``.  The JSON contains:
 #
 # * ``"meta"`` — subject, session, modalities, sfreq, duration, artifact
@@ -182,13 +182,13 @@ print(f"  [report  ] → {report_path}")
 # %%
 # Export session in BIDS format
 # ------------------------------
-# :func:`~ant.tools.save_as_bids` writes a fully BIDS-compliant directory
+# :func:`~mne_rt.tools.save_as_bids` writes a fully BIDS-compliant directory
 # tree: the baseline raw recording as ``*_eeg.fif``, the per-window NF feature
 # time-series as ``*_beh.tsv``, and the mandatory sidecar files
 # ``dataset_description.json`` and ``participants.tsv``.
 #
-# This is separate from :meth:`~ant.NFRealtime.save`, which writes ANT's own
-# working directory layout.  Use :func:`~ant.tools.save_as_bids` when you
+# This is separate from :meth:`~mne_rt.RTStream.save`, which writes ANT's own
+# working directory layout.  Use :func:`~mne_rt.tools.save_as_bids` when you
 # need to share the data with collaborators or submit it to a repository.
 
 bids_dir = tmp / "bids"

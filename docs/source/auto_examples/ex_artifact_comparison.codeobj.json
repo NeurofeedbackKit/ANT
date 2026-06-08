@@ -3,29 +3,29 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools.asr",
-   "module_short": "ant",
+   "module": "mne_rt.tools.asr",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser"
   }
  ],
@@ -33,29 +33,29 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools.lms",
-   "module_short": "ant",
+   "module": "mne_rt.tools.lms",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter"
   }
  ],
@@ -99,29 +99,29 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools.gedai",
-   "module_short": "ant",
+   "module": "mne_rt.tools.gedai",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser"
   }
  ],
@@ -156,29 +156,29 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools.orica",
-   "module_short": "ant",
+   "module": "mne_rt.tools.orica",
+   "module_short": "mne_rt",
    "name": "ORICA"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ORICA"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ORICA"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ORICA"
   }
  ],
@@ -487,65 +487,6 @@
    "name": "str"
   }
  ],
- "ant.tools.ASRDenoiser": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant",
-   "name": "ASRDenoiser"
-  }
- ],
- "ant.tools.AdaptiveLMSFilter": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant",
-   "name": "AdaptiveLMSFilter"
-  }
- ],
- "ant.tools.GEDAIDenoiser": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant",
-   "name": "GEDAIDenoiser"
-  }
- ],
- "ant.tools.ORICA": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant",
-   "name": "ORICA"
-  }
- ],
- "ant.tools.simulate_nf_session": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_nf_session"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_nf_session"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_nf_session"
-  }
- ],
  "art_comps": [
   {
    "is_class": false,
@@ -568,22 +509,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.asr",
-   "module_short": "ant",
+   "module": "mne_rt.tools.asr",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser"
   }
  ],
@@ -591,22 +532,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.asr",
-   "module_short": "ant",
+   "module": "mne_rt.tools.asr",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser.fit"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser.fit"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser.fit"
   }
  ],
@@ -614,22 +555,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.asr",
-   "module_short": "ant",
+   "module": "mne_rt.tools.asr",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ASRDenoiser.transform"
   }
  ],
@@ -1573,22 +1514,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.gedai",
-   "module_short": "ant",
+   "module": "mne_rt.tools.gedai",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser"
   }
  ],
@@ -1596,22 +1537,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.gedai",
-   "module_short": "ant",
+   "module": "mne_rt.tools.gedai",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.denoise"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.denoise"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.denoise"
   }
  ],
@@ -1619,22 +1560,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.gedai",
-   "module_short": "ant",
+   "module": "mne_rt.tools.gedai",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.find_noise_components"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.find_noise_components"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.find_noise_components"
   }
  ],
@@ -1642,22 +1583,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.gedai",
-   "module_short": "ant",
+   "module": "mne_rt.tools.gedai",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.fit_from_raw"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.fit_from_raw"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "GEDAIDenoiser.fit_from_raw"
   }
  ],
@@ -1715,22 +1656,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.lms",
-   "module_short": "ant",
+   "module": "mne_rt.tools.lms",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter"
   }
  ],
@@ -1738,22 +1679,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.lms",
-   "module_short": "ant",
+   "module": "mne_rt.tools.lms",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "AdaptiveLMSFilter.transform"
   }
  ],
@@ -1832,6 +1773,65 @@
    "module": "mne_lsl.player",
    "module_short": "mne_lsl.player",
    "name": "PlayerLSL"
+  }
+ ],
+ "mne_rt.tools.ASRDenoiser": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
+   "name": "ASRDenoiser"
+  }
+ ],
+ "mne_rt.tools.AdaptiveLMSFilter": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
+   "name": "AdaptiveLMSFilter"
+  }
+ ],
+ "mne_rt.tools.GEDAIDenoiser": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
+   "name": "GEDAIDenoiser"
+  }
+ ],
+ "mne_rt.tools.ORICA": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
+   "name": "ORICA"
+  }
+ ],
+ "mne_rt.tools.simulate_nf_session": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_nf_session"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_nf_session"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_nf_session"
   }
  ],
  "n_art": [
@@ -1995,22 +1995,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.orica",
-   "module_short": "ant",
+   "module": "mne_rt.tools.orica",
+   "module_short": "mne_rt",
    "name": "ORICA"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ORICA"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ORICA"
   }
  ],
@@ -2018,22 +2018,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.orica",
-   "module_short": "ant",
+   "module": "mne_rt.tools.orica",
+   "module_short": "mne_rt",
    "name": "ORICA.denoise"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ORICA.denoise"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ORICA.denoise"
   }
  ],
@@ -2041,22 +2041,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.orica",
-   "module_short": "ant",
+   "module": "mne_rt.tools.orica",
+   "module_short": "mne_rt",
    "name": "ORICA.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "ORICA.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ORICA.transform"
   }
  ],
@@ -3543,8 +3543,8 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
    "name": "simulate_nf_session"
   }
  ],

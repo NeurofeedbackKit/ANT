@@ -3,29 +3,29 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools.bad_channel_detector",
-   "module_short": "ant",
+   "module": "mne_rt.tools.bad_channel_detector",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector"
   }
  ],
@@ -341,15 +341,6 @@
    "module": "builtins",
    "module_short": "builtins",
    "name": "str"
-  }
- ],
- "ant.tools.BadChannelDetector": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant",
-   "name": "BadChannelDetector"
   }
  ],
  "ax_flag": [
@@ -1028,22 +1019,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.bad_channel_detector",
-   "module_short": "ant",
+   "module": "mne_rt.tools.bad_channel_detector",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector"
   }
  ],
@@ -1051,22 +1042,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.bad_channel_detector",
-   "module_short": "ant",
+   "module": "mne_rt.tools.bad_channel_detector",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector.get_bad_channels"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector.get_bad_channels"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector.get_bad_channels"
   }
  ],
@@ -1083,22 +1074,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.bad_channel_detector",
-   "module_short": "ant",
+   "module": "mne_rt.tools.bad_channel_detector",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector.update"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector.update"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "BadChannelDetector.update"
   }
  ],
@@ -1294,6 +1285,15 @@
    "module": "mne_lsl.stream",
    "module_short": "mne_lsl.stream",
    "name": "StreamLSL"
+  }
+ ],
+ "mne_rt.tools.BadChannelDetector": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
+   "name": "BadChannelDetector"
   }
  ],
  "n_bad_ts": [
@@ -3901,13 +3901,6 @@
   }
  ],
  "sample_path": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,

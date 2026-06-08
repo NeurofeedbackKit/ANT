@@ -3,16 +3,16 @@ Real-time artifact correction comparison
 =========================================
 
 This example generates a realistic EEG recording with
-:func:`~ant.tools.simulate_nf_session`, injects it into a local LSL stream
+:func:`~mne_rt.tools.simulate_nf_session`, injects it into a local LSL stream
 with :class:`~mne_lsl.player.PlayerLSL`, and compares four artifact handling
 approaches **applied in real time** as data arrives window-by-window:
 
-* :class:`~ant.tools.AdaptiveLMSFilter` — reference-based adaptive filter.
-* :class:`~ant.tools.ASRDenoiser` — baseline-calibrated subspace rejection.
-* :class:`~ant.tools.GEDAIDenoiser` — band-selective eigendecomposition.
-* :class:`~ant.tools.ORICA` — online independent component analysis.
+* :class:`~mne_rt.tools.AdaptiveLMSFilter` — reference-based adaptive filter.
+* :class:`~mne_rt.tools.ASRDenoiser` — baseline-calibrated subspace rejection.
+* :class:`~mne_rt.tools.GEDAIDenoiser` — band-selective eigendecomposition.
+* :class:`~mne_rt.tools.ORICA` — online independent component analysis.
 
-:func:`~ant.tools.simulate_nf_session` produces 64-channel biosemi64 EEG
+:func:`~mne_rt.tools.simulate_nf_session` produces 64-channel biosemi64 EEG
 with realistic 1/f background, alpha oscillations, eye blinks, muscle bursts,
 slow drift, and an NF-state marker — no MRI data required.
 """
@@ -20,7 +20,7 @@ slow drift, and an NF-state marker — no MRI data required.
 # %%
 # Generate simulated NF session data
 # ------------------------------------
-# :func:`~ant.tools.simulate_nf_session` returns a :class:`~mne.io.RawArray`
+# :func:`~mne_rt.tools.simulate_nf_session` returns a :class:`~mne.io.RawArray`
 # and a boolean NF-state mask.  We use it as our ground truth and stream it
 # via :class:`~mne_lsl.player.PlayerLSL`.
 
@@ -33,7 +33,7 @@ import matplotlib.pyplot as plt
 import mne
 from scipy.signal import welch
 
-from ant.tools import (
+from mne_rt.tools import (
     simulate_nf_session,
     AdaptiveLMSFilter, ASRDenoiser, GEDAIDenoiser, ORICA,
 )

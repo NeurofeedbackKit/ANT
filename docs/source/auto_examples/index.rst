@@ -51,6 +51,23 @@ Examples Gallery
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="Demonstrates the full epoch-based real-time pipeline:">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_ex_erp_plots_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/ex_erp_plots`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Real-time ERP accumulation — RTEpochs + epoch visualisation</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="EEG and MEG recordings often contain disconnected, noisy, or poorly coupled channels that contaminate downstream artifact correction and NF feature extraction.  BadChannelDetector evaluates independent criteria per incoming window and uses a rolling majority-vote to flag persistently bad channels — no baseline recording is needed.">
 
 .. only:: html
@@ -129,6 +146,7 @@ Examples Gallery
 
    /auto_examples/ex_alpha_laterality_nf
    /auto_examples/ex_complete_nf_session
+   /auto_examples/ex_erp_plots
    /auto_examples/ex_bad_channel_detection
    /auto_examples/ex_artifact_comparison
    /auto_examples/ex_motor_imagery_nf

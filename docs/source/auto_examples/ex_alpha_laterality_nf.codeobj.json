@@ -1,41 +1,4 @@
 {
- "NFRealtime": [
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
-   "name": "ModalityMixin"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ModalityMixin"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  }
- ],
  "Path": [
   {
    "is_class": true,
@@ -59,84 +22,50 @@
    "name": "Path"
   }
  ],
+ "RTStream": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "ModalityMixin"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  }
+ ],
  "ZScoreProtocol": [
   {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
-   "is_class": true,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
+   "module": "mne_rt.protocols",
+   "module_short": "mne_rt",
    "name": "ZScoreProtocol"
-  }
- ],
- "ant.NFRealtime": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
-  }
- ],
- "ant.NFRealtime.record_main": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.NFRealtime",
-   "module_short": "ant.NFRealtime",
-   "name": "record_main"
-  }
- ],
- "ant.protocols.ZScoreProtocol": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  }
- ],
- "ant.tools.simulate_raw": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_raw"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
-   "name": "simulate_raw"
   }
  ],
  "ax1": [
@@ -840,6 +769,63 @@
    "name": "PlayerLSL"
   }
  ],
+ "mne_rt.RTStream": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
+  }
+ ],
+ "mne_rt.RTStream.record_main": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.RTStream",
+   "module_short": "mne_rt.RTStream",
+   "name": "record_main"
+  }
+ ],
+ "mne_rt.protocols.ZScoreProtocol": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.protocols",
+   "module_short": "mne_rt",
+   "name": "ZScoreProtocol"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.protocols",
+   "module_short": "mne_rt",
+   "name": "ZScoreProtocol"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.protocols",
+   "module_short": "mne_rt",
+   "name": "ZScoreProtocol"
+  }
+ ],
+ "mne_rt.tools.simulate_raw": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_raw"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
+   "name": "simulate_raw"
+  }
+ ],
  "n_rewarded": [
   {
    "is_class": false,
@@ -853,16 +839,16 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream"
   }
  ],
  "nf._mock_player.stop": [
@@ -983,29 +969,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.connect_to_lsl"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.connect_to_lsl"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.connect_to_lsl"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.connect_to_lsl"
   }
  ],
@@ -1022,29 +1008,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.record_baseline"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.record_baseline"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.record_baseline"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.record_baseline"
   }
  ],
@@ -1052,29 +1038,29 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.realtime_nf",
-   "module_short": "ant",
-   "name": "NFRealtime.record_main"
+   "module": "mne_rt.rt_stream",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "NFRealtime.record_main"
+   "module": "mne_rt",
+   "module_short": "mne_rt",
+   "name": "RTStream.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.modalities",
-   "module_short": "ant.modalities",
+   "module": "mne_rt.modalities",
+   "module_short": "mne_rt.modalities",
    "name": "ModalityMixin.record_main"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "ModalityMixin.record_main"
   }
  ],
@@ -1297,54 +1283,6 @@
    "name": "tight_layout"
   }
  ],
- "proto": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ZScoreProtocol"
-  }
- ],
- "proto.mean_": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol.mean_"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ZScoreProtocol.mean_"
-  }
- ],
- "proto.std_": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol.std_"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ZScoreProtocol.std_"
-  }
- ],
  "proto.warmup_windows": [
   {
    "is_class": false,
@@ -1352,22 +1290,6 @@
    "module": "builtins",
    "module_short": "builtins",
    "name": "int"
-  }
- ],
- "proto.zscore": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant.protocols",
-   "module_short": "ant",
-   "name": "ZScoreProtocol.zscore"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
-   "name": "ZScoreProtocol.zscore"
   }
  ],
  "reward_vals": [
@@ -1390,8 +1312,8 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant.tools",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt.tools",
    "name": "simulate_raw"
   }
  ],

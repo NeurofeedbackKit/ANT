@@ -124,29 +124,29 @@
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools.maxwell",
-   "module_short": "ant",
+   "module": "mne_rt.tools.maxwell",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter"
   },
   {
    "is_class": true,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter"
   }
  ],
@@ -359,31 +359,6 @@
    "module": "numpy",
    "module_short": "numpy",
    "name": "ndarray"
-  }
- ],
- "ant.tools.RTMaxwellFilter": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant",
-   "name": "RTMaxwellFilter"
-  },
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools",
-   "module_short": "ant",
-   "name": "RTMaxwellFilter"
-  }
- ],
- "ant.tools.RTMaxwellFilter.transform": [
-  {
-   "is_class": false,
-   "is_explicit": true,
-   "module": "ant.tools.RTMaxwellFilter",
-   "module_short": "ant.tools.RTMaxwellFilter",
-   "name": "transform"
   }
  ],
  "ax": [
@@ -2438,6 +2413,31 @@
    "module": "mne_lsl.player",
    "module_short": "mne_lsl.player",
    "name": "PlayerLSL"
+  }
+ ],
+ "mne_rt.tools.RTMaxwellFilter": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
+   "name": "RTMaxwellFilter"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
+   "name": "RTMaxwellFilter"
+  }
+ ],
+ "mne_rt.tools.RTMaxwellFilter.transform": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "mne_rt.tools.RTMaxwellFilter",
+   "module_short": "mne_rt.tools.RTMaxwellFilter",
+   "name": "transform"
   }
  ],
  "n_ch": [
@@ -5534,22 +5534,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.maxwell",
-   "module_short": "ant",
+   "module": "mne_rt.tools.maxwell",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter"
   }
  ],
@@ -5557,22 +5557,22 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.maxwell",
-   "module_short": "ant",
+   "module": "mne_rt.tools.maxwell",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter.fit"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter.fit"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter.fit"
   }
  ],
@@ -5589,33 +5589,26 @@
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools.maxwell",
-   "module_short": "ant",
+   "module": "mne_rt.tools.maxwell",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant.tools",
-   "module_short": "ant",
+   "module": "mne_rt.tools",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter.transform"
   },
   {
    "is_class": false,
    "is_explicit": false,
-   "module": "ant",
-   "module_short": "ant",
+   "module": "mne_rt",
+   "module_short": "mne_rt",
    "name": "RTMaxwellFilter.transform"
   }
  ],
  "sample_data_folder": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pathlib._local",
-   "module_short": "pathlib",
-   "name": "PosixPath"
-  },
   {
    "is_class": false,
    "is_explicit": false,
