@@ -155,9 +155,10 @@ def _add_demo_erp_parser(sub):
         help="Launch an ERP demo: RTEpochs + epoch visualisation plots.",
         description=textwrap.dedent("""\
             Run a demo that streams MNE sample-dataset EEG through a mock LSL
-            player, collects auditory epochs via RTEpochs, and drives the four
-            epoch visualisation plots (TopoPlot, ButterflyPlot, CompareEvoked,
-            TFRPlot).  Downloads MNE sample data on first run (~1.5 GB).
+            player, collects auditory epochs via RTEpochs, and drives five
+            epoch visualisation plots (EpochPlot, TopoPlot, ButterflyPlot,
+            CompareEvoked, TFRPlot).  Downloads MNE sample data on first run
+            (~1.5 GB).
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -166,7 +167,11 @@ def _add_demo_erp_parser(sub):
         help="Number of EEG trials to collect (default: 70).",
     )
     p.add_argument(
-        "--no-erp", action="store_true",
+        "--no-epoch-plot", action="store_true",
+        help="Disable the EpochPlot scrolling raw viewer with trigger overlays.",
+    )
+    p.add_argument(
+        "--no-topo", action="store_true",
         help="Disable the scalp-layout TopoPlot (ERP display).",
     )
     p.add_argument(
@@ -270,8 +275,12 @@ def _add_run_parser(sub):
     )
     # ERP / epoch plot flags
     p.add_argument(
-        "--erp", action="store_true",
+        "--topo", action="store_true",
         help="Enable the scalp-layout TopoPlot ERP display (requires --stim-ch).",
+    )
+    p.add_argument(
+        "--epoch-plot", action="store_true",
+        help="Enable the EpochPlot scrolling raw viewer with trigger overlays (requires --stim-ch).",
     )
     p.add_argument(
         "--butterfly", action="store_true",
@@ -491,7 +500,7 @@ def _cmd_demo(args) -> None:
 
 
 def _cmd_demo_erp(args) -> None:
-    """Run an ERP demo using MNE sample data and the four epoch plot windows."""
+    """Run an ERP demo using MNE sample data and the five epoch plot windows."""
     import os
     import sys
     import time
@@ -522,12 +531,13 @@ def _cmd_demo_erp(args) -> None:
     event_id = {"auditory/left": 1, "auditory/right": 2}
     tmin, tmax = -0.1, 0.4
 
-    show_erp       = not args.no_erp
-    show_butterfly = not args.no_butterfly
-    show_compare   = not args.no_compare
-    show_tfr       = not args.no_tfr
+    show_epoch_plot = not getattr(args, "no_epoch_plot", False)
+    show_topo       = not args.no_topo
+    show_butterfly  = not args.no_butterfly
+    show_compare    = not args.no_compare
+    show_tfr        = not args.no_tfr
 
-    if not any([show_erp, show_butterfly, show_compare, show_tfr]):
+    if not any([show_epoch_plot, show_topo, show_butterfly, show_compare, show_tfr]):
         print("All plots disabled — nothing to show.  "
               "Remove --no-* flags to enable plots.")
         return
@@ -544,14 +554,18 @@ def _cmd_demo_erp(args) -> None:
     )
     rt.connect_to_lsl(mock_lsl=True, fname=mock_path, timeout=15.0)
 
+    from mne_rt.viz.epoch_plot     import EpochPlot
     from mne_rt.viz.topo_plot      import TopoPlot as ERPTopoPlot
     from mne_rt.viz.butterfly_plot import ButterflyPlot
     from mne_rt.viz.compare_evoked import CompareEvoked
     from mne_rt.viz.tfr_plot       import TFRPlot
 
+    ch_names = list(rt.epochs_stream_.info["ch_names"])
+    sfreq    = rt.epochs_stream_.info["sfreq"]
+
     common_kw = dict(
-        ch_names = list(rt.epochs_stream_.info["ch_names"]),
-        sfreq    = rt.epochs_stream_.info["sfreq"],
+        ch_names = ch_names,
+        sfreq    = sfreq,
         tmin     = tmin,
         tmax     = tmax,
         event_id = event_id,
@@ -559,15 +573,35 @@ def _cmd_demo_erp(args) -> None:
         baseline = (None, 0),
     )
 
-    erp_w   = ERPTopoPlot(**common_kw)   if show_erp       else None
+    # EpochPlot: scrolling raw viewer — epoch data is fed chunk-by-chunk
+    # so the trigger marker lands at the correct t=0 position.
+    # scale_uv=10 because ERP amplitudes are ~1-10 µV (default 100 is too coarse)
+    epoch_w = EpochPlot(
+        ch_names    = ch_names,
+        sfreq       = sfreq,
+        tmin        = tmin,
+        tmax        = tmax,
+        event_id    = event_id,
+        time_window = 15.0,
+        scale_uv    = 10.0,
+    ) if show_epoch_plot else None
+
+    topo_w  = ERPTopoPlot(**common_kw)   if show_topo      else None
     butt_w  = ButterflyPlot(**common_kw) if show_butterfly else None
     comp_w  = CompareEvoked(**common_kw) if show_compare   else None
     tfr_w   = TFRPlot(**common_kw)       if show_tfr       else None
 
     _interactive = os.environ.get("QT_QPA_PLATFORM") != "offscreen"
-    positions = [(0, 0), (730, 0), (0, 520), (730, 520)]
+    # EpochPlot gets a wider window at the top; the other four tile below it.
+    if epoch_w is not None:
+        if _interactive:
+            epoch_w.move(0, 0)
+            epoch_w.resize(1460, 440)
+        epoch_w.show()
+
+    positions = [(0, 460), (730, 460), (0, 980), (730, 980)]
     idx = 0
-    for w in (erp_w, butt_w, comp_w, tfr_w):
+    for w in (topo_w, butt_w, comp_w, tfr_w):
         if w is not None:
             if _interactive:
                 x, y = positions[idx]
@@ -577,16 +611,28 @@ def _cmd_demo_erp(args) -> None:
             idx += 1
     app.processEvents()
 
+    # Number of samples before the trigger within each epoch
+    n_pre = int(round(abs(tmin) * sfreq))
+
     update_times: list[float] = []
 
     def on_trial(n_accepted: int, data, event_code: int, condition: str) -> None:
         t0    = time.perf_counter()
         batch = rt._buf_[:n_accepted]
         conds = list(rt._cond_list_)
-        if erp_w  is not None: erp_w .update(batch, conds)
-        if butt_w is not None: butt_w.update(batch, conds)
-        if comp_w is not None: comp_w.update(batch, conds)
-        if tfr_w  is not None: tfr_w .update(batch, conds)
+
+        # Feed the epoch into EpochPlot split at t=0 so the trigger marker
+        # lands at the correct position.  `data` is the epoch itself:
+        # shape (n_ch, n_times) — NOT a batch, so no [-1] indexing.
+        if epoch_w is not None:
+            epoch_w.push(data[:, :n_pre])       # pre-trigger samples
+            epoch_w.push_trigger(code=event_code)
+            epoch_w.push(data[:, n_pre:])       # post-trigger samples
+
+        if topo_w  is not None: topo_w .update(batch, conds)
+        if butt_w  is not None: butt_w .update(batch, conds)
+        if comp_w  is not None: comp_w .update(batch, conds)
+        if tfr_w   is not None: tfr_w  .update(batch, conds)
         dt = (time.perf_counter() - t0) * 1000
         update_times.append(dt)
         print(f"  trial {n_accepted:3d} | {condition:<22s} | update {dt:.1f} ms")
@@ -603,7 +649,8 @@ def _cmd_demo_erp(args) -> None:
 
     threading.Thread(target=_collect, daemon=True).start()
 
-    sentinel = next((w for w in (erp_w, butt_w, comp_w, tfr_w) if w is not None), None)
+    all_windows = [w for w in (epoch_w, topo_w, butt_w, comp_w, tfr_w) if w is not None]
+    sentinel = all_windows[0] if all_windows else None
     while not done.is_set():
         app.processEvents()
         time.sleep(0.02)
@@ -615,12 +662,10 @@ def _cmd_demo_erp(args) -> None:
     rt.disconnect()
     print(f"\n  Accepted: {rt.n_accepted_} trials")
     if update_times:
-        import numpy as np
         print(f"  Latency : mean={np.mean(update_times):.1f} ms  "
               f"max={np.max(update_times):.1f} ms")
 
-    open_windows = [w for w in (erp_w, butt_w, comp_w, tfr_w) if w is not None]
-    if any(w.isVisible() for w in open_windows):
+    if any(w.isVisible() for w in all_windows):
         print("\nAll trials collected — close all windows to exit.")
         app.exec()
     else:
@@ -660,7 +705,8 @@ def _cmd_run(args) -> None:
     set_log_level(args.verbose)
 
     want_epoch_plots = any([
-        getattr(args, "erp", False),
+        getattr(args, "topo", False),
+        getattr(args, "epoch_plot", False),
         getattr(args, "butterfly", False),
         getattr(args, "compare_evoked", False),
         getattr(args, "tfr", False),
@@ -669,7 +715,7 @@ def _cmd_run(args) -> None:
     if want_epoch_plots and not getattr(args, "stim_ch", None):
         import sys as _sys
         print(
-            "ERROR: --erp / --butterfly / --compare-evoked / --tfr require "
+            "ERROR: --topo / --epoch-plot / --butterfly / --compare-evoked / --tfr require "
             "--stim-ch <CHANNEL>  (e.g. --stim-ch 'STI 014')",
             file=_sys.stderr,
         )
@@ -723,7 +769,7 @@ def _cmd_run(args) -> None:
 
     # ── Epoch plot windows (RTEpochs side-channel) ────────────────────────
     rt_epochs = None
-    erp_w = butt_w = comp_w = tfr_w = None
+    epoch_w = topo_w = butt_w = comp_w = tfr_w = None
 
     if want_epoch_plots:
         # Parse --event-id name=code pairs; default to stimulus=1
@@ -749,14 +795,18 @@ def _cmd_run(args) -> None:
             timeout=30.0,
         )
 
+        from mne_rt.viz.epoch_plot     import EpochPlot
         from mne_rt.viz.topo_plot      import TopoPlot as ERPTopoPlot
         from mne_rt.viz.butterfly_plot import ButterflyPlot
         from mne_rt.viz.compare_evoked import CompareEvoked
         from mne_rt.viz.tfr_plot       import TFRPlot
 
+        _run_ch_names = list(rt_epochs.epochs_stream_.info["ch_names"])
+        _run_sfreq    = rt_epochs.epochs_stream_.info["sfreq"]
+
         common_kw = dict(
-            ch_names = list(rt_epochs.epochs_stream_.info["ch_names"]),
-            sfreq    = rt_epochs.epochs_stream_.info["sfreq"],
+            ch_names = _run_ch_names,
+            sfreq    = _run_sfreq,
             tmin     = tmin,
             tmax     = tmax,
             event_id = event_id,
@@ -764,15 +814,29 @@ def _cmd_run(args) -> None:
             baseline = (None, 0),
         )
 
-        erp_w  = ERPTopoPlot(**common_kw)   if args.erp             else None
-        butt_w = ButterflyPlot(**common_kw) if args.butterfly        else None
-        comp_w = CompareEvoked(**common_kw) if args.compare_evoked   else None
-        tfr_w  = TFRPlot(**common_kw)       if args.tfr              else None
+        epoch_w = EpochPlot(
+            ch_names    = _run_ch_names,
+            sfreq       = _run_sfreq,
+            tmin        = tmin,
+            tmax        = tmax,
+            event_id    = event_id,
+            time_window = 15.0,
+            scale_uv    = 10.0,
+        ) if getattr(args, "epoch_plot", False) else None
+        topo_w  = ERPTopoPlot(**common_kw)   if args.topo            else None
+        butt_w  = ButterflyPlot(**common_kw) if args.butterfly        else None
+        comp_w  = CompareEvoked(**common_kw) if args.compare_evoked   else None
+        tfr_w   = TFRPlot(**common_kw)       if args.tfr              else None
 
         _interactive = os.environ.get("QT_QPA_PLATFORM") != "offscreen"
-        positions = [(0, 0), (730, 0), (0, 520), (730, 520)]
+        if epoch_w is not None:
+            if _interactive:
+                epoch_w.move(0, 0)
+                epoch_w.resize(1460, 440)
+            epoch_w.show()
+        positions = [(0, 460), (730, 460), (0, 980), (730, 980)]
         idx = 0
-        for w in (erp_w, butt_w, comp_w, tfr_w):
+        for w in (topo_w, butt_w, comp_w, tfr_w):
             if w is not None:
                 if _interactive:
                     x, y = positions[idx]
@@ -781,13 +845,20 @@ def _cmd_run(args) -> None:
                 w.show()
                 idx += 1
 
+        _n_pre = int(round(abs(tmin) * _run_sfreq))
+
         def _epoch_on_trial(n_accepted, data, event_code, condition):
             batch = rt_epochs._buf_[:n_accepted]
             conds = list(rt_epochs._cond_list_)
-            if erp_w  is not None: erp_w .update(batch, conds)
-            if butt_w is not None: butt_w.update(batch, conds)
-            if comp_w is not None: comp_w.update(batch, conds)
-            if tfr_w  is not None: tfr_w .update(batch, conds)
+            if epoch_w is not None:
+                # data is (n_ch, n_times) — the single epoch, not a batch
+                epoch_w.push(data[:, :_n_pre])
+                epoch_w.push_trigger(code=event_code)
+                epoch_w.push(data[:, _n_pre:])
+            if topo_w  is not None: topo_w .update(batch, conds)
+            if butt_w  is not None: butt_w .update(batch, conds)
+            if comp_w  is not None: comp_w .update(batch, conds)
+            if tfr_w   is not None: tfr_w  .update(batch, conds)
 
         rt_epochs.on_trial = _epoch_on_trial
 
