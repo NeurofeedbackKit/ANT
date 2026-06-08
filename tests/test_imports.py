@@ -8,7 +8,7 @@ def test_top_level_imports():
     assert hasattr(mne_rt, "RTStream")
     assert hasattr(mne_rt, "RTEpochs")
     assert hasattr(mne_rt, "BrainPlot")
-    assert hasattr(mne_rt, "SignalPlot")
+    assert hasattr(mne_rt, "RawPlot")
     assert hasattr(mne_rt, "ORICA")
     assert hasattr(mne_rt, "GEDAIDenoiser")
     assert hasattr(mne_rt, "OSCSender")
