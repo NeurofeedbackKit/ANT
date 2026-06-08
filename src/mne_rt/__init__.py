@@ -50,7 +50,7 @@ from mne_rt._logging import logger, set_log_level  # noqa: F401 — public API
 from mne_rt.rt_stream import RTStream
 from mne_rt.rt_epochs import RTEpochs
 from mne_rt.viz import (
-    BrainPlot, NFPlot, RawPlot, TopomapPlot, TopoPlot,
+    BrainPlot, NFPlot, RawPlot, EpochPlot, TopomapPlot, TopoPlot,
     ButterflyPlot, TFRPlot, CompareEvoked,
 )
 from mne_rt.tools import ORICA, GEDAIDenoiser
@@ -75,6 +75,7 @@ __all__ = [
     "BrainPlot",
     "NFPlot",
     "RawPlot",
+    "EpochPlot",
     "TopomapPlot",
     "TopoPlot",
     "ButterflyPlot",
