@@ -3,8 +3,7 @@
 API Reference
 =============
 
-This page provides the complete API reference for the
-**Advanced Neurofeedback Toolbox (ANT)**.
+This page provides the complete API reference for **MNE-RT**.
 
 Core
 ----
@@ -13,7 +12,8 @@ Core
    :toctree: generated/
    :nosignatures:
 
-   ant.NFRealtime
+   mne_rt.RTStream
+   mne_rt.RTEpochs
 
 Visualisation
 -------------
@@ -22,9 +22,15 @@ Visualisation
    :toctree: generated/
    :nosignatures:
 
-   ant.viz.NFSignalPlot
-   ant.viz.BrainPlot
-   ant.viz.TopoPlot
+   mne_rt.viz.NFPlot
+   mne_rt.viz.RawPlot
+   mne_rt.viz.EpochPlot
+   mne_rt.viz.BrainPlot
+   mne_rt.viz.TopomapPlot
+   mne_rt.viz.TopoPlot
+   mne_rt.viz.ButterflyPlot
+   mne_rt.viz.TFRPlot
+   mne_rt.viz.CompareEvoked
 
 Artifact correction
 -------------------
@@ -33,11 +39,11 @@ Artifact correction
    :toctree: generated/
    :nosignatures:
 
-   ant.tools.AdaptiveLMSFilter
-   ant.tools.ORICA
-   ant.tools.GEDAIDenoiser
-   ant.tools.ASRDenoiser
-   ant.tools.RTMaxwellFilter
+   mne_rt.tools.AdaptiveLMSFilter
+   mne_rt.tools.ORICA
+   mne_rt.tools.GEDAIDenoiser
+   mne_rt.tools.ASRDenoiser
+   mne_rt.tools.RTMaxwellFilter
 
 Quality control
 ---------------
@@ -46,8 +52,8 @@ Quality control
    :toctree: generated/
    :nosignatures:
 
-   ant.tools.BadChannelDetector
-   ant.tools.RiemannianPotatoDetector
+   mne_rt.tools.BadChannelDetector
+   mne_rt.tools.RiemannianPotatoDetector
 
 NF Protocols
 ------------
@@ -58,32 +64,32 @@ See :doc:`protocols` for the full protocol guide with formulas and examples.
    :toctree: generated/
    :nosignatures:
 
-   ant.protocols.ThresholdProtocol
-   ant.protocols.ZScoreProtocol
-   ant.protocols.PercentileProtocol
-   ant.protocols.LinearTrendProtocol
-   ant.protocols.ShamProtocol
-   ant.protocols.UpDownStaircaseProtocol
-   ant.protocols.MultiBandProtocol
-   ant.protocols.RLProtocol
-   ant.protocols.OperantProtocol
-   ant.protocols.TransferProtocol
+   mne_rt.protocols.ThresholdProtocol
+   mne_rt.protocols.ZScoreProtocol
+   mne_rt.protocols.PercentileProtocol
+   mne_rt.protocols.LinearTrendProtocol
+   mne_rt.protocols.ShamProtocol
+   mne_rt.protocols.UpDownStaircaseProtocol
+   mne_rt.protocols.MultiBandProtocol
+   mne_rt.protocols.RLProtocol
+   mne_rt.protocols.OperantProtocol
+   mne_rt.protocols.TransferProtocol
 
 Feature combiners
 -----------------
 
 Reduce multiple parallel NF feature values to a single mixed feedback score.
-See :class:`~ant.combiners.FeatureCombiner` for the base-class interface.
+See :class:`~mne_rt.combiners.FeatureCombiner` for the base-class interface.
 
 .. autosummary::
    :toctree: generated/
    :nosignatures:
 
-   ant.combiners.FeatureCombiner
-   ant.combiners.WeightedSumCombiner
-   ant.combiners.GeometricMeanCombiner
-   ant.combiners.ZScoredNormCombiner
-   ant.combiners.LearnedCombiner
+   mne_rt.combiners.FeatureCombiner
+   mne_rt.combiners.WeightedSumCombiner
+   mne_rt.combiners.GeometricMeanCombiner
+   mne_rt.combiners.ZScoredNormCombiner
+   mne_rt.combiners.LearnedCombiner
 
 Feedback output
 ---------------
@@ -92,8 +98,8 @@ Feedback output
    :toctree: generated/
    :nosignatures:
 
-   ant.OSCSender
-   ant.LSLSender
+   mne_rt.OSCSender
+   mne_rt.LSLSender
 
 Tools & utilities
 -----------------
@@ -102,9 +108,9 @@ Tools & utilities
    :toctree: generated/
    :nosignatures:
 
-   ant.tools.simulate_raw
-   ant.tools.simulate_nf_session
-   ant.modalities.ModalityMixin
+   mne_rt.tools.simulate_raw
+   mne_rt.tools.simulate_nf_session
+   mne_rt.modalities.ModalityMixin
 
 BIDS I/O
 --------
@@ -113,7 +119,7 @@ BIDS I/O
    :toctree: generated/
    :nosignatures:
 
-   ant.tools.save_as_bids
+   mne_rt.tools.save_as_bids
 
 Logging
 -------
@@ -122,4 +128,4 @@ Logging
    :toctree: generated/
    :nosignatures:
 
-   ant.set_log_level
+   mne_rt.set_log_level

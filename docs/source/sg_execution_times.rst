@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**02:36.954** total execution time for 6 files **from all galleries**:
+**03:20.293** total execution time for 7 files **from all galleries**:
 
 .. container::
 
@@ -32,16 +32,19 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
+   * - :ref:`sphx_glr_auto_examples_ex_complete_nf_session.py` (``../../examples/ex_complete_nf_session.py``)
+     - 02:15.771
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_ex_erp_plots.py` (``../../examples/ex_erp_plots.py``)
+     - 01:04.522
+     - 0.0
    * - :ref:`sphx_glr_auto_examples_ex_alpha_laterality_nf.py` (``../../examples/ex_alpha_laterality_nf.py``)
-     - 02:36.954
+     - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_ex_artifact_comparison.py` (``../../examples/ex_artifact_comparison.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_ex_bad_channel_detection.py` (``../../examples/ex_bad_channel_detection.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_ex_complete_nf_session.py` (``../../examples/ex_complete_nf_session.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_ex_maxwell_realtime.py` (``../../examples/ex_maxwell_realtime.py``)

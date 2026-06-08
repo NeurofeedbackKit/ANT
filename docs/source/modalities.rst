@@ -1,13 +1,14 @@
 .. _modalities:
 
-NF Modalities
-=============
+Real-time Feature Modalities
+============================
 
-ANT implements 20 neurofeedback (NF) modalities spanning sensor-space and
+MNE-RT implements 20 real-time feature modalities spanning sensor-space and
 source-space features, from simple band-power estimates to graph-theoretic
-functional connectivity measures.
-Each modality is selected via the ``--modality`` flag of :doc:`cli` and is
-identified by the config key listed in each section below.
+functional connectivity measures.  Each modality can be used as a feedback
+signal, a monitoring metric, or an input to an offline analysis pipeline.
+Select a modality via the ``--modality`` flag of :doc:`cli` or programmatically
+via :class:`~mne_rt.RTStream`; each is identified by the config key listed below.
 
 .. contents::
    :local:
@@ -119,7 +120,7 @@ computed separately for the right and left hemisphere electrode sets:
 
 This measure combines baseline normalisation (from ERD/ERS) with hemispheric
 asymmetry (from laterality) and is particularly useful for motor-imagery
-neurofeedback.
+neurofeedback and BCI applications.
 
 ----
 
@@ -144,7 +145,7 @@ Hilbert transform of the filtered signal:
 
    \phi(t) = \angle\, z(t), \qquad A(t) = |z(t)|
 
-The NF value is the instantaneous phase :math:`\phi \in (-\pi, \pi]`
+The feature value is the instantaneous phase :math:`\phi \in (-\pi, \pi]`
 at the *last sample* of the current analysis window, averaged across the
 selected channels.  The amplitude envelope :math:`A` is returned as a
 secondary output and can be used as a gating signal (e.g. stimulate only
@@ -156,7 +157,7 @@ Instantaneous phase is particularly useful for:
   phase angle (e.g., trough of the alpha cycle)
 * **Cross-frequency coupling analysis** — use as the phase-providing
   input to the CFC modality
-* **Phase synchrony neurofeedback** — reward convergence of phase
+* **Phase synchrony feedback** — reward or monitor convergence of phase
   between two electrode pairs
 
 ----
@@ -258,7 +259,7 @@ The three Hjorth parameters are:
 rad/sample); **Complexity** quantifies how closely the signal resembles a pure
 sine wave — a pure oscillation has Complexity ≈ 1.
 
-ANT reports the mean of Mobility and Complexity averaged across all channels
+MNE-RT reports the mean of Mobility and Complexity averaged across all channels
 in the selected electrode set.
 
 ----
@@ -284,8 +285,8 @@ channel :math:`i` is:
    \frac{\displaystyle\sum_{f \,\in\, [f_1,\, f_2]} f\; S_i(f)}
         {\displaystyle\sum_{f \,\in\, [f_1,\, f_2]} S_i(f)}
 
-ANT reports the **mean centroid across channels** in the selected electrode
-set as the NF feature:
+MNE-RT reports the **mean centroid across channels** in the selected electrode
+set as the feature value:
 
 .. math::
 
@@ -305,7 +306,7 @@ Entropy
 
 **Config key:** ``entropy``
 
-ANT supports three entropy variants that capture different aspects of signal
+MNE-RT supports three entropy variants that capture different aspects of signal
 complexity.
 
 **Spectral entropy** — normalised Shannon entropy of the power spectral density:
@@ -352,7 +353,7 @@ Argmax Frequency
 
 The dominant frequency is the frequency bin with maximum power within the
 target band.
-Given the Welch PSD :math:`S(f)` averaged across channels, the NF value is:
+Given the Welch PSD :math:`S(f)` averaged across channels, the feature value is:
 
 .. math::
 
@@ -386,7 +387,7 @@ are Gaussian peaks with centre :math:`\mu_k`, height :math:`a_k`, and width
 :math:`\sigma_k`.
 
 The individual alpha frequency (IAF) is identified as the peak centre
-:math:`\mu_k` closest to the canonical alpha band, and the NF value is the
+:math:`\mu_k` closest to the canonical alpha band, and the feature value is the
 aperiodic-corrected power :math:`a_k` at that peak.
 
 ----
@@ -400,7 +401,7 @@ Cross-Frequency Coupling (Sensor)
 
 Cross-frequency coupling (CFC) quantifies interactions between the phase of a
 slow oscillation and the amplitude of a faster oscillation.
-ANT uses Phase-Amplitude Coupling (PAC) via the **Modulation Index** (MI),
+MNE-RT uses Phase-Amplitude Coupling (PAC) via the **Modulation Index** (MI),
 which measures the Kullback–Leibler divergence between the observed amplitude
 distribution :math:`p(\theta)` (mean amplitude as a function of phase bin
 :math:`\theta`) and a uniform distribution :footcite:p:`tort2010measuring`:
@@ -416,7 +417,7 @@ A value of :math:`\mathrm{MI} = 0` indicates no coupling; larger values
 indicate stronger modulation of high-frequency amplitude by low-frequency
 phase.
 
-ANT can also produce a **comodulogram** — a two-dimensional map of MI values
+MNE-RT can also produce a **comodulogram** — a two-dimensional map of MI values
 over a grid of phase-frequency / amplitude-frequency pairs — to identify
 which frequency combinations exhibit significant coupling.
 
@@ -430,10 +431,10 @@ Sensor Connectivity
 **Config key:** ``sensor_connectivity``
 
 Pairwise functional connectivity between sensor channels.
-ANT directly calls the measures implemented in `MNE-Connectivity <https://mne.tools/mne-connectivity/stable/index.html>`_.
+MNE-RT directly calls the measures implemented in `MNE-Connectivity <https://mne.tools/mne-connectivity/stable/index.html>`_.
 
 See `MNE-Connectivity <https://mne.tools/mne-connectivity/stable/generated/mne_connectivity.spectral_connectivity_time.html#mne_connectivity.spectral_connectivity_time>`_ 
-for the detailed list of supported methods. The NF value is the connectivity between a specified pair of channels
+for the detailed list of supported methods. The feature value is the connectivity between a specified pair of channels
 or the mean connectivity across a set of channel pairs.
 
 ----
@@ -470,7 +471,7 @@ functional connectivity graph :math:`\mathcal{G} = (\mathcal{V}, \mathbf{W})`
 :footcite:p:`kalofolias2016learn` :footcite:p:`shabestari2026shared`.
 
 Given a signal matrix :math:`\mathbf{X} \in \mathbb{R}^{p \times n}`
-(:math:`p` sensor channels, :math:`n` samples), ANT solves the
+(:math:`p` sensor channels, :math:`n` samples), MNE-RT solves the
 **log-degree barrier** optimisation problem:
 
 .. math::
@@ -487,7 +488,7 @@ degenerate (all-zero) solutions.
 * :math:`\alpha` — data-fidelity weight (larger → smoother, more connected graph)
 * :math:`\beta` — log-degree regularisation (larger → more uniform node degrees)
 
-The NF value is the edge weight :math:`W_{ij}` between two specified sensor
+The feature value is the edge weight :math:`W_{ij}` between two specified sensor
 nodes (e.g. a left–right electrode pair), centred by subtracting a small
 offset so that values oscillate around zero.
 The optimisation is solved via the proximal splitting scheme of 
@@ -517,7 +518,7 @@ The inverse operator :math:`\mathbf{M}` projects sensor data
 where :math:`S_s(f)` is the Welch PSD of source :math:`s` and
 :math:`N_\mathrm{src}` is the number of source vertices in the region of
 interest.
-Baseline recording (``ANT baseline``) is required to compute the inverse
+Baseline recording (``mne-rt baseline``) is required to compute the inverse
 operator before running this modality.
 
 ----
@@ -560,7 +561,7 @@ source time-series matrix :math:`\hat{\mathbf{J}} \in \mathbb{R}^{q \times n}`
    \;-\; \beta \mathbf{1}^\top \log(\mathbf{W}\mathbf{1})
    \;+\; \tfrac{1}{2}\|\mathbf{W}\|_F^2
 
-The NF value is the learned edge weight :math:`W_{ij}` between two specified
+The feature value is the learned edge weight :math:`W_{ij}` between two specified
 brain atlas parcels or source vertices.
 Anatomical accuracy is improved relative to sensor-space graph learning
 because volume conduction is partially mitigated by the inverse solution.

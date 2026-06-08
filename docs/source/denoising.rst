@@ -3,8 +3,8 @@
 Artifact Correction
 ===================
 
-ANT provides five real-time artifact correction methods that can be selected
-via :class:`~ant.NFRealtime` (``artifact_correction=`` parameter) or the
+MNE-RT provides five real-time artifact correction methods that can be selected
+via :class:`~mne_rt.RTStream` (``artifact_correction=`` parameter) or the
 :doc:`CLI <cli>` (``--artifact-correction``).  All methods expose a common
 ``fit`` / ``transform`` interface and operate sample-by-sample (or
 chunk-by-chunk) during the closed-loop session.
@@ -20,7 +20,7 @@ chunk-by-chunk) during the closed-loop session.
 Adaptive LMS filter
 -------------------
 
-**Class:** :class:`ant.tools.AdaptiveLMSFilter`
+**Class:** :class:`mne_rt.tools.AdaptiveLMSFilter`
 
 The Least Mean Squares (LMS) algorithm
 :footcite:p:`widrow1988adaptive` is a stochastic gradient-descent adaptive filter
@@ -50,7 +50,7 @@ predict the artifact contribution in channel :math:`i` from the reference.
 
 **Stability condition.** The step size must satisfy
 :math:`0 < \mu < 2/(\lambda_{\max}\, q)`, where :math:`\lambda_{\max}` is the
-largest eigenvalue of the reference autocorrelation matrix.  ANT uses a
+largest eigenvalue of the reference autocorrelation matrix.  MNE-RT uses a
 normalised variant (NLMS) that adapts :math:`\mu` automatically:
 
 .. math::
@@ -68,7 +68,7 @@ baseline — the filter adapts online from sample 1.
 ORICA — Online Recursive ICA
 -----------------------------
 
-**Class:** :class:`ant.tools.ORICA`
+**Class:** :class:`mne_rt.tools.ORICA`
 
 ORICA :footcite:p:`choi2005blind` is an online (sample-recursive) variant of
 Independent Component Analysis (ICA) :footcite:p:`bell1995information` that
@@ -122,13 +122,13 @@ tracks slow non-stationarities (electrode drift, changing impedances).
 GEDAI — GED-based Artifact Isolation
 --------------------------------------
 
-**Class:** :class:`ant.tools.GEDAIDenoiser`
+**Class:** :class:`mne_rt.tools.GEDAIDenoiser`
 
 GEDAI uses Generalized Eigendecomposition (GED) :footcite:p:`cohen2022tutorial` to find
 spatial filters that maximally separate brain signal from broadband activity,
 optionally anchored to a leadfield-derived forward model :footcite:p:`ros2025return`.
 
-**GED formulation.** ANT uses a *band-vs-broadband* formulation.
+**GED formulation.** MNE-RT uses a *band-vs-broadband* formulation.
 Let :math:`\mathbf{R}_\text{band}` be the covariance of the band-limited signal
 (e.g. 8–30 Hz for alpha/beta) and :math:`\mathbf{R}_\text{broad}` be the
 broadband covariance.  The GED solves:
@@ -151,7 +151,7 @@ in **descending** order:
 * **Small** :math:`\lambda_k` — low band/broadband ratio → **non-brain**
   (broadband, artifact-like).
 
-**Artifact isolation.** :meth:`~ant.tools.GEDAIDenoiser.find_noise_components`
+**Artifact isolation.** :meth:`~mne_rt.tools.GEDAIDenoiser.find_noise_components`
 returns the :math:`n_\text{noise}` components with the **smallest** eigenvalues
 (least band-specific), which are then zeroed before back-projection:
 
@@ -164,7 +164,7 @@ where :math:`\mathbf{W}_{\text{brain}}` is the subset of :math:`\mathbf{W}`
 with the largest eigenvalues (brain-like directions retained).
 
 **Leadfield incorporation.** When a forward model is available
-(:meth:`~ant.tools.GEDAIDenoiser.fit_from_leadfield`), GEDAI replaces
+(:meth:`~mne_rt.tools.GEDAIDenoiser.fit_from_leadfield`), GEDAI replaces
 :math:`\mathbf{R}_\text{band}` with the leadfield outer product
 :math:`\mathbf{L}\mathbf{L}^\top`, directly constraining filters to be
 consistent with neural generators.
@@ -180,7 +180,7 @@ Requires a calibration recording (``fit_from_raw()`` uses the first N seconds).
 ASR — Artifact Subspace Reconstruction
 ---------------------------------------
 
-**Class:** :class:`ant.tools.ASRDenoiser`
+**Class:** :class:`mne_rt.tools.ASRDenoiser`
 
 ASR :footcite:p:`mullen2015real` :footcite:p:`de2018robust` learns the
 covariance statistics of a clean baseline segment, then projects out
@@ -235,7 +235,7 @@ Requires a brief clean baseline (``fit_asr()`` records 60 s by default).
 RTMaxwellFilter — Real-Time SSS / tSSS
 ----------------------------------------
 
-**Class:** :class:`ant.tools.RTMaxwellFilter`
+**Class:** :class:`mne_rt.tools.RTMaxwellFilter`
 
 The Signal Space Separation (SSS) method :footcite:p:`taulu2004suppression` and its
 temporal extension (tSSS) :footcite:p:`taulu2006spatiotemporal` exploit the physics of
@@ -294,8 +294,8 @@ where :math:`\Pi_{\mathrm{corr}}` is the projector onto the directions of
 :math:`\boldsymbol{\alpha}` that correlate above threshold with the external
 coefficient matrix over the buffer.
 
-**Real-time implementation in ANT.**
-:class:`~ant.tools.RTMaxwellFilter` caches :math:`\mathbf{P}_{\mathrm{SSS}}`
+**Real-time implementation in MNE-RT.**
+:class:`~mne_rt.tools.RTMaxwellFilter` caches :math:`\mathbf{P}_{\mathrm{SSS}}`
 once during ``fit()`` using :func:`mne.preprocessing.compute_maxwell_basis`,
 then applies it as a matrix multiply per incoming chunk.  This gives:
 
@@ -309,7 +309,7 @@ tSSS runs periodically on a rolling buffer with
 already-applied spatial step).
 
 **Empty-room noise covariance.** When an empty-room recording is provided,
-:class:`~ant.tools.RTMaxwellFilter` uses a system-identification approach:
+:class:`~mne_rt.tools.RTMaxwellFilter` uses a system-identification approach:
 MNE's full Maxwell filter (with noise-informed regularisation) is applied to a
 Gaussian test signal, and the effective operator is recovered by least squares:
 
@@ -323,7 +323,7 @@ where :math:`\mathbf{X}` is the test input (good-channel MEG) and
 fine calibration, cross-talk compensation, and noise-informed regularisation
 into the single cached matrix — no re-implementation of SSS is required.
 
-**Baseline requirement.** Unlike ASR or GEDAI, :class:`~ant.tools.RTMaxwellFilter`
+**Baseline requirement.** Unlike ASR or GEDAI, :class:`~mne_rt.tools.RTMaxwellFilter`
 requires *no* baseline recording — :math:`\mathbf{P}_{\mathrm{SSS}}` depends
 only on sensor geometry, which is fixed at scanner installation.
 
@@ -338,11 +338,11 @@ nearby ferromagnetic objects or implants are present.
 Bad Channel Detection
 ---------------------
 
-**Class:** :class:`ant.tools.BadChannelDetector`
+**Class:** :class:`mne_rt.tools.BadChannelDetector`
 
 Artifact correction assumes all channels are functional.  A disconnected or
 noisy electrode contaminating adjacent channels can degrade every downstream
-method.  :class:`~ant.tools.BadChannelDetector` evaluates each incoming data
+method.  :class:`~mne_rt.tools.BadChannelDetector` evaluates each incoming data
 window against up to four independent criteria and uses a rolling-window
 majority vote to flag persistently bad channels.
 
@@ -389,7 +389,7 @@ from transient artifacts.
 Riemannian Potato — Online Artifact Detection
 ---------------------------------------------
 
-**Class:** :class:`ant.tools.RiemannianPotatoDetector`
+**Class:** :class:`mne_rt.tools.RiemannianPotatoDetector`
 
 The *Riemannian Potato* :footcite:p:`barachant2014plug,barthelemy2019riemannian` is a
 covariance-based method for **detecting** — rather than correcting —
@@ -425,12 +425,12 @@ artifact when :math:`z_t > \theta` (default :math:`\theta = 3`).
    The Riemannian Potato is a **detection** method, not a correction method.
    It identifies and rejects artifactual windows; it does not reconstruct
    clean signal from contaminated data.  Pair it with
-   :class:`~ant.tools.ORICA` or :class:`~ant.tools.ASRDenoiser` when online
+   :class:`~mne_rt.tools.ORICA` or :class:`~mne_rt.tools.ASRDenoiser` when online
    *correction* is needed.
 
 **Usage example**::
 
-    from ant.tools import RiemannianPotatoDetector
+    from mne_rt.tools import RiemannianPotatoDetector
 
     # Calibrate on 60 clean 1-second windows
     detector = RiemannianPotatoDetector(threshold=3.0)
@@ -445,7 +445,7 @@ artifact when :math:`z_t > \theta` (default :math:`\theta = 3`).
             logger.debug("Artifact detected (z=%.2f) — window skipped", z_score)
 
 **When to use.**  Any EEG or MEG setup where transient artifacts (blinks,
-muscle bursts, electrode pops) need to be excluded from the NF feature
+muscle bursts, electrode pops) need to be excluded from the feature
 computation.  Particularly effective when reliable reference channels for
 LMS are unavailable.  Requires a short clean calibration phase (≥ 30 windows
 recommended) before streaming begins.

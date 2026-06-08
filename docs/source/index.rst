@@ -1,15 +1,16 @@
 .. raw:: html
 
     <div style="text-align:center; margin-bottom:20px;">
-        <img src="_static/ANT_Logo_Horizontal.svg" alt="ANT Logo" width="500"/>
+        <img src="_static/mne_rt_logo.svg" alt="MNE-RT Logo" width="500"/>
     </div>
 
-**Advanced Neurofeedback Toolbox (ANT)** is an open-source Python library for
-**real-time M/EEG neurofeedback**, built on `MNE-Python <https://mne.tools>`_
-and the `Lab Streaming Layer <https://labstreaminglayer.org>`_ (LSL).
-It covers the full closed-loop pipeline, from amplifier to 3-D brain display,
-in a single, researcher-friendly API designed for both clinical and basic-science
-applications.
+**MNE-RT** is an open-source Python library for
+**real-time M/EEG signal processing and analysis**, built on
+`MNE-Python <https://mne.tools>`_ and
+`MNE-LSL <https://mne.tools/mne-lsl>`_.
+It covers the full real-time pipeline — from amplifier to 3-D brain display, 
+in a single, researcher-friendly API designed for neurofeedback, BCI,
+and clinical or basic-science monitoring applications.
 
 .. raw:: html
 
@@ -23,10 +24,10 @@ Key capabilities
    :header-rows: 0
 
    * - ✔
-     - **Multiple real-time NF modalities** — sensor power, ERD/ERS, Hjorth parameters,
+     - **Multiple real-time feature modalities** — sensor power, ERD/ERS, Hjorth parameters,
        spectral centroid and peak, band ratio, cross-frequency coupling (CFC),
-       connectivity, instantaneous phase (Hilbert analytic
-       signal), graph-theory metrics, and more.
+       connectivity, instantaneous phase (Hilbert analytic signal),
+       graph-theory metrics, and more.
        See :doc:`modalities` for the full list.
 
    * - ✔
@@ -36,95 +37,75 @@ Key capabilities
 
    * - ✔
      - **Live artifact correction** —
-       :class:`~ant.tools.ORICA` (online ICA),
-       :class:`~ant.tools.AdaptiveLMSFilter` (adaptive least-mean-squares),
-       :class:`~ant.tools.GEDAIDenoiser` (generalised eigendecomposition),
-       :class:`~ant.tools.ASRDenoiser` (artifact subspace reconstruction), and
-       :class:`~ant.tools.RTMaxwellFilter` (real-time Maxwell/SSS filtering for MEG).
+       :class:`~mne_rt.tools.ORICA` (online ICA),
+       :class:`~mne_rt.tools.AdaptiveLMSFilter` (adaptive least-mean-squares),
+       :class:`~mne_rt.tools.GEDAIDenoiser` (generalised eigendecomposition),
+       :class:`~mne_rt.tools.ASRDenoiser` (artifact subspace reconstruction), and
+       :class:`~mne_rt.tools.RTMaxwellFilter` (real-time Maxwell/SSS filtering for MEG).
        See :doc:`denoising` for algorithm details and benchmarks.
 
    * - ✔
-     - **Real-time quality control** — :class:`~ant.tools.BadChannelDetector`
+     - **Real-time quality control** — :class:`~mne_rt.tools.BadChannelDetector`
        flags flat, noisy, or de-correlated channels every window using a
-       robust rolling-vote mechanism.  :class:`~ant.tools.RiemannianPotatoDetector`
+       robust rolling-vote mechanism.  :class:`~mne_rt.tools.RiemannianPotatoDetector`
        detects artifactual epochs by measuring Riemannian distance from a
        clean-data geometric mean on the SPD manifold.
 
    * - ✔
-     - **Adaptive NF protocols** — :class:`~ant.protocols.ThresholdProtocol`,
-       :class:`~ant.protocols.ZScoreProtocol`,
-       :class:`~ant.protocols.PercentileProtocol`,
-       :class:`~ant.protocols.LinearTrendProtocol`
+     - **Adaptive feedback protocols** — :class:`~mne_rt.protocols.ThresholdProtocol`,
+       :class:`~mne_rt.protocols.ZScoreProtocol`,
+       :class:`~mne_rt.protocols.PercentileProtocol`,
+       :class:`~mne_rt.protocols.LinearTrendProtocol`
        (OLS-based trend reward — encourages sustained directional change rather
        than single-window threshold crossings),
-       :class:`~ant.protocols.ShamProtocol`
+       :class:`~mne_rt.protocols.ShamProtocol`
        (double-blind sham wrapper for within-session RCTs),
-       :class:`~ant.protocols.UpDownStaircaseProtocol`
+       :class:`~mne_rt.protocols.UpDownStaircaseProtocol`
        (adaptive psychophysics staircase converging to a target success rate),
-       :class:`~ant.protocols.MultiBandProtocol`
+       :class:`~mne_rt.protocols.MultiBandProtocol`
        (simultaneous two-band reward — e.g., alpha↑ + theta↓),
-       :class:`~ant.protocols.RLProtocol`
+       :class:`~mne_rt.protocols.RLProtocol`
        (ε-greedy reinforcement-learning threshold search — fully self-calibrating),
-       :class:`~ant.protocols.OperantProtocol`
+       :class:`~mne_rt.protocols.OperantProtocol`
        (partial reinforcement schedules: FR, VR, FI, VI — wraps any inner protocol), and
-       :class:`~ant.protocols.TransferProtocol`
+       :class:`~mne_rt.protocols.TransferProtocol`
        (cross-session z-score seeded from a prior session file — zero warmup)
        give fine-grained control over when to issue a reward.
        See :doc:`protocols` for formulas, selection guide, and examples.
 
    * - ✔
-     - **Three parallel visualisation windows** — a scrolling
-       :class:`~ant.viz.NFSignalPlot`, a live
-       `MNE <https://mne.tools/stable/visualization.html>`_-style :class:`~ant.viz.TopoPlot`,
-       and an interactive :class:`~ant.viz.BrainPlot` (3-D cortical surface with
-       colour-mapped activity, hemisphere toggles, and surface switching).
+     - **Feature combiners** — blend N parallel feature values into a single feedback score.
+       :class:`~mne_rt.combiners.WeightedSumCombiner` (normalised weighted sum),
+       :class:`~mne_rt.combiners.GeometricMeanCombiner` (weighted geometric mean — best for
+       multiplicative power features), :class:`~mne_rt.combiners.ZScoredNormCombiner`
+       (unit-free deviation-from-baseline Euclidean norm), and
+       :class:`~mne_rt.combiners.LearnedCombiner` (any fitted ``sklearn``-compatible
+       estimator).  See :doc:`tutorial` for usage examples.
+
+   * - ✔
+     - **Nine real-time visualisation windows** — a scrolling NF
+       :class:`~mne_rt.viz.NFPlot`, a scrolling raw :class:`~mne_rt.viz.RawPlot`
+       (with bad-channel marking and bad-segment annotation),
+       a continuous :class:`~mne_rt.viz.EpochPlot` with trigger/epoch overlays,
+       a live scalp :class:`~mne_rt.viz.TopomapPlot`,
+       an interactive :class:`~mne_rt.viz.BrainPlot` (3-D cortical surface),
+       a scalp-layout :class:`~mne_rt.viz.TopoPlot` ERP display with ±SEM shading and
+       re-referencing, an all-channel :class:`~mne_rt.viz.ButterflyPlot` with
+       region-colour coding, a per-channel :class:`~mne_rt.viz.CompareEvoked`
+       with peak markers, and a Morlet-wavelet :class:`~mne_rt.viz.TFRPlot`
+       (time-frequency heatmaps, induced or evoked mode).  All plots
+       update live and support EEG and MEG data.
 
    * - ✔
      - **Dual feedback output** — broadcast values via OSC (Max/MSP,
-       SuperCollider, TouchDesigner) with :class:`~ant.osc.OSCSender`, or over
-       `LSL <https://labstreaminglayer.org>`_ with :class:`~ant.lsl_output.LSLSender`
+       SuperCollider, TouchDesigner) with :class:`~mne_rt.osc.OSCSender`, or over
+       `LSL <https://labstreaminglayer.org>`_ with :class:`~mne_rt.lsl_output.LSLSender`
        for low-latency same-machine integration with PsychoPy, OpenViBE, BCI2000,
        and other LSL-aware apps.
 
    * - ✔
-     - **CLI** — launch full NF sessions with a single ``ANT run`` command,
-       driven by a YAML config file. See :doc:`cli`.
-
-.. raw:: html
-
-    <div style="height:16px;"></div>
-
-.. tabs::
-
-   .. tab:: NF Signal
-
-      .. raw:: html
-
-         <div style="text-align:center; margin: 20px 0;">
-             <video width="100%" style="max-width: 850px; border-radius: 15px; display: block; margin: 0 auto;" autoplay muted loop>
-                 <source src="_static/NFSignal.mp4" type="video/mp4">
-             </video>
-         </div>
-
-   .. tab:: Topo Plot
-
-      .. raw:: html
-
-         <div style="text-align:center; margin: 20px 0;">
-             <video width="100%" style="max-width: 850px; border-radius: 15px; display: block; margin: 0 auto;" autoplay muted loop>
-                 <source src="_static/TopoPlot.mp4" type="video/mp4">
-             </video>
-         </div>
-
-   .. tab:: Brain Plot
-
-      .. raw:: html
-
-         <div style="text-align:center; margin: 20px 0;">
-             <video width="100%" style="max-width: 850px; border-radius: 15px; display: block; margin: 0 auto;" autoplay muted loop>
-                 <source src="_static/BrainPlot.mp4" type="video/mp4">
-             </video>
-         </div>
+     - **CLI** — launch full real-time M/EEG sessions with a single
+       ``mne-rt run`` command, driven by a YAML config file. See :doc:`cli`.
 
 .. toctree::
    :hidden:
@@ -138,6 +119,7 @@ Key capabilities
    :caption: Reference
 
    api
+   visualization
    cli
    denoising
    modalities
@@ -162,8 +144,8 @@ Quick install
 
       .. code-block:: bash
 
-          pip install ant-nf                 # core  (MNE, LSL, OSC included)
-          pip install "ant-nf[full]"         # + 3-D viz, dev tools, docs
+          pip install mne-rt                 # core  (MNE, LSL, OSC included)
+          pip install "mne-rt[full]"         # + 3-D viz, dev tools, docs
 
    .. tab:: uv
 
@@ -172,20 +154,20 @@ Quick install
           # Install uv once
           curl -LsSf https://astral.sh/uv/install.sh | sh
 
-          uv pip install ant-nf
-          uv pip install "ant-nf[full]"      # + 3-D viz, dev tools, docs
+          uv pip install mne-rt
+          uv pip install "mne-rt[full]"      # + 3-D viz, dev tools, docs
 
           # Editable install from source
-          git clone https://github.com/payamsash/ANT.git
-          cd ANT && uv pip install -e ".[dev]"
+          git clone https://github.com/payamsash/mne-rt.git
+          cd mne-rt && uv pip install -e ".[dev]"
 
    .. tab:: conda / mamba
 
       .. code-block:: bash
 
-          mamba create -n ant python=3.11
-          mamba activate ant
-          pip install "ant-nf[full]"
+          mamba create -n mne-rt python=3.11
+          mamba activate mne-rt
+          pip install "mne-rt[full]"
 
 See :doc:`install` for full instructions.
 
@@ -194,9 +176,9 @@ Quick start
 
 .. code-block:: python
 
-    from ant import NFRealtime
+    from mne_rt import RTStream
 
-    nf = NFRealtime(
+    nf = RTStream(
         "sub01",
         session="01",
         subjects_dir="/data/subjects",
@@ -226,12 +208,12 @@ Pipeline overview
    <tbody>
      <tr style="background:#eff6ff;">
        <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;font-weight:600;white-space:nowrap;">① Acquisition</td>
-       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;"><code>NFRealtime.connect_to_lsl()</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;"><code>RTStream.connect_to_lsl()</code></td>
        <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Hardware amplifier or mock replay via mne-lsl <code>StreamInlet</code></td>
      </tr>
      <tr style="background:#f0fdf4;">
        <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;font-weight:600;white-space:nowrap;">② Baseline</td>
-       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;"><code>NFRealtime.record_baseline()</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;"><code>RTStream.record_baseline()</code></td>
        <td style="padding:7px 14px;border-bottom:1px solid #dcfce7;">Bad-channel detection · ICA · noise covariance · inverse operator</td>
      </tr>
      <tr style="background:#eff6ff;">
@@ -247,17 +229,17 @@ Pipeline overview
      <tr style="background:#f5f3ff;">
        <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;font-weight:600;white-space:nowrap;">⑤ Feature extraction</td>
        <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;"><code>record_main(modality=[…])</code></td>
-       <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;">20 NF modalities in sensor or source space; parallel thread-pool per window</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #ede9fe;">20 feature modalities in sensor or source space; parallel thread-pool per window</td>
      </tr>
      <tr style="background:#ecfdf5;">
-       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;font-weight:600;white-space:nowrap;">⑥ NF protocol</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;font-weight:600;white-space:nowrap;">⑥ Feedback protocol</td>
        <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;"><code>ThresholdProtocol</code> · <code>ZScoreProtocol</code> · <code>PercentileProtocol</code> · <code>LinearTrendProtocol</code> · <code>ShamProtocol</code> · <code>UpDownStaircaseProtocol</code> · <code>MultiBandProtocol</code> · <code>RLProtocol</code> · <code>OperantProtocol</code> · <code>TransferProtocol</code></td>
-       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;">Maps raw feature value → reward signal; all are stateful and adaptive</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #d1fae5;">Maps feature value → output signal; all are stateful and adaptive</td>
      </tr>
      <tr style="background:#eff6ff;">
        <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;font-weight:600;white-space:nowrap;">⑦ Visualisation</td>
-       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;"><code>NFSignalPlot</code> · <code>TopoPlot</code> · <code>BrainPlot</code></td>
-       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Scrolling signal · per-band scalp topo · 3-D cortical surface with Qt controls</td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;"><code>NFPlot</code> · <code>RawPlot</code> · <code>EpochPlot</code> · <code>TopomapPlot</code> · <code>BrainPlot</code> · <code>TopoPlot</code> · <code>ButterflyPlot</code> · <code>CompareEvoked</code> · <code>TFRPlot</code></td>
+       <td style="padding:7px 14px;border-bottom:1px solid #dbeafe;">Scrolling signal · epoch overlays · scalp topo · 3-D brain · scalp-layout ERP · butterfly overlay · per-channel comparison · TFR heatmaps</td>
      </tr>
      <tr style="background:#f0fdf4;">
        <td style="padding:7px 14px;font-weight:600;white-space:nowrap;">⑧ Feedback output</td>
@@ -271,7 +253,7 @@ Pipeline overview
 Cite
 ----
 
-If you use ANT, please cite :footcite:`shabestari2025advances`.
+If you use MNE-RT, please cite :footcite:`shabestari2025advances`.
 
 .. footbibliography::
 

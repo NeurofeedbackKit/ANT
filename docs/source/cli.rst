@@ -1,18 +1,19 @@
 .. _cli:
 
-Command-Line Interface
-======================
+CLI
+===
 
-ANT provides an ``ANT`` shell command with four sub-commands.
+MNE-RT provides an ``mne-rt`` shell command with five sub-commands.
 
 .. code-block:: text
 
-    ANT --help
-    ANT --version
-    ANT info
-    ANT demo [options]
-    ANT baseline --subject ID --subjects-dir DIR [options]
-    ANT run     --subject ID --subjects-dir DIR --duration N [options]
+    mne-rt --help
+    mne-rt --version
+    mne-rt info
+    mne-rt demo         [options]
+    mne-rt demo-erp     [options]
+    mne-rt baseline     --subject ID --subjects-dir DIR [options]
+    mne-rt run          --subject ID --subjects-dir DIR --duration N [options]
 
 Global options:
 
@@ -27,36 +28,35 @@ Global options:
      - WARNING
      - Logging verbosity level: ``DEBUG``, ``INFO``, ``WARNING``, or ``ERROR``
 
-``ANT info``
-------------
+``mne-rt info``
+---------------
 
-Print the installed ANT version and all key dependency versions.
+Print the installed MNE-RT version and all key dependency versions.
 
 .. code-block:: console
 
-    $ ANT info
-    Advanced Neurofeedback Toolbox (ANT)
-    ────────────────────────────────────
-      ANT version  : 1.0.0
-      Python       : 3.11.9
-      mne          : 1.8.0
+    $ mne-rt info
+    MNE-RT — Real-Time M/EEG Analysis
+    ──────────────────────────────────
+      mne-rt version : 1.0.0
+      Python         : 3.11.9
+      mne            : 1.8.0
       ...
 
-``ANT demo``
-------------
+``mne-rt demo``
+---------------
 
-Launch a full demo NF session from simulated EEG (no amplifier needed).
-The real-time scalp topomap (δ/θ/α/β/γ) is shown by default.  The 3D brain
+Launch a full demo real-time session from simulated EEG (no amplifier needed).
+The real-time scalp topomap (δ/θ/α/β/γ) is shown by default.  The 3-D brain
 display is enabled automatically when a FreeSurfer ``fsaverage5`` directory
 is found (via ``FREESURFER_HOME`` or ``--subjects-fs-dir``).
 
 .. code-block:: console
 
-    $ ANT demo
-    $ ANT demo --duration 120 --modality sensor_power erd_ers
-    $ ANT demo --no-topo
-    $ ANT demo --no-brain
-    $ ANT demo --subjects-fs-dir /path/to/freesurfer/subjects
+    $ mne-rt demo
+    $ mne-rt demo --duration 120 --modality sensor_power erd_ers
+    $ mne-rt demo --no-topomap
+    $ mne-rt demo --no-brain
 
 Options:
 
@@ -72,49 +72,90 @@ Options:
      - Session duration in seconds
    * - ``--modality``
      - sensor_power band_ratio entropy hjorth
-     - NF modality(ies) to demonstrate
+     - Feature modality(ies) to demonstrate
    * - ``--winsize``
      - 1.0
      - Analysis window length (s)
-   * - ``--no-signal``
+   * - ``--no-nf``
      - —
-     - Disable NF signal plot
+     - Disable the scrolling real-time NF signal plot (:class:`~mne_rt.viz.NFPlot`)
    * - ``--no-raw``
      - —
-     - Disable raw stream viewer
-   * - ``--no-topo``
+     - Disable the scrolling raw M/EEG viewer (:class:`~mne_rt.viz.RawPlot`)
+   * - ``--no-topomap``
      - —
      - Disable the real-time scalp topomap (enabled by default)
    * - ``--no-brain``
      - —
-     - Disable 3D brain display (auto-enabled when FreeSurfer is found)
+     - Disable 3-D brain display (auto-enabled when FreeSurfer is found)
    * - ``--subjects-fs-dir``
      - —
      - FreeSurfer subjects directory (auto-detected from ``FREESURFER_HOME``
        or ``SUBJECTS_DIR`` if not given)
    * - ``--surf``
      - inflated
-     - Brain surface geometry
+     - Brain surface geometry (``inflated``, ``pial``, or ``white``)
    * - ``--smoothing``
      - 0.25
-     - EMA smoothing factor applied to each NF value (``1.0`` = no smoothing,
-       ``0.1`` = heavy smoothing). Lower values produce smoother curves at the
+     - EMA smoothing factor applied to each feature value (``1.0`` = no smoothing,
+       ``0.1`` = heavy smoothing). Lower values produce smoother output at the
        cost of slower response to real changes in brain activity.
    * - ``--no-save``
      - —
-     - Skip saving NF data and session report
+     - Skip saving session data and report
 
-``ANT baseline``
-----------------
+``mne-rt demo-erp``
+--------------------
 
-Record a resting-state baseline and compute the inverse operator.
+Launch an ERP demo that streams MNE sample-dataset EEG through a mock LSL
+player, collects auditory epochs trial-by-trial via :class:`~mne_rt.RTEpochs`,
+and drives the four epoch visualisation windows.
+Downloads the MNE sample dataset on first run (~1.5 GB).
 
 .. code-block:: console
 
-    $ ANT baseline --subject sub01 --subjects-dir /data/subjects
-    $ ANT baseline --subject sub01 --subjects-dir /data --duration 180 --mock
-    $ ANT baseline --subject sub01 --subjects-dir /data --mock \
-                   --fname /path/to/recording.fif
+    $ mne-rt demo-erp                          # all four plot windows
+    $ mne-rt demo-erp --n-trials 50            # stop after 50 trials
+    $ mne-rt demo-erp --no-tfr                 # skip the TFR heatmap
+    $ mne-rt demo-erp --no-compare --no-tfr    # TopoPlot + ButterflyPlot only
+
+Options:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 15 45
+
+   * - Flag
+     - Default
+     - Description
+   * - ``--n-trials``
+     - 70
+     - Number of EEG trials to collect before stopping
+   * - ``--no-topo``
+     - —
+     - Disable the scalp-layout :class:`~mne_rt.viz.TopoPlot` (ERP display)
+   * - ``--no-butterfly``
+     - —
+     - Disable the :class:`~mne_rt.viz.ButterflyPlot` (all-channel overlay)
+   * - ``--no-compare``
+     - —
+     - Disable :class:`~mne_rt.viz.CompareEvoked` (per-channel comparison)
+   * - ``--no-tfr``
+     - —
+     - Disable the :class:`~mne_rt.viz.TFRPlot` (Morlet wavelet heatmaps)
+
+``mne-rt baseline``
+--------------------
+
+Record a resting-state baseline and compute the noise covariance and inverse
+operator needed for source-space modalities.
+
+.. code-block:: console
+
+    $ mne-rt baseline --subject sub01 --subjects-dir /data/subjects
+    $ mne-rt baseline --subject sub01 --subjects-dir /data --duration 180 --mock
+    $ mne-rt baseline --subject sub01 --subjects-dir /data --mock \
+                      --fname /path/to/recording.fif
 
 Required:
 
@@ -153,32 +194,39 @@ Options:
      - —
      - FreeSurfer subjects directory (required for source-space modalities)
 
-``ANT run``
------------
+``mne-rt run``
+--------------
 
-Run a closed-loop NF main session.
+Run a real-time M/EEG session with feature extraction, feedback protocols,
+and live visualisation.
 
 .. code-block:: console
 
-    $ ANT run --subject sub01 --subjects-dir /data --duration 600 \
-              --modality sensor_power erd_ers
+    $ mne-rt run --subject sub01 --subjects-dir /data --duration 600 \
+                 --modality sensor_power erd_ers
+
+    # With epoch plots (requires a stimulus channel in the recording)
+    $ mne-rt run --subject sub01 --subjects-dir /data --duration 600 \
+                 --modality sensor_power \
+                 --topo --tfr --stim-ch "STI 014" \
+                 --event-id left=1 right=2
 
     # With topomap display
-    $ ANT run --subject sub01 --subjects-dir /data --duration 600 \
-              --modality sensor_power --topo
+    $ mne-rt run --subject sub01 --subjects-dir /data --duration 600 \
+                 --modality sensor_power --topomap
 
     # With OSC output to Max/MSP
-    $ ANT run --subject sub01 --subjects-dir /data --duration 600 \
-              --modality sensor_power --osc-host 127.0.0.1 --osc-port 9000
+    $ mne-rt run --subject sub01 --subjects-dir /data --duration 600 \
+                 --modality sensor_power --osc-host 127.0.0.1 --osc-port 9000
 
-    # With LSL output (faster, same-machine feedback)
-    $ ANT run --subject sub01 --subjects-dir /data --duration 600 \
-              --modality sensor_power --lsl-output
+    # With LSL output (faster, same-machine integration)
+    $ mne-rt run --subject sub01 --subjects-dir /data --duration 600 \
+                 --modality sensor_power --lsl-output
 
     # From a mock file with artifact correction
-    $ ANT run --subject sub01 --subjects-dir /data --duration 300 \
-              --mock --fname /data/sub01/session.fif \
-              --artifact-correction asr --topo
+    $ mne-rt run --subject sub01 --subjects-dir /data --duration 300 \
+                 --mock --fname /data/sub01/session.fif \
+                 --artifact-correction asr --topo
 
 Options (inherits all ``baseline`` flags above, plus):
 
@@ -194,25 +242,52 @@ Options (inherits all ``baseline`` flags above, plus):
      - Session duration in seconds
    * - ``--modality``
      - sensor_power
-     - One or more NF modalities (space-separated).  See table below.
+     - One or more feature modalities (space-separated).  See table below.
    * - ``--winsize``
      - 1.0
      - Analysis window length (s)
    * - ``--artifact-correction``
      - —
      - ``lms``, ``orica``, ``gedai``, ``asr``, or ``maxwell`` (MEG only)
-   * - ``--no-signal``
+   * - ``--no-nf``
      - —
-     - Disable NF signal plot
+     - Disable the scrolling real-time NF signal plot (:class:`~mne_rt.viz.NFPlot`)
    * - ``--no-raw``
      - —
-     - Disable raw stream viewer
-   * - ``--topo``
+     - Disable the scrolling raw M/EEG viewer (:class:`~mne_rt.viz.RawPlot`)
+   * - ``--topomap``
      - —
      - Enable real-time scalp topomap (δ/θ/α/β/γ bands)
    * - ``--brain``
      - —
-     - Enable 3D brain display (requires inverse operator)
+     - Enable 3-D brain display (requires inverse operator)
+   * - ``--topo``
+     - —
+     - Enable :class:`~mne_rt.viz.TopoPlot` ERP display (requires ``--stim-ch``)
+   * - ``--butterfly``
+     - —
+     - Enable :class:`~mne_rt.viz.ButterflyPlot` (requires ``--stim-ch``)
+   * - ``--compare-evoked``
+     - —
+     - Enable :class:`~mne_rt.viz.CompareEvoked` (requires ``--stim-ch``)
+   * - ``--tfr``
+     - —
+     - Enable :class:`~mne_rt.viz.TFRPlot` Morlet wavelet heatmap
+       (requires ``--stim-ch``)
+   * - ``--stim-ch``
+     - —
+     - Stimulus/trigger channel name, e.g. ``STI 014`` — required when
+       any epoch plot flag is used
+   * - ``--tmin``
+     - -0.1
+     - Epoch start relative to stimulus (s)
+   * - ``--tmax``
+     - 0.5
+     - Epoch end relative to stimulus (s)
+   * - ``--event-id``
+     - stimulus=1
+     - Condition definitions as ``NAME=CODE`` pairs, e.g.
+       ``--event-id left=1 right=2``
    * - ``--surf``
      - inflated
      - Brain surface geometry
@@ -223,22 +298,22 @@ Options (inherits all ``baseline`` flags above, plus):
      - 9000
      - OSC destination port
    * - ``--osc-prefix``
-     - /ant
+     - /mne_rt
      - OSC address prefix
    * - ``--lsl-output``
      - —
-     - Push NF values into an LSL stream outlet (faster than OSC for
-       same-machine feedback; readable by PsychoPy, Psychtoolbox, …)
+     - Push feature values into an LSL stream outlet (faster than OSC for
+       same-machine integration; readable by PsychoPy, Psychtoolbox, …)
    * - ``--lsl-stream-name``
-     - ANT_NF
+     - MNE_RT
      - LSL stream name (only with ``--lsl-output``)
    * - ``--smoothing``
      - 0.25
-     - EMA smoothing factor applied to each NF value (``1.0`` = no smoothing,
+     - EMA smoothing factor applied to each feature value (``1.0`` = no smoothing,
        ``0.1`` = heavy smoothing)
 
-Available NF modalities
------------------------
+Available feature modalities
+-----------------------------
 
 .. list-table::
    :header-rows: 1
@@ -288,3 +363,40 @@ Available NF modalities
      - Graph-Laplacian learning from source connectivity
 
 For the mathematical background of every modality, see :doc:`modalities`.
+
+Real-time visualisation
+-----------------------
+
+All eight plot windows are available as CLI flags and can be combined freely:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 58
+
+   * - Flag
+     - Plot class
+   * - ``--nf`` *(default on)*
+     - :class:`~mne_rt.viz.NFPlot` — scrolling multi-channel NF signal monitor
+   * - ``--raw`` *(default on)*
+     - :class:`~mne_rt.viz.RawPlot` — scrolling raw M/EEG channel viewer (bad-channel / bad-segment marking)
+   * - ``--epoch-plot``
+     - :class:`~mne_rt.viz.EpochPlot` — scrolling raw viewer with trigger/epoch overlays (requires ``--stim-ch``)
+   * - ``--topomap``
+     - :class:`~mne_rt.viz.TopomapPlot` — live per-band scalp topography
+   * - ``--brain``
+     - :class:`~mne_rt.viz.BrainPlot` — interactive 3-D cortical surface
+   * - ``--topo``
+     - :class:`~mne_rt.viz.TopoPlot` — scalp-layout ERP with ±SEM shading
+   * - ``--butterfly``
+     - :class:`~mne_rt.viz.ButterflyPlot` — all channels overlaid, region-coloured
+   * - ``--compare-evoked``
+     - :class:`~mne_rt.viz.CompareEvoked` — per-channel comparison with SEM ribbons
+   * - ``--tfr``
+     - :class:`~mne_rt.viz.TFRPlot` — Morlet wavelet TFR heatmaps
+
+The first four (``--nf``, ``--raw``, ``--topomap``, ``--brain``) work with
+continuous feature extraction (``mne-rt run``).  The epoch-based windows
+(``--epoch-plot``, ``--erp``, ``--butterfly``, ``--compare-evoked``, ``--tfr``)
+require ``--stim-ch``.  Use ``mne-rt demo-erp`` to try them without a live recording.
+
+See :doc:`visualization` for screenshots and feature descriptions of each plot.

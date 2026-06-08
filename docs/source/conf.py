@@ -1,6 +1,35 @@
 import os
 import sys
+import warnings
 from unittest.mock import MagicMock
+
+# Suppress third-party warnings that are irrelevant to our docs build:
+#
+# 1. numpydoc uses Sphinx's deprecated dict interface on Options objects.
+#    RemovedInSphinx11Warning (a PendingDeprecationWarning subclass) fires
+#    on every documented member with Sphinx 9.x — nothing actionable here.
+warnings.filterwarnings(
+    "ignore",
+    message=".*mapping interface for autodoc options.*",
+)
+try:
+    from sphinx.deprecation import RemovedInSphinx11Warning
+    warnings.filterwarnings("ignore", category=RemovedInSphinx11Warning)
+except Exception:
+    pass
+
+# 2. numpydoc UserWarnings about custom sections in existing docstrings
+#    (OperantProtocol, ModalityMixin) — cosmetic, not a build failure.
+warnings.filterwarnings(
+    "ignore",
+    message=".*Unknown section.*",
+    category=UserWarning,
+)
+warnings.filterwarnings(
+    "ignore",
+    message=".*potentially wrong underline length.*",
+    category=UserWarning,
+)
 
 # Force a non-Qt matplotlib backend BEFORE any ant/pyqtgraph import so that
 # matplotlib does not try to version-check the mocked PyQt6.
@@ -45,7 +74,7 @@ _MOCK_MODULES = [
 for _mod in _MOCK_MODULES:
     sys.modules.setdefault(_mod, MagicMock())
 
-# NFSignalPlot and TopoPlot inherit from QMainWindow.  When QMainWindow is a
+# SignalPlot and TopoPlot inherit from QMainWindow.  When QMainWindow is a
 # MagicMock instance, autodoc resolves those classes as "alias of <MagicMock>"
 # and drops the docstring entirely.  Replacing QMainWindow with a real (dummy)
 # Python class lets autodoc see the proper class hierarchy and renders the docs.
@@ -62,7 +91,7 @@ autodoc_mock_imports = _MOCK_MODULES
 # Project information
 # ---------------------------------------------------------------------------
 
-project = 'Advanced Neurofeedback Toolbox (ANT)'
+project = 'MNE-RT'
 copyright = '2025, Payam S. Shabestari'
 author = 'Payam S. Shabestari'
 release = '1.0.0'
@@ -114,16 +143,16 @@ numpydoc_xref_ignore = {"optional", "default", "or"}
 # ---------------------------------------------------------------------------
 
 html_theme = "pydata_sphinx_theme"
-html_title = "ANT"
+html_title = "MNE-RT"
 html_static_path = ['_static']
 html_css_files = ['custom.css']
 
 html_theme_options = {
     "logo": {
-        "image_light": "_static/ANT_Logo_Horizontal.svg",
-        "image_dark":  "_static/ANT_Logo_Horizontal.svg",
+        "image_light": "_static/mne_rt_logo.svg",
+        "image_dark":  "_static/mne_rt_logo.svg",
     },
-    "github_url": "https://github.com/payamsash/ANT",
+    "github_url": "https://github.com/payamsash/mne-rt",
     "navbar_end": ["navbar-icon-links"],
     "secondary_sidebar_items": ["page-toc", "edit-this-page"],
     "show_toc_level": 2,
@@ -141,10 +170,11 @@ html_sidebars = {
 # ---------------------------------------------------------------------------
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3/", None),
-    "numpy":  ("https://numpy.org/doc/stable/", None),
-    "scipy":  ("https://docs.scipy.org/doc/scipy/", None),
-    "mne":    ("https://mne.tools/stable/", None),
+    "python":  ("https://docs.python.org/3/", None),
+    "numpy":   ("https://numpy.org/doc/stable/", None),
+    "scipy":   ("https://docs.scipy.org/doc/scipy/", None),
+    "mne":     ("https://mne.tools/stable/", None),
+    "mne_lsl": ("https://mne.tools/mne-lsl/stable/", None),
 }
 
 # ---------------------------------------------------------------------------
@@ -158,8 +188,10 @@ bibtex_default_style = 'unsrt'
 # Sphinx Gallery
 # ---------------------------------------------------------------------------
 
+_examples_root = os.path.abspath(os.path.join(_here, '..', '..', 'examples'))
+
 sphinx_gallery_conf = {
-    'examples_dirs':        os.path.join(_here, '..', '..', 'examples'),
+    'examples_dirs':        _examples_root,
     'gallery_dirs':         'auto_examples',
     'filename_pattern':     r'ex_.*\.py',
     'run_stale_examples':   False,   # only re-run when source md5 changes
@@ -167,9 +199,8 @@ sphinx_gallery_conf = {
     'download_all_examples': False,
     'show_memory':          False,
     'backreferences_dir':   os.path.join('generated', 'backreferences'),
-    'doc_module':           ('ant',),
-    'reference_url':        {'ant': None},
+    'doc_module':           ('mne_rt',),
+    'reference_url':        {'mne_rt': None},
     'first_notebook_cell':  "import matplotlib\nmatplotlib.use('Agg')\n",
-    # Show source code even if execution fails
     'abort_on_example_error': False,
 }

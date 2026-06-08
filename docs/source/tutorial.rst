@@ -3,9 +3,9 @@
 User Guide
 ==========
 
-This page introduces the core concepts behind real-time neurofeedback (NF)
-and explains how ANT maps those concepts onto a concrete session workflow.
-No prior BCI experience is required.
+This page introduces the core concepts behind real-time M/EEG processing
+and explains how MNE-RT maps those concepts onto a concrete session workflow.
+No prior BCI or neurofeedback experience is required.
 
 .. contents::
    :local:
@@ -13,13 +13,14 @@ No prior BCI experience is required.
 
 ----
 
-What is Neurofeedback?
-----------------------
+Real-time M/EEG processing
+--------------------------
 
-Neurofeedback is a closed-loop brain-computer interface (BCI) technique in
-which a participant receives continuous, moment-to-moment information about a
-feature of their own brain activity and uses that information to *voluntarily
-modulate* the feature.
+Real-time M/EEG processing refers to any pipeline that acquires brain signals,
+extracts features *as fast as the data arrives*, and delivers results — feedback,
+monitoring outputs, or triggers — within a latency budget of milliseconds to
+seconds.  MNE-RT covers the full range: continuous neurofeedback, event-related
+ERP/TFR analysis, BCI decoding, and passive brain monitoring.
 
 .. raw:: html
 
@@ -41,8 +42,8 @@ modulate* the feature.
      </td>
      <td style="padding:20px 24px; width:33%;">
        <div style="font-weight:700; color:#d97706; margin-bottom:6px;">③ Feedback</div>
-       <div style="color:#475569;">The NF value drives a visual, auditory, or
-       haptic reward signal the participant can see and learn to control.</div>
+       <div style="color:#475569;">The feature value drives a visual, auditory, or
+       haptic output signal — or is streamed for offline analysis or BCI control.</div>
      </td>
    </tr>
    </table>
@@ -61,51 +62,48 @@ asymmetry training).
 
 ----
 
-The ANT Session Workflow
+MNE-RT Session Workflow
 ------------------------
 
-Every ANT session follows the same three-phase structure:
+Every session follows the same three-phase structure:
 
 .. raw:: html
 
    <div style="margin:24px 0;">
    <div style="display:flex; flex-direction:column; gap:0;
-        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:13px;">
+        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:13px; box-sizing: border-box;">
 
-   <!-- Phase 1 -->
-   <div style="display:flex; align-items:stretch; gap:0;">
+   <div style="display:flex; align-items:stretch; gap:0; box-sizing: border-box;">
      <div style="background:#1e40af; color:white; font-weight:700; padding:14px 18px;
-          border-radius:10px 0 0 0; display:flex; align-items:center; min-width:130px;
-          white-space:nowrap;">① Acquisition</div>
+          border-radius:10px 0 0 0; display:flex; align-items:center; width:150px; flex-shrink: 0;
+          white-space:nowrap; box-sizing: border-box;">① Acquisition</div>
      <div style="background:#eff6ff; border:1px solid #bfdbfe; border-left:none;
-          padding:14px 18px; border-radius:0 10px 0 0; flex:1; color:#1e3a8a;">
+          padding:14px 18px; border-radius:0 10px 0 0; flex:1; color:#1e3a8a; box-sizing: border-box;">
        Connect to an EEG/MEG amplifier (or mock replay) via LSL.
-       <code style="background:#dbeafe; padding:1px 5px; border-radius:4px;">NFRealtime.connect_to_lsl()</code>
+       <code style="background:#dbeafe; padding:1px 5px; border-radius:4px;">RTStream.connect_to_lsl()</code>
      </div>
    </div>
 
-   <!-- Phase 2 -->
-   <div style="display:flex; align-items:stretch; gap:0;">
+   <div style="display:flex; align-items:stretch; gap:0; box-sizing: border-box;">
      <div style="background:#065f46; color:white; font-weight:700; padding:14px 18px;
-          display:flex; align-items:center; min-width:130px; white-space:nowrap;">② Baseline</div>
+          display:flex; align-items:center; width:150px; flex-shrink: 0; white-space:nowrap; box-sizing: border-box;">② Baseline</div>
      <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-left:none;
-          border-top:none; padding:14px 18px; flex:1; color:#14532d;">
-       Record 2–5 min of resting-state data. ANT automatically detects bad
+          border-top:none; padding:14px 18px; flex:1; color:#14532d; box-sizing: border-box;">
+       Record 2–5 min of resting-state data, automatically detects bad
        channels, computes noise covariance, and builds the inverse operator.
-       <code style="background:#dcfce7; padding:1px 5px; border-radius:4px;">NFRealtime.record_baseline()</code>
+       <code style="background:#dcfce7; padding:1px 5px; border-radius:4px;">RTStream.record_baseline()</code>
      </div>
    </div>
 
-   <!-- Phase 3 -->
-   <div style="display:flex; align-items:stretch; gap:0;">
+   <div style="display:flex; align-items:stretch; gap:0; box-sizing: border-box;">
      <div style="background:#92400e; color:white; font-weight:700; padding:14px 18px;
-          border-radius:0 0 0 10px; display:flex; align-items:center; min-width:130px;
-          white-space:nowrap;">③ NF session</div>
+          border-radius:0 0 0 10px; display:flex; align-items:center; width:150px; flex-shrink: 0;
+          white-space:nowrap; box-sizing: border-box;">③ Real-time</div>
      <div style="background:#fffbeb; border:1px solid #fde68a; border-left:none;
-          border-top:none; padding:14px 18px; border-radius:0 0 10px 0; flex:1; color:#78350f;">
+          border-top:none; padding:14px 18px; border-radius:0 0 10px 0; flex:1; color:#78350f; box-sizing: border-box;">
        Run the closed-loop feedback loop for the prescribed duration.
-       NF values, reward signals, and quality metrics are streamed live and saved to BIDS.
-       <code style="background:#fef3c7; padding:1px 5px; border-radius:4px;">NFRealtime.record_main()</code>
+       Feature values, reward signals, and quality metrics are streamed live and saved to BIDS.
+       <code style="background:#fef3c7; padding:1px 5px; border-radius:4px;">RTStream.record_main()</code>
      </div>
    </div>
 
@@ -122,10 +120,10 @@ reference power).
 Closed-Loop Architecture
 ------------------------
 
-The diagram below shows how data flows inside ANT during a NF window:
+The diagram below shows how data flows inside MNE-RT during a processing window:
 
 .. image:: _static/code_design.svg
-   :alt: ANT closed-loop architecture diagram
+   :alt: MNE-RT closed-loop architecture diagram
    :align: center
    :width: 75%
 
@@ -139,11 +137,11 @@ source-space inverse) never block the feedback display.
 Key Concepts
 ------------
 
-NF Modality
+Feature Modality
 ~~~~~~~~~~~
 
 A **modality** is the brain feature that is being fed back to the participant.
-ANT implements 20 modalities across sensor space, connectivity, and source
+MNE-RT implements 20 modalities across sensor space, connectivity, and source
 space.  You select one or more per session:
 
 .. raw:: html
@@ -182,7 +180,7 @@ space.  You select one or more per session:
      <tr style="background:#f8fafc;">
        <td style="padding:6px 14px;border:1px solid #e2e8f0;font-weight:600;">Source space</td>
        <td style="padding:6px 14px;border:1px solid #e2e8f0;font-family:monospace;font-size:12px;">source_power · source_connectivity · source_graph</td>
-       <td style="padding:6px 14px;border:1px solid #e2e8f0;">Region-specific NF; tinnitus, depression</td>
+       <td style="padding:6px 14px;border:1px solid #e2e8f0;">Region-specific analysis; tinnitus, depression</td>
      </tr>
    </tbody>
    </table>
@@ -190,11 +188,11 @@ space.  You select one or more per session:
 
 See :doc:`modalities` for the mathematical definition of each.
 
-NF Protocol
+Feedback Protocol
 ~~~~~~~~~~~
 
 A **protocol** decides *when* to deliver a reward and *how much*.  It sits
-between the raw modality value and the feedback display.  ANT ships ten
+between the raw modality value and the feedback display.  MNE-RT ships ten
 protocols:
 
 .. raw:: html
@@ -202,7 +200,7 @@ protocols:
    <pre style="background:#1e293b; color:#e2e8f0; padding:16px 20px;
         border-radius:10px; font-size:12px; line-height:1.8; overflow-x:auto;
         font-family:'JetBrains Mono','Fira Code','Courier New',monospace;">
-   NF value  ──▶  Protocol  ──▶  (crossed: bool, magnitude: float)
+   feature value  ──▶  Protocol  ──▶  (crossed: bool, magnitude: float)
                     │
                     ├── ThresholdProtocol   fixed or slowly-adapting threshold
                     ├── ZScoreProtocol      running z-score; self-calibrating
@@ -221,10 +219,10 @@ See :doc:`protocols` for formulas and selection guidance.
 Feature Combiner
 ~~~~~~~~~~~~~~~~
 
-A **feature combiner** reduces N parallel feature values to a single mixed NF
+A **feature combiner** reduces N parallel feature values to a single mixed
 score.  This is useful when several modalities capture complementary aspects of
 the brain state and you want one unified number for the protocol and display.
-ANT provides four combiners in :mod:`ant.combiners`:
+MNE-RT provides four combiners in :mod:`mne_rt.combiners`:
 
 .. list-table::
    :header-rows: 1
@@ -232,24 +230,24 @@ ANT provides four combiners in :mod:`ant.combiners`:
 
    * - Class
      - Strategy
-   * - :class:`~ant.combiners.WeightedSumCombiner`
+   * - :class:`~mne_rt.combiners.WeightedSumCombiner`
      - Normalised weighted sum ``Σ(wᵢ·xᵢ)/Σ(wᵢ)``.  Intuitive, interpretable.
        Negative weights allowed (e.g. subtract theta from alpha).
-   * - :class:`~ant.combiners.GeometricMeanCombiner`
+   * - :class:`~mne_rt.combiners.GeometricMeanCombiner`
      - Weighted geometric mean ``exp(Σ wᵢ·log(xᵢ)/Σwᵢ)``.  Best for positive
        ratio or power features whose effects are multiplicative.
-   * - :class:`~ant.combiners.ZScoredNormCombiner`
+   * - :class:`~mne_rt.combiners.ZScoredNormCombiner`
      - Z-score each feature against a warmup baseline, then take the Euclidean
        norm divided by ``√n``.  Returns a unit-free "deviation from baseline"
        score regardless of feature units or dynamic range.
-   * - :class:`~ant.combiners.LearnedCombiner`
+   * - :class:`~mne_rt.combiners.LearnedCombiner`
      - Pass the feature vector to any fitted ``sklearn``-compatible estimator
        (e.g. ``Ridge``, ``PLSRegression``).  Requires an offline calibration
        step but can capture non-linear feature interactions.
 
 Example — blend alpha power and interhemispheric laterality::
 
-    from ant.combiners import WeightedSumCombiner
+    from mne_rt.combiners import WeightedSumCombiner
 
     combiner = WeightedSumCombiner(
         weights={"sensor_power": 0.6, "laterality": 0.4}
@@ -261,7 +259,7 @@ Analysis Window
 ~~~~~~~~~~~~~~~
 
 The **analysis window** (``winsize``) is the length of the EEG/MEG segment
-used to compute each NF value.  Shorter windows give more frequent updates
+used to compute each feature value.  Shorter windows give more frequent updates
 (lower latency) but noisier estimates; longer windows give more stable estimates
 at the cost of update frequency.
 
@@ -290,37 +288,37 @@ at the cost of update frequency.
 Step-by-Step: First Session
 ----------------------------
 
-**Step 1 — Install ANT**
+**Step 1 — Install MNE-RT**
 
 .. code-block:: bash
 
-    pip install "ANT[full]"
+    pip install "mne-rt[full]"
 
 **Step 2 — Run the demo (no hardware needed)**
 
-The demo streams simulated EEG internally and runs a full NF session with
+The demo streams simulated EEG internally and runs a full real-time session with
 live topo display:
 
 .. code-block:: bash
 
-    ANT demo --duration 60 --modality sensor_power erd_ers
+    mne-rt demo --duration 60 --modality sensor_power erd_ers
 
 **Step 3 — Record a baseline**
 
 Connect your amplifier, then record a 2-minute resting-state baseline.
-ANT detects bad channels, computes ICA, and saves a noise covariance file:
+MNE-RT detects bad channels, computes ICA, and saves a noise covariance file:
 
 .. code-block:: bash
 
-    ANT baseline --subject sub01 --subjects-dir /data/subjects
+    mne-rt baseline --subject sub01 --subjects-dir /data/subjects
 
 Or in Python:
 
 .. code-block:: python
 
-    from ant import NFRealtime
+    from mne_rt import RTStream
 
-    nf = NFRealtime(
+    nf = RTStream(
         subject_id="sub01",
         session="01",
         subjects_dir="/data/subjects",
@@ -329,11 +327,11 @@ Or in Python:
     nf.connect_to_lsl()          # connects to live amplifier
     nf.record_baseline(duration=120)
 
-**Step 4 — Run the NF session**
+**Step 4 — Run the real-time session**
 
 .. code-block:: python
 
-    from ant.protocols import ZScoreProtocol
+    from mne_rt.protocols import ZScoreProtocol
 
     proto = ZScoreProtocol(direction="up", zscore_threshold=0.5, warmup_windows=20)
 
@@ -363,9 +361,9 @@ Or in Python:
 Multi-Session Protocols
 -----------------------
 
-For longitudinal training studies, ANT provides two patterns:
+For longitudinal training studies, MNE-RT provides two patterns:
 
-**Multi-block session** — run several NF blocks with rest periods in between,
+**Multi-block session** — run several recording blocks with rest periods in between,
 all within one Python call:
 
 .. code-block:: python
@@ -384,7 +382,7 @@ previous session's file so rewards start immediately (no warmup phase):
 
 .. code-block:: python
 
-    from ant.protocols import TransferProtocol
+    from mne_rt.protocols import TransferProtocol
 
     proto = TransferProtocol(
         fname="sub-sub01_ses-01_task-nf_beh.json",
@@ -469,7 +467,7 @@ Choosing a Modality and Protocol
 Quality Monitoring
 ------------------
 
-ANT tracks two session-level quality metrics automatically when requested:
+MNE-RT tracks two session-level quality metrics automatically when requested:
 
 .. code-block:: python
 
@@ -487,8 +485,8 @@ A session with artifact rate > 20 % should be reviewed for electrode impedance
 issues or movement artefacts before proceeding.
 
 For detailed real-time quality control, see the
-:class:`~ant.tools.BadChannelDetector` and
-:class:`~ant.tools.RiemannianPotatoDetector` classes documented in
+:class:`~mne_rt.tools.BadChannelDetector` and
+:class:`~mne_rt.tools.RiemannianPotatoDetector` classes documented in
 :doc:`denoising`.
 
 ----
@@ -496,8 +494,8 @@ For detailed real-time quality control, see the
 Further Reading
 ---------------
 
-- :doc:`modalities` — mathematical definitions of all 20 NF modalities
+- :doc:`modalities` — mathematical definitions of all 20 feature modalities
 - :doc:`protocols` — reward protocol formulas, selection table, and examples
 - :doc:`denoising` — artifact correction algorithms and benchmarks
 - :doc:`api` — complete class and function reference
-- :doc:`cli` — full CLI reference (``ANT run``, ``ANT baseline``, ``ANT demo``)
+- :doc:`cli` — full CLI reference (``mne-rt run``, ``mne-rt baseline``, ``mne-rt demo``)

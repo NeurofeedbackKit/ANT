@@ -5,7 +5,7 @@ NF Protocols
 
 A **neurofeedback protocol** decides *when* and *how much* to reward.
 It sits between the raw NF feature value (e.g. alpha power) and the
-feedback signal delivered to the participant.  ANT ships ten protocols,
+feedback signal delivered to the participant.  MNE-RT ships ten protocols,
 covering the full spectrum from simple fixed-threshold designs to
 adaptive psychophysics staircases, reinforcement-learning thresholds,
 operant conditioning schedules, cross-session transfer, and double-blind
@@ -134,12 +134,12 @@ windows, decrease after missed windows.
 
 **When to use:**  Quick prototyping, clinical applications where the
 threshold is set by an expert, or as the inner protocol for
-:class:`~ant.protocols.ShamProtocol` or
-:class:`~ant.protocols.MultiBandProtocol`.
+:class:`~mne_rt.protocols.ShamProtocol` or
+:class:`~mne_rt.protocols.MultiBandProtocol`.
 
 .. code-block:: python
 
-    from ant.protocols import ThresholdProtocol
+    from mne_rt.protocols import ThresholdProtocol
 
     proto = ThresholdProtocol(threshold=1.2e-10, direction="up")
     crossed, mag = proto.evaluate(alpha_power)
@@ -189,7 +189,7 @@ re-setting thresholds.
 
 .. code-block:: python
 
-    from ant.protocols import ZScoreProtocol
+    from mne_rt.protocols import ZScoreProtocol
 
     proto = ZScoreProtocol(direction="up", zscore_threshold=0.5, warmup_windows=20)
     for value in nf_stream:
@@ -225,7 +225,7 @@ target.  The 75th-percentile default rewards the best ~25 % of windows.
 
 .. code-block:: python
 
-    from ant.protocols import PercentileProtocol
+    from mne_rt.protocols import PercentileProtocol
 
     proto = PercentileProtocol(percentile=75.0, direction="up", history_len=100)
     crossed, mag = proto.evaluate(alpha_power)
@@ -278,7 +278,7 @@ control.
 
 .. code-block:: python
 
-    from ant.protocols import LinearTrendProtocol
+    from mne_rt.protocols import LinearTrendProtocol
 
     proto = LinearTrendProtocol(direction="up", window=20, slope_threshold=0.0, min_r2=0.3)
     crossed, mag = proto.evaluate(alpha_power)
@@ -296,7 +296,7 @@ Sham Protocol
    </div>
 
 In a double-blind NF design the participant should not be able to tell
-when feedback is real and when it is sham.  :class:`~ant.protocols.ShamProtocol`
+when feedback is real and when it is sham.  :class:`~mne_rt.protocols.ShamProtocol`
 intercepts the inner protocol's output on a configurable fraction of
 windows and substitutes a randomly-drawn historical reward value:
 
@@ -314,7 +314,7 @@ The inner protocol's state always advances correctly — only the
 records which windows were sham for post-session unblinding.
 
 **Important:** the inner protocol must be configured separately; the
-:class:`~ant.protocols.ShamProtocol` wrapper is agnostic to the inner
+:class:`~mne_rt.protocols.ShamProtocol` wrapper is agnostic to the inner
 protocol type.
 
 **When to use:**  Any experiment that requires a within-session sham
@@ -323,8 +323,8 @@ or use ``rng_seed`` for exact reproducibility.
 
 .. code-block:: python
 
-    from ant.protocols import ZScoreProtocol
-    from ant.protocols.sham import ShamProtocol
+    from mne_rt.protocols import ZScoreProtocol
+    from mne_rt.protocols.sham import ShamProtocol
 
     inner = ZScoreProtocol(direction="up")
     proto = ShamProtocol(inner, sham_rate=0.5, rng_seed=42)
@@ -406,7 +406,7 @@ audiometry or psychophysics.
 
 .. code-block:: python
 
-    from ant.protocols.staircase import UpDownStaircaseProtocol
+    from mne_rt.protocols.staircase import UpDownStaircaseProtocol
 
     proto = UpDownStaircaseProtocol(
         initial_threshold=0.5, direction="up",
@@ -437,7 +437,7 @@ reward alpha *up-regulation* while penalising theta *up-regulation*
 (focus training), or reward SMR while suppressing theta (ADHD protocol
 :footcite:p:`sterman2006foundation`).
 
-:class:`~ant.protocols.MultiBandProtocol` wraps two independent inner
+:class:`~mne_rt.protocols.MultiBandProtocol` wraps two independent inner
 protocols and combines their outputs:
 
 .. math::
@@ -468,13 +468,13 @@ both must be non-zero to produce a non-zero combined magnitude.
 
 **When to use:**  Any protocol that targets two brain rhythms
 simultaneously.  The two inner protocols are independent and can be of
-different types — e.g. a :class:`~ant.protocols.ThresholdProtocol` for
-alpha and a :class:`~ant.protocols.ZScoreProtocol` for theta.
+different types — e.g. a :class:`~mne_rt.protocols.ThresholdProtocol` for
+alpha and a :class:`~mne_rt.protocols.ZScoreProtocol` for theta.
 
 .. code-block:: python
 
-    from ant.protocols import ZScoreProtocol
-    from ant.protocols.multiband import MultiBandProtocol
+    from mne_rt.protocols import ZScoreProtocol
+    from mne_rt.protocols.multiband import MultiBandProtocol
 
     alpha_proto = ZScoreProtocol(direction="up",   warmup_windows=20)
     theta_proto = ZScoreProtocol(direction="down",  warmup_windows=20)
@@ -516,18 +516,18 @@ window to keep the rolling hit rate close to the target:
    \theta_{t+1} &= \theta_t + \eta \cdot \delta_t
    \quad (\text{direction = "up"})
 
-With probability :math:`\varepsilon` the current value is treated as a
-*forced hit* (exploration step), preventing the threshold from drifting so
-high that the participant never succeeds.
+With probability :math:`\varepsilon` (the ``epsilon`` parameter) the current
+value is treated as a *forced hit* (exploration step), preventing the threshold
+from drifting so high that the participant never succeeds.
 
 **When to use:**  When there is no prior calibration data and you want
 the protocol to self-tune from scratch.  Works particularly well in
-conjunction with :class:`~ant.protocols.ShamProtocol` for within-session
+conjunction with :class:`~mne_rt.protocols.ShamProtocol` for within-session
 sham control.
 
 .. code-block:: python
 
-    from ant.protocols import RLProtocol
+    from mne_rt.protocols import RLProtocol
 
     proto = RLProtocol(
         direction="up",
@@ -554,7 +554,7 @@ Operant Protocol
 
 Partial reinforcement schedules are more resistant to extinction than
 continuous reinforcement :footcite:t:`ferster1957schedules`.
-:class:`~ant.protocols.OperantProtocol` wraps any existing NF protocol and
+:class:`~mne_rt.protocols.OperantProtocol` wraps any existing NF protocol and
 filters its reward output through one of four classical schedules:
 
 .. raw:: html
@@ -587,7 +587,7 @@ engagement over long sessions by preventing saturation).
 
 .. code-block:: python
 
-    from ant.protocols import ZScoreProtocol, OperantProtocol
+    from mne_rt.protocols import ZScoreProtocol, OperantProtocol
 
     inner = ZScoreProtocol(direction="up", warmup_windows=20)
     proto = OperantProtocol(inner, schedule="VR", ratio=3, rng_seed=42)
@@ -608,9 +608,9 @@ Transfer Protocol
    rewards from the very first window of the new session.
    </div>
 
-The standard :class:`~ant.protocols.ZScoreProtocol` needs a warmup phase to
+The standard :class:`~mne_rt.protocols.ZScoreProtocol` needs a warmup phase to
 estimate :math:`\hat\mu` and :math:`\hat\sigma` before rewards can be issued.
-:class:`~ant.protocols.TransferProtocol` eliminates warmup by loading the
+:class:`~mne_rt.protocols.TransferProtocol` eliminates warmup by loading the
 population statistics from a previous session's ``beh.json`` file and seeding
 the Welford accumulators directly:
 
@@ -633,7 +633,7 @@ replacing the prior with session-specific data.
       "data": {"sensor_power": [0.12, 0.14, 0.11, …]}
     }
 
-Such files are written automatically by :meth:`~ant.NFRealtime.save`.
+Such files are written automatically by :meth:`~mne_rt.RTStream.save`.
 
 **When to use:**  Multi-session training programmes where consistent reward
 rates across sessions improve participant motivation.  Also useful in studies
@@ -642,7 +642,7 @@ baseline.
 
 .. code-block:: python
 
-    from ant.protocols import TransferProtocol
+    from mne_rt.protocols import TransferProtocol
 
     proto = TransferProtocol(
         fname="sub-01_ses-01_task-nf_beh.json",
