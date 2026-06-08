@@ -30,7 +30,7 @@ class TransferProtocol:
     :meth:`evaluate` continue updating the running statistics, but because
     the prior already contributes, no warmup period is needed.
 
-    The JSON file must follow ANT's BIDS behavioural format::
+    The JSON file must follow MNE-RT's BIDS behavioural format::
 
         {
             "meta": {"modalities": ["sensor_power"], ...},
@@ -143,7 +143,7 @@ class TransferProtocol:
         if "data" not in payload:
             raise KeyError(
                 f"The file {fname} does not contain a top-level 'data' key. "
-                "Expected ANT BIDS JSON format: "
+                "Expected MNE-RT BIDS JSON format: "
                 '{"meta": {...}, "data": {"<modality>": [...]}}'
             )
         data_section = payload["data"]
