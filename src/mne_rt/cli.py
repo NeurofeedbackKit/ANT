@@ -35,7 +35,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="mne-rt",
         description=textwrap.dedent("""\
             MNE-RT
-            ─────────────────────────────────────
+            -------------------------------------
             Real-time M/EEG signal processing and analysis.
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -210,7 +210,7 @@ def _add_baseline_parser(sub):
     )
     p.add_argument(
         "--fname", metavar="FILE",
-        help="Any MNE-readable file to simulate (.fif, .vhdr, .edf, .bdf, .set, …) — requires --mock.",
+        help="Any MNE-readable file to simulate (.fif, .vhdr, .edf, .bdf, .set, ...) - requires --mock.",
     )
     return p
 
@@ -246,7 +246,7 @@ def _add_run_parser(sub):
     )
     p.add_argument(
         "--fname", metavar="FILE",
-        help="Any MNE-readable file to simulate (.fif, .vhdr, .edf, .bdf, .set, …) — requires --mock.",
+        help="Any MNE-readable file to simulate (.fif, .vhdr, .edf, .bdf, .set, ...) - requires --mock.",
     )
     p.add_argument(
         "--artifact-correction",
@@ -335,7 +335,7 @@ def _add_run_parser(sub):
         "--lsl-output", action="store_true",
         help=(
             "Broadcast feature values as an LSL stream outlet named 'MNE_RT'.  "
-            "Any LSL-aware application (PsychoPy, Psychtoolbox, OpenViBE, …) "
+            "Any LSL-aware application (PsychoPy, Psychtoolbox, OpenViBE, ...) "
             "can subscribe to this stream.  Faster and more reliable than OSC "
             "for same-machine integration."
         ),
@@ -391,8 +391,8 @@ def _cmd_info(args) -> None:
     import platform
 
     lines = [
-        "MNE-RT — Real-Time M/EEG Analysis",
-        "─" * 40,
+        "MNE-RT - Real-Time M/EEG Analysis",
+        "-" * 40,
     ]
     try:
         from mne_rt import __version__
@@ -419,7 +419,7 @@ def _cmd_demo(args) -> None:
 
     set_log_level(args.verbose)
 
-    print("MNE-RT Demo — simulating EEG …")
+    print("MNE-RT Demo - simulating EEG ...")
     import os
     import tempfile
     from pathlib import Path
@@ -436,7 +436,7 @@ def _cmd_demo(args) -> None:
             "Re-run from the MNE-RT repository root or reinstall the package."
         )
 
-    # Resolve FreeSurfer subjects directory: explicit arg → env vars → known paths
+    # Resolve FreeSurfer subjects directory: explicit arg -> env vars -> known paths
     subjects_fs_dir = getattr(args, "subjects_fs_dir", None)
     if subjects_fs_dir is None:
         _candidates = []
@@ -471,7 +471,7 @@ def _cmd_demo(args) -> None:
     nf.connect_to_lsl(mock_lsl=True, fname=str(fname_sim), verbose=args.verbose)
 
     # Always record a brief baseline so the report and ERD/ERS work
-    print("Recording brief baseline (10 s) …")
+    print("Recording brief baseline (10 s) ...")
     nf.record_baseline(baseline_duration=10, verbose=args.verbose)
 
     nf.record_main(
@@ -491,10 +491,10 @@ def _cmd_demo(args) -> None:
     if do_save:
         saved = nf.save()
         for kind, path in saved.items():
-            print(f"  [{kind}] → {path}")
+            print(f"  [{kind}] -> {path}")
         try:
             report_path = nf.create_report()
-            print(f"  [report] → {report_path}")
+            print(f"  [report] -> {report_path}")
         except Exception as exc:
             print(f"  [report] skipped ({exc})")
 
@@ -511,7 +511,7 @@ def _cmd_demo_erp(args) -> None:
     import mne
     import numpy as np
 
-    print("MNE-RT ERP Demo — downloading/loading MNE sample data …")
+    print("MNE-RT ERP Demo - downloading/loading MNE sample data ...")
     data_path  = mne.datasets.sample.data_path()
     raw_full   = mne.io.read_raw_fif(
         str(data_path) + "/MEG/sample/sample_audvis_raw.fif",
@@ -522,7 +522,7 @@ def _cmd_demo_erp(args) -> None:
 
     mock_path  = "/tmp/mne_rt_demo_erp_raw.fif"
     raw_demo.save(mock_path, overwrite=True, verbose=False)
-    print(f"  Saved {raw_demo.times[-1]:.0f} s demo file → {mock_path}")
+    print(f"  Saved {raw_demo.times[-1]:.0f} s demo file -> {mock_path}")
 
     from PyQt6.QtWidgets import QApplication
     app = QApplication.instance() or QApplication(sys.argv)
@@ -538,11 +538,11 @@ def _cmd_demo_erp(args) -> None:
     show_tfr        = not args.no_tfr
 
     if not any([show_epoch_plot, show_topo, show_butterfly, show_compare, show_tfr]):
-        print("All plots disabled — nothing to show.  "
+        print("All plots disabled - nothing to show.  "
               "Remove --no-* flags to enable plots.")
         return
 
-    print("\n── Connecting RTEpochs ──────────────────────────────────────────────")
+    print("\n-- Connecting RTEpochs ----------------------------------------------")
     from mne_rt import RTEpochs
     rt = RTEpochs(
         event_id=event_id,
@@ -573,9 +573,9 @@ def _cmd_demo_erp(args) -> None:
         baseline = (None, 0),
     )
 
-    # EpochPlot: scrolling raw viewer — epoch data is fed chunk-by-chunk
+    # EpochPlot: scrolling raw viewer - epoch data is fed chunk-by-chunk
     # so the trigger marker lands at the correct t=0 position.
-    # scale_uv=10 because ERP amplitudes are ~1-10 µV (default 100 is too coarse)
+    # scale_uv=10 because ERP amplitudes are ~1-10 uV (default 100 is too coarse)
     epoch_w = EpochPlot(
         ch_names    = ch_names,
         sfreq       = sfreq,
@@ -623,7 +623,7 @@ def _cmd_demo_erp(args) -> None:
 
         # Feed the epoch into EpochPlot split at t=0 so the trigger marker
         # lands at the correct position.  `data` is the epoch itself:
-        # shape (n_ch, n_times) — NOT a batch, so no [-1] indexing.
+        # shape (n_ch, n_times) - NOT a batch, so no [-1] indexing.
         if epoch_w is not None:
             epoch_w.push(data[:, :n_pre])       # pre-trigger samples
             epoch_w.push_trigger(code=event_code)
@@ -640,7 +640,7 @@ def _cmd_demo_erp(args) -> None:
 
     rt.on_trial = on_trial
 
-    print(f"\n── Collecting {args.n_trials} trials ───────────────────────────────────────")
+    print(f"\n-- Collecting {args.n_trials} trials ---------------------------------------")
     done = threading.Event()
 
     def _collect():
@@ -655,7 +655,7 @@ def _cmd_demo_erp(args) -> None:
         app.processEvents()
         time.sleep(0.02)
         if sentinel is not None and not sentinel.isVisible():
-            print("\n  Window closed — stopping early.")
+            print("\n  Window closed - stopping early.")
             rt.stop()
             break
 
@@ -666,7 +666,7 @@ def _cmd_demo_erp(args) -> None:
               f"max={np.max(update_times):.1f} ms")
 
     if any(w.isVisible() for w in all_windows):
-        print("\nAll trials collected — close all windows to exit.")
+        print("\nAll trials collected - close all windows to exit.")
         app.exec()
     else:
         print("\nDone.")
@@ -740,15 +740,15 @@ def _cmd_run(args) -> None:
     )
 
     if artifact_correction == "gedai":
-        print("Fitting GEDAI denoiser from baseline …")
+        print("Fitting GEDAI denoiser from baseline ...")
         nf.record_baseline(baseline_duration=60, verbose=args.verbose)
         nf.fit_gedai()
     elif artifact_correction == "asr":
-        print("Fitting ASR denoiser from baseline …")
+        print("Fitting ASR denoiser from baseline ...")
         nf.record_baseline(baseline_duration=60, verbose=args.verbose)
         nf.fit_asr()
     elif artifact_correction == "maxwell":
-        print("Computing SSS/tSSS Maxwell filter from sensor geometry …")
+        print("Computing SSS/tSSS Maxwell filter from sensor geometry ...")
         nf.fit_maxwell()
 
     osc_sender = None
@@ -759,15 +759,15 @@ def _cmd_run(args) -> None:
             port=args.osc_port,
             prefix=args.osc_prefix,
         )
-        print(f"OSC output → {osc_sender.target}  prefix={osc_sender.prefix}")
+        print(f"OSC output -> {osc_sender.target}  prefix={osc_sender.prefix}")
 
     lsl_sender = None
     if getattr(args, "lsl_output", False):
         from mne_rt.lsl_output import LSLSender
         lsl_sender = LSLSender(stream_name=getattr(args, "lsl_stream_name", "MNE_RT"))
-        print(f"LSL output → stream '{lsl_sender.stream_name}'")
+        print(f"LSL output -> stream '{lsl_sender.stream_name}'")
 
-    # ── Epoch plot windows (RTEpochs side-channel) ────────────────────────
+    # -- Epoch plot windows (RTEpochs side-channel) ------------------------
     rt_epochs = None
     epoch_w = topo_w = butt_w = comp_w = tfr_w = None
 
@@ -851,7 +851,7 @@ def _cmd_run(args) -> None:
             batch = rt_epochs._buf_[:n_accepted]
             conds = list(rt_epochs._cond_list_)
             if epoch_w is not None:
-                # data is (n_ch, n_times) — the single epoch, not a batch
+                # data is (n_ch, n_times) - the single epoch, not a batch
                 epoch_w.push(data[:, :_n_pre])
                 epoch_w.push_trigger(code=event_code)
                 epoch_w.push(data[:, _n_pre:])
@@ -869,7 +869,7 @@ def _cmd_run(args) -> None:
             _epoch_done.set()
 
         threading.Thread(target=_collect_epochs, daemon=True).start()
-        print(f"Epoch plots active — stimulus channel: {args.stim_ch}")
+        print(f"Epoch plots active - stimulus channel: {args.stim_ch}")
 
     try:
         nf.record_main(
